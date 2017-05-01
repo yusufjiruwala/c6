@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+    <meta charset="UTF-8">
+    <title>SplitApp Tree</title>
+    <link rel="stylesheet" type="text/css" href="css/chainel1.css">
+    <script
+            id="sap-ui-bootstrap"
+            src='resources/sap-ui-core.js'
+            data-sap-ui-theme="sap_bluecrystal"
+            data-sap-ui-libs="sap.m,sap.ui.commons,sap.ui.table"
+            data-sap-ui-xx-bindingSyntax="complex"
+            data-sap-ui-resourceroots='{
+				"sap.ui.chainel1": "./",
+				"chainel1":"./chainel1"
+			}'>
+    </script>
+    <script  src="util/generic/Util.js"></script>
+    <script  src="util/generic/AppTestData.js"></script>
+    <script>
+        sap.ui.localResources("chainel1");
+        sap.ui.localResources("i18n");
+
+        var Util = sap.ui.require("sap/ui/chainel1/util/generic/Util");
+        var LocalTableData = sap.ui.require("chainel1/util/generic/DataCell");
+        console.log(Util.objToStr(LocalTableData));
+
+        //var v=QueryView.create("s","s");
+        //        console.log(q);
+
+
+        new sap.m.Shell("ShellId", {
+            title: "Chain..Electronically..CHAIN-EL",
+            showLogout: false,
+            app: new sap.ui.core.ComponentContainer({
+                name: "sap.ui.chainel1"
+            })
+        }).placeAt("content");
+
+        //        var oView = sap.ui.view({
+        //            viewName: "chainel1.Main",
+        //            type: sap.ui.core.mvc.ViewType.JS
+        //        });
+        //        oView.placeAt("content");
+    </script>
+    <link rel="stylesheet" href="css/chainel1.css">
+</head>
+<body class="sapUiBody" role="application">
+<div id="content">
+</div>
+</body>
+</html>

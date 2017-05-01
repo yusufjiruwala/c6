@@ -1,0 +1,225 @@
+package com.controller;
+
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.generic.DBClass;
+import com.generic.QueryExe;
+import com.generic.utils;
+
+@Component
+@Scope("session")
+public class InstanceInfo {
+	private DBClass mDbc = null;
+
+	private boolean mLogonSuccessed = false;
+	private String mLoginUser = "";
+	private String mLoginPassword = "";
+	private String mLoginFile = "";
+	private String mOwner = "";
+	private String mOwnerPassword = "";
+	private String mOwnerDBUrl = "";
+	private String mCurrentProfile = "";
+	private int mLoginUserPN = 0;
+
+	private Map<String, Object> mMapVars = new HashMap<String, Object>();
+	private Map<String, String> mMapProfiles = new HashMap<String, String>();
+	private List<String> mListProfiles = new ArrayList<String>();
+
+	@Autowired
+	private ServletContext servletContext;
+
+	// -----------------------------------set--get--funcitons---------------------
+	public String getmLoginUser() {
+		return mLoginUser;
+	}
+
+	public void setmLoginUser(String mLoginUser) {
+		this.mLoginUser = mLoginUser;
+	}
+
+	public String getmLoginPassword() {
+		return mLoginPassword;
+	}
+
+	public void setmLoginPassword(String mLoginPassword) {
+		this.mLoginPassword = mLoginPassword;
+	}
+
+	public String getmLoginFile() {
+		return mLoginFile;
+	}
+
+	public void setmLoginFile(String mLoginFile) {
+		this.mLoginFile = mLoginFile;
+	}
+
+	public String getmCurrentProfile() {
+		return mCurrentProfile;
+	}
+
+	public String getmCurrentProfileName() {
+		return mMapProfiles.get(mCurrentProfile);
+	}
+
+	public void setmCurrentProfile(String mCurrentProfile) {
+		this.mCurrentProfile = mCurrentProfile;
+	}
+
+	public int getmLoginUserPN() {
+		return mLoginUserPN;
+	}
+
+	public void setmLoginUserPN(int mLoginUserPN) {
+		this.mLoginUserPN = mLoginUserPN;
+	}
+
+	public String getmOwner() {
+		return mOwner;
+	}
+
+	public String getmOwnerPassword() {
+		return mOwnerPassword;
+	}
+
+	public String getmOwnerDBUrl() {
+		return mOwnerDBUrl;
+	}
+
+	public DBClass getmDbc() {
+		return mDbc;
+	}
+
+	public boolean isMlogonSuccessed() {
+		return mLogonSuccessed;
+	}
+
+	public void setMlogonSuccessed(boolean logonSuccessed) {
+		this.mLogonSuccessed = logonSuccessed;
+	}
+
+	public Map<String, Object> getMmapVar() {
+		return this.mMapVars;
+	}
+
+	public DBClass getConnection(String fn) {
+		this.mLoginFile = fn;
+		return getConnection();
+	}
+
+	public Map<String, String> getmMapProfiles() {
+		return mMapProfiles;
+	}
+
+	public List<String> getmListProfiles() {
+		return mListProfiles;
+	}
+
+	// -----------------------------------main-functions---------------------
+	public DBClass getConnection() {
+		try {
+			if (mDbc != null) {
+				mDbc.getDbConnection().close();
+				mMapVars.clear();
+				mListProfiles.clear();
+				mMapProfiles.clear();
+				// d = mDbc;
+				mDbc = null;
+			}
+			if (mLoginFile.isEmpty())
+				return null;
+			utils.readVars(mMapVars, mLoginFile);
+			mOwner = mMapVars.get("ini_owner") + "";
+			mOwnerPassword = mMapVars.get("ini_password") + "";
+			mOwnerDBUrl = mMapVars.get("ini_dburl") + "";
+			mDbc = new DBClass(mOwnerDBUrl, mOwner, mOwnerPassword);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.gc(); // just remove any object not refered any more..
+
+		return mDbc;
+	}
+
+	public String loginUser(Map<String, String> params) throws Exception {
+		String ret = "";
+		String user = params.get("user").toUpperCase();
+		String password = params.get("password");
+		String file = params.get("file");
+		String owner = setOwnerFile(servletContext.getRealPath("") + file);
+		System.out.println(owner);
+		Integer vl = Integer.valueOf(QueryExe.getSqlValue("select nvl(max(profileno),-1) from \"" + owner + "\"."
+				+ "cp_users where upper(USERNAME)='" + user + "' and password='" + password + "'",
+				getmDbc().getDbConnection(), "-1") + "");
+		if (vl <= -1)
+			throw new Exception("Invalid user name or password !");
+
+		setmLoginUserPN(vl);
+		setmLoginUser(user);
+		setmLoginPassword(password);
+		buildProfiles();
+		setMlogonSuccessed(true);
+		ret = " \"login_state\":\"success\"";
+		ret = "{" + ret + "," + utils.getJSONMap(getMmapVar()) + "}";
+		return ret;
+	}
+
+	private String setOwnerFile(String filename) throws Exception {
+
+		getConnection(filename);
+		return getMmapVar().get("ini_owner") + "";
+	}
+
+	private void buildProfiles() throws Exception {
+
+		if (getmDbc() == null) {
+			throw new Exception("Database not opened..!");
+		}
+		// ---------------------------------------setup-variable
+		QueryExe qn = new QueryExe(
+				"select variable,value from " + mOwner + ".cp_user_profiles "
+						+ "  where (profileno=:PN OR PROFILENO=0) ORDER BY profileno,variable ",
+				getmDbc().getDbConnection());
+		qn.setParaValue("PN", mLoginUserPN);
+		ResultSet rs = qn.executeRS();
+		getMmapVar().clear();
+		rs.beforeFirst();
+		while (rs.next()) {
+			getMmapVar().put(rs.getString("VARIABLE"), rs.getString("VALUE"));
+		}
+		qn.close();
+		// ---------------------------------------company-variable
+		ResultSet rst = QueryExe.getSqlRS("select name,namea,SPECIFICATION,SPECIFICATIONA from company where crnt='X'",
+				getmDbc().getDbConnection());
+		getMmapVar().put("COMPANY_NAME", rst.getString("NAME"));
+		getMmapVar().put("COMPANY_NAMEA", rst.getString("NAME"));
+		getMmapVar().put("COMPANY_SPECS", rst.getString("NAME"));
+		getMmapVar().put("COMPANY_SPECSA", rst.getString("NAME"));
+		rst.close();
+		// ---------------------------------------profile-names
+		getmMapProfiles().clear();
+		getmListProfiles().clear();
+		rst = QueryExe.getSqlRS(
+				"select *from  CP_MAIN_GROUPS where profiles like '%\"" + getmLoginUserPN() + "\"%' ORDER BY CODE ",
+				getmDbc().getDbConnection());
+		rst.beforeFirst();
+		while (rst.next()) {
+			getmListProfiles().add(rst.getString("CODE"));
+			getmMapProfiles().put(rst.getString("code"), rst.getString("title"));
+		}
+		rst.close();
+
+		setmCurrentProfile(utils.nvl(getMmapVar().get("CURRENT_PROFILE_CODE"), ""));
+
+	}
+
+}
