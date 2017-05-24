@@ -1,0 +1,34 @@
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.qrGroup {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    color: maroon !important;
+}
+
+@media print
+{
+    table { page-break-after:auto }
+    tr    { page-break-inside:avoid; page-break-after:auto }
+    td    { page-break-inside:avoid; page-break-after:auto }
+    thead { display:table-header-group;}
+    tfoot { display:table-footer-group;}
+}
+
+@media print {
+    body {-webkit-print-color-adjust: exact;}
+}

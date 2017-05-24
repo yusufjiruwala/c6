@@ -984,8 +984,9 @@ public class utils {
 
 	public static String getJSONStr(String var, Object val, boolean includeBracket) {
 		String tmp1 = (includeBracket ? "{" : "");
-		tmp1 += "\"" + var + "\":";
-		tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + "" : "\"" + nvl(val, "") + "\"");
+		tmp1 += "\"" + decodeEscape(var) + "\":";
+		tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + ""
+				: "\"" + decodeEscape(nvl(val, "").replace("\"", "'") + "\""));
 		tmp1 += (includeBracket ? "}" : "");
 		return tmp1;
 	}
@@ -997,4 +998,72 @@ public class utils {
 		}
 		return ret;
 	}
+
+	public static String getJSONsql(String var, ResultSet rs, Connection con, String excludeColumn,
+			String includeColumn) throws SQLException {
+
+		if (rs == null || !rs.first())
+			return "";
+		String ret = "";
+		ResultSetMetaData rsm = rs.getMetaData();
+		rs.beforeFirst();
+		String tmp1 = "", cn = "";
+		while (rs.next()) {
+			tmp1 = "";
+			for (int i = 0; i < rsm.getColumnCount(); i++) {
+				cn = rsm.getColumnName(i + 1);
+				tmp1 += (tmp1.length() == 0 ? "" : ",") + getJSONStr(cn, nvl(rs.getString(cn), ""), false);
+			}
+			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
+		}
+
+		ret = (var.length() == 0 ? "" : "\"" + var + "\":") + "[" + ret + "]";
+
+		return ret;
+	}
+
+	public static String getJSONsqlMetaData(ResultSet rs, Connection con, String excludeColumn, String includeColumn)
+			throws SQLException {
+
+		if (rs == null || !rs.first())
+			return "";
+		String ret = "", met = "";
+		String tmp1 = "", cn = "";
+		ResultSetMetaData rsm = rs.getMetaData();
+		for (int i = 0; i < rsm.getColumnCount(); i++) {
+			tmp1 = getJSONStr("colname", rsm.getColumnName(i + 1), false);
+			tmp1 += "," + getJSONStr("width", "30", false);
+			met += (met.length() > 0 ? "," : "") + "{" + tmp1 + "}";
+			
+		}
+
+		rs.beforeFirst();
+
+		while (rs.next()) {
+			tmp1 = "";
+			for (int i = 0; i < rsm.getColumnCount(); i++) {
+				cn = rsm.getColumnName(i + 1);
+				Object vl = (isNumber(rsm.getColumnType(i + 1)) ? Double.valueOf(rs.getDouble(cn)) : rs.getString(cn));
+				tmp1 += (tmp1.length() == 0 ? "" : ",") + getJSONStr(cn, vl, false);
+			}
+			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
+		}
+
+		ret = "\"metadata\":" + "[" + met + "] ," + "\"data\":" + "[" + ret + "]";
+
+		return ret;
+	}
+
+	public static String decodeEscape(String v) {
+		return v.replace("\\", "\\\\").replace("'", "\\\\'").replace("\n", "\\n");
+	}
+
+	public static boolean isNumber(int datatype) {
+		if (datatype == 19 || datatype == 9 || datatype == 2) {
+			return true;
+		}
+		return false;
+
+	}
+
 }

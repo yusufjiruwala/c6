@@ -16,6 +16,7 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mList = "";
         this.mColClass = "";
         this.mTitle = "";
+        this.mGrouped=false;
     }
 
     Column.prototype = {

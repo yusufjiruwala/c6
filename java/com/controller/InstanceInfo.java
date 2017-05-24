@@ -155,14 +155,13 @@ public class InstanceInfo {
 		String user = params.get("user").toUpperCase();
 		String password = params.get("password");
 		String file = params.get("file");
-		String owner = setOwnerFile(servletContext.getRealPath("") + file);
-		System.out.println(owner);
+		String owner = setOwnerFile(servletContext.getRealPath("") + file);		
 		Integer vl = Integer.valueOf(QueryExe.getSqlValue("select nvl(max(profileno),-1) from \"" + owner + "\"."
 				+ "cp_users where upper(USERNAME)='" + user + "' and password='" + password + "'",
 				getmDbc().getDbConnection(), "-1") + "");
 		if (vl <= -1)
 			throw new Exception("Invalid user name or password !");
-
+		
 		setmLoginUserPN(vl);
 		setmLoginUser(user);
 		setmLoginPassword(password);
@@ -214,7 +213,8 @@ public class InstanceInfo {
 		rst.beforeFirst();
 		while (rst.next()) {
 			getmListProfiles().add(rst.getString("CODE"));
-			getmMapProfiles().put(rst.getString("code"), rst.getString("title"));
+			getmMapProfiles().put(rst.getString("CODE"), rst.getString("title"));
+			
 		}
 		rst.close();
 

@@ -47,6 +47,7 @@ public class ColumnProperty {
 	public SelectionListener SearchSelecitonEvent = null;
 	public Object defaultValue = null;
 	public Map<String, String> mapReturns = null;
+	public String other_info="";
 	
 	@Override
 	public String toString() {

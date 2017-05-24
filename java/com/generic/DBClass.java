@@ -24,7 +24,7 @@ import javax.swing.JLabel;
  */
 public class DBClass implements Serializable {
 
-//	private String driverClass = "com.mysql.jdbc.Driver";
+	// private String driverClass = "com.mysql.jdbc.Driver";
 	private String driverClass = "oracle.jdbc.OracleDriver";
 	private String dbUrl = "";
 
@@ -71,8 +71,7 @@ public class DBClass implements Serializable {
 		try {
 			Class.forName(driverClass);
 		} catch (ClassNotFoundException ex) {
-			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null,
-					ex);
+			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -89,9 +88,7 @@ public class DBClass implements Serializable {
 	public String getSqlValue(String sq) {
 		if (dbConnection != null) {
 			try {
-				ps = dbConnection.prepareStatement(sq,
-						ResultSet.TYPE_SCROLL_SENSITIVE,
-						ResultSet.CONCUR_READ_ONLY);
+				ps = dbConnection.prepareStatement(sq, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet trs = ps.executeQuery();
 				if (trs.first()) {
 					String s = trs.getObject(1).toString();
@@ -103,8 +100,7 @@ public class DBClass implements Serializable {
 					ps.close();
 				}
 			} catch (SQLException ex) {
-				Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE,
-						null, ex);
+				Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 		return "";
@@ -121,8 +117,7 @@ public class DBClass implements Serializable {
 			connected = true;
 		} catch (Exception ex) {
 			connected = false;
-			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null,
-					ex);
+			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null, ex);
 			throw ex;
 		}
 	}
@@ -142,21 +137,17 @@ public class DBClass implements Serializable {
 	public void parseStatment() throws SQLException {
 		// if (ps!=null && ps.isClosed()==false) {ps.close();}
 		if (dbConnection != null) {
-			ps = dbConnection
-					.prepareStatement(sqlString,
-							ResultSet.TYPE_SCROLL_SENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
+			ps = dbConnection.prepareStatement(sqlString, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		} else {
 			dbConnection = DriverManager.getConnection(dbUrl, dbUser, dbPwd);
 		}
 	}
-	
+
 	public void executeStatment() throws SQLException {
 		rs = ps.executeQuery();
 	}
-	
-	
-	public List<String> getColNames() {		
+
+	public List<String> getColNames() {
 		List<String> ls = new ArrayList<String>();
 		try {
 			parseStatment();
@@ -168,13 +159,11 @@ public class DBClass implements Serializable {
 			// trs.close();
 			ps.close();
 		} catch (Exception ex) {
-			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null,
-					ex);
+			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return ls;
-	}	
+	}
 
-	
 	public List<qryColumn> getColumnsList() {
 		List<qryColumn> lst = new ArrayList<qryColumn>();
 		try {
@@ -192,17 +181,14 @@ public class DBClass implements Serializable {
 				q.setDisplaySize(rsm.getColumnDisplaySize(i + 1));
 				q.setDatatype(rsm.getColumnType(i + 1));
 
-				if (rsm.getColumnType(i + 1) == 19
-						|| rsm.getColumnType(i + 1) == 9
-						|| rsm.getColumnType(i + 1) == 2) {
+				if (rsm.getColumnType(i + 1) == 19 || rsm.getColumnType(i + 1) == 9 || rsm.getColumnType(i + 1) == 2) {
 
 					q.setAlignmnet(JLabel.RIGHT);
 				}
 				lst.add(q);
 			}
 		} catch (SQLException ex) {
-			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null,
-					ex);
+			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return lst;
 	}
@@ -233,13 +219,11 @@ public class DBClass implements Serializable {
 				r.setRowStatus(Row.ROW_QUERIED);
 				for (int i = 0; i < rsm.getColumnCount(); i++) {
 					if ((filterstring == null || filterstring.length() == 0)
-							|| (rs.getObject(i + 1) != null && rs.getObject(
-									i + 1).toString().contains(filterstring))) {
+							|| (rs.getObject(i + 1) != null && rs.getObject(i + 1).toString().contains(filterstring))) {
 						fnd = true;
 					}
 					if (rs.getObject(i + 1) != null) {
-						r.lst.get(i).setValue(rs.getObject(i + 1).toString(),
-								rs.getObject(i + 1));
+						r.lst.get(i).setValue(rs.getObject(i + 1).toString(), rs.getObject(i + 1));
 					} else {
 						r.lst.get(i).setValue("", "");
 					}
@@ -253,9 +237,10 @@ public class DBClass implements Serializable {
 			ps.close();
 			return lsr;
 		} catch (SQLException ex) {
-			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null,
-					ex);
+			Logger.getLogger(DBClass.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		return null;
 	}
+
+
 }

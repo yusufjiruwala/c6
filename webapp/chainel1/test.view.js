@@ -17,50 +17,176 @@ sap.ui.jsview('chainel1.test', {
 
         //      var dta = AppTestData.getDummyItemsData();
 
-        var LocalTableData = sap.ui.require("sap/ui/chainel1/util/generic/LocalTableData");
-        var lctb = new LocalTableData();
-
-
-        //Util.doAjaxGet("sqltojson?tablename=items&ordby=descr2", "", false).done(function (data) {
-        Util.doAjaxGet(`sqltojson?tablename=items&ordby1-descr2=descr2&col-1=reference&col-2=descr
-            &col-3=parentitem&col-4=descr2&and-equal-childcounts=0`, "", false).done(function (data) {
-            console.log("data initialize");
-            //console.log(data);
-            var oModel=new sap.ui.model.json.JSONModel();
-            oModel.setData(data);
-            sap.ui.getCore().setModel(oModel,"items_data");
-            //console.log(data);
-            lctb.parse(data);
-        });
-
-
-
         console.log("onView");
 
         this.app = new sap.m.App("mainApp", {initialPage: "loginPg"});
 
-        var DataTree = sap.ui.require("sap/ui/chainel1/util/generic/DataTree");
+        var oModel=new sap.ui.model.json.JSONModel();
 
-        this.dt = DataTree.create(this.createId("tree"), lctb, "REFERENCE", "DESCR", "PARENTITEM");
-        //this.dt = DataTree.create(this.createId("tree"), lctb, "CODE", "TITLE", "PARENTCODE");
-
-        this.dt.loadData();
+        var data={
+            "name":"yusuf"
+        };
+        oModel.setData(data);
+        sap.ui.getCore().setModel(oModel,"global");
+        this.setModel(oModel,"global");
 
         oController.dt = this.dt;
-        this.setDisplayBlock(true);
-        var oPage = new sap.m.Page("loginPg", {
-            title: "Login",
-            content: [new sap.m.Button({
-                text: "Hit me.!",
-                press: function () {
-                    oController.hitme();
-                }
-            }),
-                this.dt.mTree]
-        });
-        this.app.addPage(oPage);
-        //this.app.setHeight("100%");
 
+        //var SmartTable= sap.ui.require("sap.ui.comp.smarttable.SmartTable");
+
+    //     var oTable = new sap.ui.comp.smarttable.SmartTable("SmartTable", {
+    //         tableType : 'AnalyticalTable',
+    //         entitySet : 'SmartTableSet',
+    //         useVariantManagement : false,
+    //
+    //         beforeRebindTable: [function(oEvent)
+    //
+    //         {oController.onBeforeRebindTable(oEvent);
+    //
+    //         }, oController], //Created "onBeforeRebindTable" Method in Controller File
+    //
+    //
+    //
+    //         initialise: [function(oEvent) {oController.initialise(oEvent); }, oController],
+    //
+    //         dataReceived: [function(oEvent) {oController.onDataReceived(oEvent); }, oController],
+    //
+    //         initiallyVisibleFields : 'Field1,Field2,Field3,Field4',   //Which Fields need to appear in output Initially
+    //         header : 'Your Output Heading:',
+    //         persistencyKey : 'ST',
+    //         enableAutoBinding : true,
+    //         showRowCount : false,
+    //         enableCustomFilter : true,
+    //
+    //         useExportToExcel : true,
+    //
+    //         customToolbar : new sap.m.Toolbar("button",
+    //
+    //             { enabled : true, content : new sap.ui.commons.Button({
+    //
+    //                     text : "Email",
+    //
+    //                     icon: "sap-icon://email",
+    //
+    //                     style: sap.ui.commons.ButtonStyle.Emph,
+    //
+    //                     tooltip : "Send Email",
+    //
+    //                     height: "40px",
+    //
+    //                     press :
+    //
+    //                         [function(oEvent) { sap.ui.getCore().byId("Dialog1").open(); }]
+    //
+    //             })
+    //
+    //     })
+    //
+    //
+    //
+    // });
+
+        var oData={
+            data:[
+                {
+                    name:"yusuf",
+                    code:"0010",
+                    amt:100
+
+                },
+                {
+                    name:"yusuf",
+                    code:"0010",
+                    amt:200
+                },
+                {
+                    name:"yusuf1",
+                    code:"003",
+                    amt:10000
+                },
+                {
+                    name:"yusuf1",
+                    code:"003",
+                    amt:10000
+                },
+                {
+                    name:"yusuf1",
+                    code:"003",
+                    amt:10000
+                },
+                {
+                    name:"yusuf1",
+                    code:"003",
+                    amt:10000
+                },
+                {
+                    name:"yusuf1",
+                    code:"003",
+                    amt:10000
+                },
+                {
+                    name:"yusuf1",
+                    code:"003",
+                    amt:10000
+                }
+
+            ]
+        };
+
+        var oModel=new sap.ui.model.json.JSONModel(oData);
+        this.setModel(oModel,"test");
+
+        // oTable.setModel(oController.getModel());
+        jQuery.sap.require  ("sapui6.ui.table.Table-dbg");
+        var oColumn1 = new sapui6.ui.table.Column({
+            title:"Title1",
+            path:"test>name",
+            width:"80px",
+            align:"center",
+            showSortMenuEntry:true,
+            showGroupMenuEntry:true
+
+        });
+        var oColumn2 = new sapui6.ui.table.Column({
+            title:"Title2",
+            path:"test>code",
+            width:"80px",
+            align:"center"
+        });
+
+        var oColumn3 = new sapui6.ui.table.Column({
+            title:"Title2",
+            path:"test>amt",
+            width:"80px",
+            align:"right",
+            format:"##,###.###",
+            groupSummary:"sum"
+        });
+
+        this.table = new sapui6.ui.table.Table({
+            columns:[oColumn1,oColumn2,oColumn3],
+            mergeColumnIndex:1,
+            rowBorderStyle:"outset",
+            showGroupSummary:true,
+            rowHeight:"20px",
+        });
+        this.table.bindRows("test>/data");
+
+
+
+
+
+        var oPage = new sap.m.Page("loginPg", {
+            title: "{global>/name}",
+            content: [
+                this.table
+            ]
+
+        });
+
+
+
+        this.app.addPage(oPage);
 
         return this.app;
 

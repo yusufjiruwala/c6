@@ -14,7 +14,7 @@ sap.ui.jsview('chainel1.Login', {
      * @memberOf chainel1.Login **/
     createContent: function (oController) {
 
-        console.log("createContent");
+        //console.log("createContent");
 
          var cb = new sap.m.ComboBox(this.createId("txtFile"),{
             items: {
@@ -27,6 +27,7 @@ sap.ui.jsview('chainel1.Login', {
             var oModel = new sap.ui.model.json.JSONModel();
             oModel.setData(JSON.parse(data));
             cb.setModel(oModel);
+
         });
 
         if (cb.getItems().length>0)
@@ -36,12 +37,12 @@ sap.ui.jsview('chainel1.Login', {
         this.setDisplayBlock(true);
 
         var txtUser = new sap.m.Input(this.createId("txtUser"), {
-            value: "{Data>/login_users/username}",
+            value: "{login_info>/login_user}",
             placeholder: "Enter user name"
         }).addStyleClass("simpleInput sapUiSmallMarginTop");
 
         var txtPassword = new sap.m.Input(this.createId("txtPassword"), {
-            value: "{Data>/login_users/password}",
+            value: "{login_info>/login_password}",
             placeholder: "Enter password here..",
             type: sap.m.InputType.Password
         }).addStyleClass("simpleInput");

@@ -5,8 +5,14 @@ sap.ui.controller('chainel1.Login', {
      * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
      * @memberOf chainel1.Login **/
     onInit: function () {
-        console.log("onInit");
-
+        var d = {
+            "login_user": "A",
+            "login_password": "A",
+            "login_file": "LG3ISH.ini"
+        };
+        var mdl = new sap.ui.model.json.JSONModel(d);
+        this.getView().setModel(mdl, "login_info");
+        sap.ui.getCore().setModel(mdl, "login_info");
     },
 
     /**
@@ -44,14 +50,24 @@ sap.ui.controller('chainel1.Login', {
 
         var dt = null;
         Util.doAjaxGet(pth, "", false).done(function (data) {
-            console.log(data);
             dt = JSON.parse(data);
+            var oModel = new sap.ui.model.json.JSONModel(dt);
+            sap.ui.getCore().setModel(oModel, "settings");
+
         });
         if (dt.errorMsg != null && dt.errorMsg.length > 0) {
             sap.m.MessageToast.show(dt.errorMsg);
             return;
         }
+        pth = "exe?command=get-profile-list"
+        Util.doAjaxGet(pth, "", false).done(function (data) {
+            if (data != undefined) {
+                var dt = JSON.parse(data);
+                var oModel = new sap.ui.model.json.JSONModel(dt);
+                sap.ui.getCore().setModel(oModel, "profiles");
+            }
 
+        });
         this.app = sap.ui.getCore().byId("mainApp");
         var page = sap.ui.jsview("SplitPage", "chainel1.SplitPage");
         this.app.addPage(page);

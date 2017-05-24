@@ -1,23 +1,32 @@
-.simplePage{
+.simplePage {
     vertical-align: middle;
 }
-.simpleInputFirst{
+
+.simpleInputFirst {
 
     width: 80% !important;
     padding-left: 30% !Important;
 }
 
-.simpleInput{
+.simpleInput {
 
     width: 80% !important;
     padding-left: 30% !Important;
 
 }
 
-
-
-.simpleBtn{
-    width:80%;
+.simpleBtn {
+    width: 80%;
     padding-left: 30% !Important;
 
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.qrGroup {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    color: maroon !important;
 }

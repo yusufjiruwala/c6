@@ -2,8 +2,8 @@ sap.ui.define([], function () {
     "use strict";
     var Data = {
         login_users: {
-            username: "checking...",
-            password:""
+            username: "A",
+            password:"A"
         },
         settings: [{
             variable: "autosave",

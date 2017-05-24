@@ -22,6 +22,12 @@ sap.ui.controller('chainel1.test', {
      * This hook is the same one that SAPUI5 controls get after being rendered.
      * @memberOf chainel1.test **/
     onAfterRendering: function () {
+        this.getView().setHeight("100%");
+        var he="600px";
+        // if (this.getView().$().height()!="0" && this.getView().$().height()!=undefined)
+        //     he=this.getView().$().height()+"px";
+
+            this.getView().table.setHeight(he);
 
     }
     ,
@@ -35,29 +41,30 @@ sap.ui.controller('chainel1.test', {
     }
     ,
     hitme: function () {
-        sap.ui.require(["sap/ui/chainel1/util/generic/DataCell",
-                "sap/ui/chainel1/util/generic/Column",
-                "sap/ui/chainel1/util/generic/Row",
-                "sap/ui/chainel1/util/generic/LocalTableData",
-                "sap/ui/chainel1/util/generic/Parameter"],
-            function (DataCell, Column, Row, LocalTableData, Parameter) {
-                var col = new Column();
-                col.mColpos = 1;
-                console.log(new DataCell("val", "display"));
-                console.log(col);
+        Util.doAjaxJson("test", {sql: "select reference,descr2 from items", ret: "none"}, false).done(function (data) {
+            console.log(data.ret);
+            var dt=JSON.parse("{"+data.ret+"}");
+            console.log(dt);
+        }).fail(function (data) {
+            alert('failed');
+            console.log(data);
 
-                var r = new Row(10);
-                console.log(r);
+        });
+    },
 
-                var lctb = new LocalTableData();
+    getModel: function(){
 
-                console.log(lctb);
-                var p = Parameter.create("size", "100");
+        var oDataUrl = "/sap/opu/odata/SAP/Your oData Service/";
 
-                console.log(p);
+        var oModel = new sap.ui.model.odata.v2.ODataModel(oDataUrl, true);
 
-            });
-    }
+        oModel.setDefaultCountMode(sap.ui.model.odata.CountMode.Request);
+
+        var oView = this.getView();
+
+        oView.setModel(oModel);
+
+    },
 
 
 });

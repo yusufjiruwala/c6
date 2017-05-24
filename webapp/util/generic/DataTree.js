@@ -10,7 +10,6 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
             this.mapNodes = {};
             this.mTreeId = "";
             this.mTree = null;
-
         };
 
         // DataTree.create = function (lctb) {
@@ -76,11 +75,14 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
             }
             columns = [];
             for (var k = 0; k < this.mLcTb.cols.length; k++) {
-                var w="200px";
+                var w="auto";
                 columns.push(new sap.ui.table.Column({
                     label: this.mLcTb.cols[k].mColName,
                     template: this.mLcTb.cols[k].mColName,
-                    width:w
+                    width:w,
+                    filterProperty:this.mLcTb.cols[k].mColName,
+                    sortProperty:this.mLcTb.cols[k].mColName,
+                    customData:{key:this.mColCode},
                 }));
             }
             if (!this.mTree) {
@@ -89,9 +91,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
                     selectionMode: sap.ui.table.SelectionMode.Single,
                     enableColumnReordering: true,
                     expandFirstLevel: true,
-                    visibleRowCountMode:sap.ui.table.VisibleRowCountMode.Auto
+                    visibleRowCountMode:sap.ui.table.VisibleRowCountMode.Auto,
+                    mode:sap.m.ListMode.SingleSelectMaster
                 });
-
             } else {
                 this.mTree.setModel(null);
             }
@@ -100,6 +102,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
             oModel.setData(itemsByID);
             this.mTree.setModel(oModel);
             this.mTree.bindRows("/");
+            oModel.updateBindings(true);
         };
 
 

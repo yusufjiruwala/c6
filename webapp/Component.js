@@ -2,6 +2,13 @@ jQuery.sap.declare("sap.ui.chainel1.Component");
 sap.ui.core.UIComponent.extend("sap.ui.chainel1.Component", {
     createContent : function () {
         // create root view
+
+        var deviceModel = new sap.ui.model.json.JSONModel({
+            isPhone: sap.ui.Device.system.phone
+        });
+
+        sap.ui.getCore().setModel(deviceModel, "device");
+
         var oView = sap.ui.view({
             id : "app",
             //viewName : "chainel1.Login",

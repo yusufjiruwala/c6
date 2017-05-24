@@ -1,0 +1,69 @@
+<script>
+
+    function cleanElement(el) {
+        for (var i = 0; i < el.childNodes.length; i++) {
+            if (el.childNodes[i].childNodes.length > 0) {
+                cleanElement(el.childNodes[i]);
+            } else {
+                clearAttrOnEvents(el);
+                $(el).removeAttr("class");
+                $(el).removeAttr("style");
+            }
+
+        }
+    }
+    function clearAttrOnEvents(el) {
+        $.each(el.attributes, function () {
+            if (this.name.startsWith('on')) {
+                $(el).removeAttr(this.name);
+            }
+        })
+    }
+    function generate() {
+
+        // table header ...
+        var bd = document.getElementsByTagName("body")[0];
+        var e = document.getElementById("__table0_ht");
+        var cg = e.getElementsByTagName("colgroup");
+        var th = e.getElementsByTagName("thead")[0];
+        var thr = e.getElementsByTagName("tr");
+
+        var te = document.getElementById("__table0_dt");
+        var tcg = te.getElementsByTagName("colgroup");
+        var tth = te.getElementsByTagName("tbody")[0];
+        var tthr = te.getElementsByTagName("tr");
+
+
+        var tb = document.createElement("table");
+        tb.setAttribute("id", "t1");
+        //colgroups...
+        for (var i = 0; i < cg.length; i++) {
+            tb.appendChild($(cg[i]).clone().get(0));
+        }
+        //th...
+
+        for (i = 0; i < thr.length; i++) {
+            var tmp2 = thr[i].cloneNode(true);
+            cleanElement(tmp2);
+            tb.appendChild(tmp2);
+        }
+
+        for (i = 0; i < tthr.length; i++) {
+            var tmp2 = tthr[i].cloneNode(true);
+            cleanElement(tmp2);
+            tb.appendChild(tmp2);
+        }
+
+
+        console.log(tb);
+        bd.appendChild(tb);
+
+    }
+
+
+    $("#b1").click(function (c) {
+
+        generate();
+    })
+
+</script>

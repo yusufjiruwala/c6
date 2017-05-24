@@ -52,13 +52,15 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
         };
         LocalTableData.prototype.getData = function (reFormat) {
             //var dta = JSON.parse(this.jsonString);
-            var frmt="";
+            var frmt = "";
             var dt;
-            if (reFormat){
-                frmt=this.format();
+            if (reFormat) {
+                frmt = this.format();
                 //console.log(frmt);
-                dt=JSON.parse(frmt).data;
-            } else { dt=this.dataJson.data;}
+                dt = JSON.parse(frmt).data;
+            } else {
+                dt = this.dataJson.data;
+            }
 
             return dt;
         };
@@ -102,8 +104,9 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 rstr = "";
                 for (var c in this.cols) {
                     rstr += (rstr.length == 0 ? "" : ",") + '"' +
-                        this.cols[c].mColName + '":"' +
-                        this.rows[r].cells[c].getValue().replace(/\\/g,"\\\\") + '"';
+                        this.cols[c].mColName + '":' +
+                        (typeof this.rows[r].cells[c].getValue() == "number" ? this.rows[r].cells[c].getValue() :
+                        '"' + this.rows[r].cells[c].getValue().replace(/\\/g, "\\\\") + '"');
                 }
                 rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
                 tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";
@@ -120,6 +123,30 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             this.rows = [];
         };
 
+        LocalTableData.prototype.find = function (fld, val) {
+            //var cp = this.getColPos(fld);
+            for (var i = 0; i < this.rows.length; i++)
+                if (this.getFieldValue(i, fld) == val)
+                    return i;
+
+            return -1;
+        };
+
+        LocalTableData.prototype.setColumnMerge = function (iCol1, iCol2) {
+            for (var i = 0; i < this.rows.length; i++) {
+                var f1 = this.cols[iCol1].mColName;
+                var f2 = this.cols[iCol2].mColName;
+                var v = Util.nvl(this.getFieldValue(i, f1), "") + " - " + Util.nvl(this.getFieldValue(i, f2), "");
+                this.setFieldValue(i, f1, v);
+            }
+            this.deleteCol(iCol2);
+        };
+
+        LocalTableData.prototype.deleteCol = function (col) {
+            this.cols.splice(col, 1);
+            for (var i = 0; i < this.rows.length; i++)
+                this.rows[i].cells.splice(col, 1);
+        };
 
         return LocalTableData;
 
