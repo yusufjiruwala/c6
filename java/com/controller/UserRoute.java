@@ -198,25 +198,14 @@ public class UserRoute {
 		String sq = "select indexno,initcap(nvl(DISPLAY_NAME,FIELD_NAME)) FIELD_NAME,'Y' SELECTION ,COLWIDTH DISPLAY_WIDTH ,'' FILTER_TEXT,datatypex "
 				+ "FROM INVQRYCOLS2 WHERE CODE='" + rid
 				+ "' and  group_name is null and iswhere is null and cp_hidecol is null"
-				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg + "')"
-				+ " and field_name in (" + cols + ")" + "  order by indexno ";
+				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg + "')" + " and field_name in ("
+				+ cols + ")" + "  order by indexno ";
 		qrm.data_cols.createDBClassFromConnection(con);
 		qrm.data_cols.executeQuery(sq, true);
-		String sql = qrm.buildSql(rid);
-		System.out.println(sql);
-		QueryExe qe = new QueryExe(sql, con);
-		for (String key : params.keySet()) {
-			if (key.startsWith("_para_")) {
-				System.out.println("para # " + key + " = " + params.get(key));
-				qe.setParaValue(key.replace("_para_", ""), params.get(key));
-			}
-
-		}
-		ResultSet rs = qe.executeRS();
-		ret = "{" + utils.getJSONsqlMetaData(rs, con, "", "") + "}";
-		qe.close();
-
+		ret= qrm.buildJson(rid, params);
+		
 		return ret;
+
 	}
 
 	private String buildSql(Map<String, String> params) {

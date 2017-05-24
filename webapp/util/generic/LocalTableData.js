@@ -22,6 +22,12 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                     return i;
             return -1;
         };
+        LocalTableData.prototype.getColByName = function (cn) {
+            for (var i = 0; i < this.cols.length; i++)
+                if (this.cols[i].mColName.toUpperCase() == cn.toUpperCase())
+                    return this.cols[i];
+            return null;
+        };
         LocalTableData.prototype.getFieldValue = function (rowno, fieldName) {
             var cp = this.getColPos(fieldName);
             if (cp < 0)
@@ -72,8 +78,16 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 var c = new Column();
                 c.mColName = this.dataJson.metadata[key].colname;
                 c.mColpos = key;
-                c.getMUIHelper().displaySize = this.dataJson.metadata[key].width;
+                c.getMUIHelper().data_type = this.dataJson.metadata[key].data_type;
+                c.getMUIHelper().display_format = this.dataJson.metadata[key].display_format;
+                c.getMUIHelper().display_width = this.dataJson.metadata[key].display_width * 2;
+                c.getMUIHelper().display_align = Util.nvl(this.dataJson.metadata[key].display_align, "").replace("ALIGN_", "").toLowerCase();
+                c.mTitle = this.dataJson.metadata[key].descr;
+                c.mSummary = this.dataJson.metadata[key].summary;
+
                 this.cols.push(c);
+
+
             }
             for (var rn in this.dataJson.data) {
                 var r = new Row(this.cols.length);

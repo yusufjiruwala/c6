@@ -10,7 +10,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 selectionMode: sap.ui.table.SelectionMode.Single,
                 selectionBehavior: sap.ui.table.SelectionBehavior.Row,
                 enableGrouping: true,
-                footer: new sap.ui.commons.Label({text: "100.000"})
+                fixedBottomRowCount:1
 
             });
             var that = this;
@@ -61,12 +61,22 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
 
             this.mTable.destroyColumns();
             var dt = this.buildJsonData();
+            var cc = null;
             for (var i = 0; i < this.mLctb.cols.length; i++) {
+                cc = this.mLctb.cols[i];
+                var a = cc.getMUIHelper().display_align;
+                if (cc.getMUIHelper().display_format == "MONEY_FORMAT")
+                    a = "end";
+                if (cc.getMUIHelper().display_format == "QTY_FORMAT")
+                    a = "center";
 
                 var c = new sap.ui.table.Column(/*this.mLctb.cols[i].mColName.replace(" ", ""),*/ {
-                    label: new sap.ui.commons.Label({text: this.mLctb.cols[i].mColName}),
-                    template: new sap.ui.commons.Label().bindProperty("text", this.mLctb.cols[i].mColName),
-                    width: "200px",
+                    label: new sap.m.Label({text: cc.mTitle}),
+                    template: new sap.ui.commons.Label({
+                        "text": "{" + this.mLctb.cols[i].mColName + "}",
+                        textAlign: Util.getAlignTable(a)
+                    }),
+                    width: (cc.getMUIHelper().display_width) + "px"
                 });
 
                 col.push(c);
@@ -153,7 +163,8 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             var cnt = 0;
             var grp = "";
             var t;
-
+            var sett = sap.ui.getCore().getModel("settings").getData();
+            var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
             for (var i = 0; i < o.length; i++) {
                 cnt = 0;
                 for (var v in o[i]) {
@@ -175,6 +186,8 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                     if (typeof (o[i][v]) == "number") {
                         footerg[v] = (footerg[v] == undefined ? 0 : footerg[v]) + o[i][v];
                         footer[v] = (footer[v] == undefined ? 0 : footer[v]) + o[i][v];
+                        if (this.mLctb.getColByName(v).getMUIHelper().display_format === "MONEY_FORMAT")
+                            o[i][v] = df.format(o[i][v]);
                     }
                     else {
                         footer[v] = "";
@@ -184,6 +197,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 }
 
                 if (i > o.length - 2) {
+                    for (var fv in footerg)  // formating...
+                        if (fv!="_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
+                            footerg[fv] = df.format(footerg[fv]);
                     o.splice(i + 1, 0, footerg);
                     grp = o[i][t];
                     t = null;
@@ -194,6 +210,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
 
                 if (t != undefined && i + 1 < o.length && grp != o[i + 1][t]) {
                     var nxt = o[i + 1][t];
+                    for (var fv in footerg)  // formating...
+                        if (fv!="_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
+                            footerg[fv] = df.format(footerg[fv]);
                     o.splice(i + 1, 0, footerg);
                     grp = nxt;
                     //t = null;
@@ -208,6 +227,10 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
 
 
             }
+            for (var fv in footer)  // formating...
+                if (fv!="_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
+                    footer[fv] = df.format(footer[fv]);
+
             o.push(footer);
             return o;
 
@@ -244,14 +267,14 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 if (cellValue != undefined && cellValue.startsWith(String.fromCharCode(4095))) {
                     for (var k = 0 + cellAdd; k < cellsCount; k++) {
                         var cv = oModel.getProperty(this.mLctb.cols[k].mColName, currentRowContext);
-                        if (cv != undefined && typeof cv == "number")
+                        if (cv != undefined && (cv+"").trim().length>0)
                             this.mTable.getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("yellow");
 
                     }
                 }
                 if (cellValue != undefined && cellValue.startsWith(String.fromCharCode(4094))) {
                     this.mTable.getRows()[i].getCells()[0].$().addClass("qrGroup");
-                    this.mTable.getRows()[i].getCells()[0].$().parent().parent().attr("colspan", (cellAdd+1) + "");
+                    this.mTable.getRows()[i].getCells()[0].$().parent().parent().attr("colspan", (cellAdd + 1) + "");
                 }
 
             }
@@ -293,7 +316,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                         tmpv2 = " class=\"yellow\" "
                     }
                     if (cellValue != undefined && oData[i][t].startsWith(String.fromCharCode(4094))) {
-                        tmpv2 = " class=\"qrGroup\" colspan=\""+(this.mLctb.cols.length-1)+"\""
+                        tmpv2 = " class=\"qrGroup\" colspan=\"" + (this.mLctb.cols.length - 1) + "\""
                     }
 
                     // tmpv2 = (cell.$().css("align") === undefined ? "" : "\"text-align:" + cell.$().css("align") + "\"");

@@ -3,13 +3,13 @@ sap.ui.define(["./DataCell"], function (DataCell) {
     function Column() {
         this.mUIHelper = {
             canEdit: false,
-            dataType: "string",
-            defaultValue: null,
-            formatStr: "",
+            data_type: "string",
+            default_value: null,
+            display_format: "",
             styleName: "",
-            displaySize: "300px",
-            isVisible: true
-
+            display_width: "300px",
+            isVisible: true,
+            display_align:"begin"
         };
         this.mColpos = 0;
         this.mColName = "";
@@ -17,6 +17,8 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mColClass = "";
         this.mTitle = "";
         this.mGrouped=false;
+        this.mSummary="";
+
     }
 
     Column.prototype = {

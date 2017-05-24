@@ -215,7 +215,19 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                             }
                         }
                     }
-                }
+                },
+            getAlignTable:function (cc) {
+                var al=sap.ui.core.TextAlign.Begin;
+                if (cc=="left")
+                    al=sap.ui.core.TextAlign.Left;
+                if (cc=="right")
+                    al=sap.ui.core.TextAlign.Right;
+                if (cc=="center")
+                    al=sap.ui.core.TextAlign.Center;
+                if (cc=="end")
+                    al=sap.ui.core.TextAlign.End;
+                return al;
+            }
 
             }
             ;

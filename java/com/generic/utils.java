@@ -962,6 +962,38 @@ public class utils {
 
 	}
 
+	public static ColumnProperty findColByDescr(String des,
+			List<ColumnProperty> lstItemCols) {
+		for (Iterator iterator = lstItemCols.iterator(); iterator.hasNext();) {
+			ColumnProperty prop = (ColumnProperty) iterator.next();
+			if (prop.descr.equals(des)) {
+				return prop;
+			}
+		}
+		return null;
+	}
+
+	public static ColumnProperty findColByCol(String des,
+			List<ColumnProperty> lstItemCols) {
+		for (Iterator iterator = lstItemCols.iterator(); iterator.hasNext();) {
+			ColumnProperty prop = (ColumnProperty) iterator.next();
+			if (prop.colname.toUpperCase().equals(des.toUpperCase())) {
+				return prop;
+			}
+		}
+		return null;
+	}
+
+	public static ColumnProperty findColByPos(int des, List<ColumnProperty> lstItemCols) {
+		for (Iterator iterator = lstItemCols.iterator(); iterator.hasNext();) {
+			ColumnProperty prop = (ColumnProperty) iterator.next();
+			if (prop.pos == des) {
+				return prop;
+			}
+		}
+		return null;
+	}
+	
 	public static void roundDate(Date dt) {
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(dt);
@@ -1034,7 +1066,7 @@ public class utils {
 			tmp1 = getJSONStr("colname", rsm.getColumnName(i + 1), false);
 			tmp1 += "," + getJSONStr("width", "30", false);
 			met += (met.length() > 0 ? "," : "") + "{" + tmp1 + "}";
-			
+
 		}
 
 		rs.beforeFirst();
@@ -1064,6 +1096,22 @@ public class utils {
 		}
 		return false;
 
+	}
+
+	public static String getJSONCP(ColumnProperty cp) throws Exception {
+		if (cp == null)
+			return "";
+		String ret = "";
+
+		ret = getJSONStr("data_type", cp.data_type, false);
+		ret += "," + getJSONStr("display_format", cp.display_format, false);
+		ret += "," + getJSONStr("display_align", cp.display_align, false);
+		ret += "," + getJSONStr("summary", cp.summary, false);
+		ret += "," + getJSONStr("display_align", cp.display_align, false);
+		ret += "," + getJSONStr("display_width", cp.display_width, false);
+		ret += "," + getJSONStr("descr", cp.descr, false);
+
+		return ret;
 	}
 
 }

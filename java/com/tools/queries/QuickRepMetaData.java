@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class QuickRepMetaData {
 
 	private List<String> listGroups = new ArrayList<String>();
 
-	private List<ColumnProperty> listCols = new ArrayList<ColumnProperty>();
+//	private List<ColumnProperty> listCols = new ArrayList<ColumnProperty>();
 
 	public QuickRepMetaData(InstanceInfo inf) {
 		this.instanceInfo = inf;
@@ -67,7 +68,7 @@ public class QuickRepMetaData {
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 		String cols = "", ret = "", tmp1 = "", groups = "", grps = "";
 
-		for (ColumnProperty col : listCols) {
+		for (ColumnProperty col : listcols) {
 			tmp1 = utils.getJSONStr("field_name", col.colname, false);
 			tmp1 += "," + utils.getJSONStr("group_name", col.other_info, false);
 			cols += (cols.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
@@ -106,7 +107,7 @@ public class QuickRepMetaData {
 	}
 
 	private void bulidListCols() throws Exception {
-		listCols.clear();
+		listcols.clear();
 		listGroups.clear();
 
 		Connection con = instanceInfo.getmDbc().getDbConnection();
@@ -125,7 +126,7 @@ public class QuickRepMetaData {
 				cp.colname = rs.getString("field_name");
 				cp.descr = rs.getString("display_name");
 				cp.other_info = utils.nvl(rs.getString("group_name"), "");
-				listCols.add(cp);
+				listcols.add(cp);
 			}
 			qe.close();
 		}
@@ -527,6 +528,68 @@ public class QuickRepMetaData {
 			indexin = indexin + com + ltmp.get(i);
 		}
 		return indexin;
+	}
+
+	public String buildJson(String rid, Map<String, String> params) throws Exception {
+		Connection con = instanceInfo.getmDbc().getDbConnection();
+		this.id = rid;
+		String ret = "";
+		String sql = buildSql(rid);
+		System.out.println(sql);
+
+		QueryExe qe = new QueryExe(sql, con);
+		for (String key : params.keySet()) {
+			if (key.startsWith("_para_")) {
+				System.out.println("para # " + key + " = " + params.get(key));
+				qe.setParaValue(key.replace("_para_", ""), params.get(key));
+			}
+
+		}
+		ResultSet rs = qe.executeRS();
+		ret = "{" + getJSONsqlMetaData(rs, con, "", "") + "}";
+		qe.close();
+
+		return ret;
+
+	}
+
+	private String getJSONsqlMetaData(ResultSet rs, Connection con, String excludeColumn, String includeColumn)
+			throws Exception {
+
+		if (rs == null || !rs.first())
+			return "";
+		String ret = "", met = "";
+		String tmp1 = "", cn = "";
+		String scp = "";
+		ColumnProperty cp = null;
+		ResultSetMetaData rsm = rs.getMetaData();
+		for (int i = 0; i < rsm.getColumnCount(); i++) {
+
+			tmp1 = utils.getJSONStr("colname", rsm.getColumnName(i + 1), false);
+			cp = utils.findColByCol(rsm.getColumnName(i + 1), listcols);
+			scp = utils.getJSONCP(cp);
+			tmp1 += "," + scp;
+			
+			met += (met.length() > 0 ? "," : "") + "{" + tmp1 + "}";
+
+		}
+
+		rs.beforeFirst();
+
+		while (rs.next()) {
+			tmp1 = "";
+			for (int i = 0; i < rsm.getColumnCount(); i++) {
+				cn = rsm.getColumnName(i + 1);
+				Object vl = (utils.isNumber(rsm.getColumnType(i + 1)) ? Double.valueOf(rs.getDouble(cn))
+						: rs.getString(cn));
+				tmp1 += (tmp1.length() == 0 ? "" : ",") + utils.getJSONStr(cn, vl, false);
+			}
+			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
+		}
+
+		ret = "\"metadata\":" + "[" + met + "] ," + "\"data\":" + "[" + ret + "]";
+
+		return ret;
 	}
 
 }
