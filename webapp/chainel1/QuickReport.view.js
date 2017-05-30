@@ -62,7 +62,7 @@ sap.ui.jsview("chainel1.QuickReport", {
                 items: {
                     path: "/",
                     template: new sap.ui.core.ListItem({
-                        text: "{rep_name}",
+                        text: "{rep_name} - {rep_code}",
                         key: "{rep_code}"
                     }),
                     templateShareable: true
@@ -86,6 +86,12 @@ sap.ui.jsview("chainel1.QuickReport", {
                 }
             }).addStyleClass("simpleInput");
 
+        (this.byId("lblgroupheader") != undefined ? this.byId("lblgroupheader").destroy() : null);
+        var lblG = new sap.m.Label(this.createId("lblgroupheader"), {
+            text: "Group Header",
+            labelFor: txtGroupHeader
+        }).addStyleClass("simpleInput");
+
 
         (this.byId("txtGroupDetail") != undefined ? this.byId("txtGroupDetail").destroy() : null);
         var txtGroupDetail = new sap.m.ComboBox(this.createId("txtGroupDetail"),
@@ -100,9 +106,16 @@ sap.ui.jsview("chainel1.QuickReport", {
                 }
             }).addStyleClass("simpleInput");
 
+        (this.byId("lblgroupdetail") != undefined ? this.byId("lblgroupdetail").destroy() : null);
+        var lblD = new sap.m.Label(this.createId("lblgroupdetail"), {
+            text: "Group Details",
+            labelFor: txtGroupDetail
+        }).addStyleClass("simpleInput");
 
         this.mainPage.addContent(txtSubGroup);
+        this.mainPage.addContent(lblG);
         this.mainPage.addContent(txtGroupHeader);
+        this.mainPage.addContent(lblD);
         this.mainPage.addContent(txtGroupDetail);
 
         sap.ui.getCore().byId("pgQuickRep").loadData();
@@ -135,20 +148,71 @@ sap.ui.jsview("chainel1.QuickReport", {
             txtGroupDetail.setModel(new sap.ui.model.json.JSONModel(dtx.groups));
             var txtGroupHeader = that.byId("txtGroupHeader");
             txtGroupHeader.setModel(new sap.ui.model.json.JSONModel(dtx.groups));
-            console.log(that.colData);
-            if (that.coldData !== undefined) {
-                for (var i = 0; i < that.colData.parameters.length; i++) {
-
-                    (that.byId("para_" + i) != undefined ? that.byId("para_" + i).destroy() : null);
-                }
-            }
+            var sett = sap.ui.getCore().getModel("settings").getData();
+            var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+            // if (that.coldData !== undefined) {
+            //     for (var i = 0; i < that.colData.parameters.length; i++) {
+            //
+            //         (that.byId("para_" + i) != undefined ? that.byId("para_" + i).destroy() : null);
+            //     }
+            // }
             for (var i = 0; i < dtx.parameters.length; i++) {
 
-                var p = new sap.m.Input(that.createId("para_" + i), {
-                    value: "01-jan-2016",
-                    placeholder: dtx.parameters[i].PARA_DESCRARB
+                var p, pl, vls;
+                vls = "";
+                if (dtx.parameters[i].PARA_DEFAULT != undefined)
+                    vls = dtx.parameters[i].PARA_DEFAULT;
+
+                (that.byId("para_" + i) != undefined ? that.byId("para_" + i).destroy() : null);
+                (that.byId("lblpara_" + i) != undefined ? that.byId("lblpara_" + i).destroy() : null);
+                if (dtx.parameters[i].LISTNAME != undefined && dtx.parameters[i].LISTNAME.toString().trim().length > 0) {
+                    var dtlist = dtx.parameters[i].LISTNAME;
+                    p = new sap.m.ComboBox(that.createId("para_" + i),
+                        {
+                            items: {
+                                path: "/",
+                                template: new sap.ui.core.ListItem({
+                                    text: "{TITLE} - {CODE}",
+                                    key: "{CODE}"
+                                }),
+                                templateShareable: true
+                            },
+                            selectedKey: vls
+                        }).addStyleClass("simpleInput");
+                    p.setModel(new sap.ui.model.json.JSONModel(dtlist));
+
+                } else {
+                    p = new sap.m.Input(that.createId("para_" + i), {
+                        placeholder: dtx.parameters[i].PARA_DESCRARB,
+                        value: vls
+                    }).addStyleClass("simpleInput");
+                }
+                pl = new sap.m.Label(that.createId("lblpara_" + i), {
+                    text: dtx.parameters[i].PARA_DESCRARB,
+                    labelFor: p
                 }).addStyleClass("simpleInput");
 
+                if (dtx.parameters[i].PARA_DATATYPE === "DATE") {
+                    var vl = null;
+                    if (dtx.parameters[i].PARA_DEFAULT != undefined)
+                        vl = dtx.parameters[i].PARA_DEFAULT;
+                    (that.byId("para_" + i) != undefined ? that.byId("para_" + i).destroy() : null);
+                    (that.byId("lblpara_" + i) != undefined ? that.byId("lblpara_" + i).destroy() : null);
+                    p = new sap.m.DatePicker(that.createId("para_" + i), {
+                        value: (vl != undefined ? vl : ""),
+                        valueFormat: sett["ENGLISH_DATE_FORMAT"],
+                        displayFormat: sett["ENGLISH_DATE_FORMAT"],
+                        placeholder: dtx.parameters[i].PARA_DESCRARB
+                    }).addStyleClass("simpleInput");
+                    pl = new sap.m.Label(that.createId("lblpara_" + i), {
+                        text: dtx.parameters[i].PARA_DESCRARB,
+                        labelFor: p
+                    }).addStyleClass("simpleInput");
+                    ;
+
+
+                }
+                that.mainPage.addContent(pl);
                 that.mainPage.addContent(p);
             }
 

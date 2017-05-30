@@ -4,13 +4,21 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
         function QueryView(tableId) {
             this.mJsonString = "";
             this.tableId = tableId;
+            this.refreshCmd = new sap.m.Button({
+                text: "Refresh",
+                press: function () {
+                    sap.m.MessageToast.show("Show");
+                }
+            });
+            this.toolbar = new sap.m.Toolbar({content: [refreshCmd]});
+
             this.mTable = new sap.ui.table.Table(tableId, {
                 visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
                 firstVisibleRow: 3,
                 selectionMode: sap.ui.table.SelectionMode.Single,
                 selectionBehavior: sap.ui.table.SelectionBehavior.Row,
                 enableGrouping: true,
-                fixedBottomRowCount:1
+                fixedBottomRowCount: 1
 
             });
             var that = this;
@@ -34,7 +42,20 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             q.mLctb.parse(jsonStr);
             q.mJsonObject = q.mLctb.getData();
             return q;
-        }
+        };
+
+        QueryView.prototype.createView=function () {
+            var v=[];
+            this.toolbar.removeAllContent();
+            this.toolbar.destroyContent();
+
+            this.toolbar.addContent(this.refreshCmd);
+            v.push(this.toolbar);
+
+            v.push(this.mTable);
+            return v;
+
+        };
         QueryView.prototype.constructor = QueryView;
 
 
@@ -91,7 +112,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             this.mTable.bindRows("/");
             var that = this;
 
-            if (this.mLctb.cols[0].mGrouped)
+            if (this.mLctb.cols.length <= 0) return;
+
+            if (this.mLctb.cols.length > 0 && this.mLctb.cols[0].mGrouped)
                 this.mTable.getColumns()[0].setVisible(false);
 
 
@@ -112,7 +135,6 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 //     that.colorRows();
                 // });
             }, 1000);
-
 
         };
 
@@ -139,12 +161,17 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
         };
 
         QueryView.prototype.buildJsonData = function () {
-            this.mLctb.cols[0].mGrouped = true;
-            this.mLctb.cols[1].mGrouped = true;
+
+
+            // this.mLctb.cols[0].mGrouped = true;
+            // this.mLctb.cols[1].mGrouped = true;
+            if (this.mLctb.cols.length == 0)
+                return null;
 
             var headerg = {};
             var grpCol = "";
-
+            var grouped = false;
+            // merging first and second column
             if (this.mLctb.cols[0].mGrouped &&
                 this.mLctb.cols.length > 1 &&
                 this.mLctb.cols[1].mGrouped) {
@@ -153,7 +180,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 var v = this.mLctb.cols[0].mColName;
                 if (this.mLctb.cols.length > 1)
                     grpCol = this.mLctb.cols[1].mColName;
-
+                grouped = true;
             }
             var o = this.mLctb.getData(true);
 
@@ -165,11 +192,13 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             var t;
             var sett = sap.ui.getCore().getModel("settings").getData();
             var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+            var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
             for (var i = 0; i < o.length; i++) {
                 cnt = 0;
                 for (var v in o[i]) {
-                    if (cnt === 0) {
+                    if (grouped && cnt === 0) {
                         footer[v] = String.fromCharCode(4095) + "";
+
                         footerg[v] = String.fromCharCode(4095);
                         cnt++;
                         t = v;
@@ -184,21 +213,32 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                         continue;
                     }
                     if (typeof (o[i][v]) == "number") {
-                        footerg[v] = (footerg[v] == undefined ? 0 : footerg[v]) + o[i][v];
-                        footer[v] = (footer[v] == undefined ? 0 : footer[v]) + o[i][v];
+                        if (this.mLctb.getColByName(v).mSummary == "SUM") {
+                            footerg[v] = (footerg[v] == undefined ? 0 : footerg[v]) + o[i][v];
+                            footer[v] = (footer[v] == undefined ? 0 : footer[v]) + o[i][v];
+                        } else {
+                            footerg[v] = "";
+                            footer[v] = "";
+                        }
                         if (this.mLctb.getColByName(v).getMUIHelper().display_format === "MONEY_FORMAT")
                             o[i][v] = df.format(o[i][v]);
                     }
                     else {
                         footer[v] = "";
                         footerg[v] = "";
+                        if (v != "_rowid" && this.mLctb.getColByName(v).getMUIHelper().display_format === "SHORT_DATE_FORMAT") {
+                            var dt = new Date(o[i][v]);
+                            o[i][v] = sf.format(dt);
+                        }
+
+
                     }
                     cnt++;
                 }
 
-                if (i > o.length - 2) {
+                if (grouped && i > o.length - 2) {
                     for (var fv in footerg)  // formating...
-                        if (fv!="_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
+                        if (fv != "_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
                             footerg[fv] = df.format(footerg[fv]);
                     o.splice(i + 1, 0, footerg);
                     grp = o[i][t];
@@ -208,10 +248,10 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                     break;
                 }
 
-                if (t != undefined && i + 1 < o.length && grp != o[i + 1][t]) {
+                if (grouped && t != undefined && i + 1 < o.length && grp != o[i + 1][t]) {
                     var nxt = o[i + 1][t];
                     for (var fv in footerg)  // formating...
-                        if (fv!="_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
+                        if (fv != "_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
                             footerg[fv] = df.format(footerg[fv]);
                     o.splice(i + 1, 0, footerg);
                     grp = nxt;
@@ -228,7 +268,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
 
             }
             for (var fv in footer)  // formating...
-                if (fv!="_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
+                if (fv != "_rowid" && this.mLctb.getColByName(fv).getMUIHelper().display_format === "MONEY_FORMAT")
                     footer[fv] = df.format(footer[fv]);
 
             o.push(footer);
@@ -237,6 +277,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
         };
 
         QueryView.prototype.colorRows = function () {
+            if (this.mLctb.cols.length <= 0)                return;
             var oModel = this.mTable.getModel();
             var rowCount = this.mTable.getVisibleRowCount(); //number of visible rows
             var rowStart = this.mTable.getFirstVisibleRow(); //starting Row index
@@ -267,7 +308,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 if (cellValue != undefined && cellValue.startsWith(String.fromCharCode(4095))) {
                     for (var k = 0 + cellAdd; k < cellsCount; k++) {
                         var cv = oModel.getProperty(this.mLctb.cols[k].mColName, currentRowContext);
-                        if (cv != undefined && (cv+"").trim().length>0)
+                        if (cv != undefined && (cv + "").trim().length > 0)
                             this.mTable.getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("yellow");
 
                     }
@@ -280,7 +321,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             }
 
         };
+
         QueryView.prototype.printHtml = function () {
+            if (this.mLctb.cols.length <= 0) return;
             var h = "", dt = "", rs = "";           // table header data
             var oData = this.mTable.getModel().getData();
             var tmpv1 = "", tmpv2 = "", tmpv3 = "";
@@ -308,14 +351,19 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 tmpv2 = "", tmpv3 = "";
                 for (var v in oData[i]) {
                     cnt++;
-                    if (cnt - 1 == 0) t = v;   // get 1st array key.. to find this row is summary/group
-                    if (cnt - 1 === 0 && grouped) continue;
+                    if (cnt - 1 == 0) {
+                        t = v;
+                    }   // get 1st array key.. to find this row is summary/group
+                    if (cnt - 1 === 0 && grouped) {
+                        continue;
+                    }
                     if (cnt - 1 === this.mLctb.cols.length) break;
                     cellValue = oData[i][v];
+
                     if (cellValue != undefined && cellValue + "".trim().length > 0 && oData[i][t].startsWith(String.fromCharCode(4095))) {
                         tmpv2 = " class=\"yellow\" "
                     }
-                    if (cellValue != undefined && oData[i][t].startsWith(String.fromCharCode(4094))) {
+                    if (grouped && cellValue != undefined && oData[i][t].startsWith(String.fromCharCode(4094))) {
                         tmpv2 = " class=\"qrGroup\" colspan=\"" + (this.mLctb.cols.length - 1) + "\""
                     }
 

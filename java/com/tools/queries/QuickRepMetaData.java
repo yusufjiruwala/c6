@@ -6,11 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.controller.InstanceInfo;
 import com.generic.ColumnProperty;
@@ -33,7 +36,7 @@ public class QuickRepMetaData {
 
 	private List<String> listGroups = new ArrayList<String>();
 
-//	private List<ColumnProperty> listCols = new ArrayList<ColumnProperty>();
+	// private List<ColumnProperty> listCols = new ArrayList<ColumnProperty>();
 
 	public QuickRepMetaData(InstanceInfo inf) {
 		this.instanceInfo = inf;
@@ -72,19 +75,55 @@ public class QuickRepMetaData {
 			tmp1 = utils.getJSONStr("field_name", col.colname, false);
 			tmp1 += "," + utils.getJSONStr("group_name", col.other_info, false);
 			cols += (cols.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
-			// tmp1+=","+utils.getjson
 		}
 
 		for (String grp : listGroups)
 			grps += (grps.length() == 0 ? "" : ",") + utils.getJSONStr("group_name", grp, true);
 
-		ResultSet rs = QueryExe.getSqlRS("select *from invqrycolspara where code='" + id + "' order by inddexno", con);
-		String pms = utils.getJSONsql("parameters", rs, con, "", "");
+		String pms = getJSONparameters();
 		ret += "\"cols\":" + "[" + cols + "]";
 		ret += ",\"groups\":[" + grps + "]";
 		ret += "," + pms;
 		return "{" + ret + "}";
 
+	}
+
+	public String getJSONparameters() throws SQLException {
+		String var = "parameters";
+		Connection con = instanceInfo.getmDbc().getDbConnection();
+
+		ResultSet rs = QueryExe.getSqlRS("select *from invqrycolspara where code='" + id + "' order by inddexno", con);
+
+		if (rs == null || !rs.first())
+			return "";
+
+		String ret = "";
+		ResultSetMetaData rsm = rs.getMetaData();
+		rs.beforeFirst();
+		String tmp1 = "", cn = "", vl = "";
+		while (rs.next()) {
+			tmp1 = "";
+			for (int i = 0; i < rsm.getColumnCount(); i++) {
+				cn = rsm.getColumnName(i + 1);
+				vl = utils.nvl(rs.getString(cn), "");
+				if (cn.equals("PARA_DEFAULT") && vl.startsWith("$"))
+					vl = utils.getParaValue(vl, instanceInfo);
+
+				if (cn.equals("LISTNAME") && vl.length() > 0) { // getting list
+																// of values ..
+					ResultSet rss = QueryExe.getSqlRS(vl, con);
+					vl = utils.getJSONsql("", rss, con, "", "");
+					tmp1 += (tmp1.length() == 0 ? "" : ",") + "\"LISTNAME\":" + vl;
+				} else
+					tmp1 += (tmp1.length() == 0 ? "" : ",") + utils.getJSONStr(cn, vl, false);
+
+			}
+			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
+		}
+
+		ret = (var.length() == 0 ? "" : "\"" + var + "\":") + "[" + ret + "]";
+
+		return ret;
 	}
 
 	private void buildListsInit() throws Exception {
@@ -322,7 +361,7 @@ public class QuickRepMetaData {
 				sqlMap.get("GROUP").add(col);
 			}
 			if (rs_2.getString("orderno") != null && rs_2.getString("orderno").length() > 0) {
-				order_by[rs_2.getInt("orderno")] = col + " " + rs_2.getString("ordertype");
+				order_by[rs_2.getInt("orderno")] = col + " " + utils.nvl(rs_2.getString("ordertype"),"ASC");
 			}
 			if ((rs_2.getString("CP_HIDECOL") != null && rs_2.getString("CP_HIDECOL").length() > 0)) {
 				sqlMap.get("HIDECOL").add(coldisp);
@@ -532,6 +571,7 @@ public class QuickRepMetaData {
 
 	public String buildJson(String rid, Map<String, String> params) throws Exception {
 		Connection con = instanceInfo.getmDbc().getDbConnection();
+		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
 		this.id = rid;
 		String ret = "";
 		String sql = buildSql(rid);
@@ -542,6 +582,8 @@ public class QuickRepMetaData {
 			if (key.startsWith("_para_")) {
 				System.out.println("para # " + key + " = " + params.get(key));
 				qe.setParaValue(key.replace("_para_", ""), params.get(key));
+				if (params.get(key).startsWith("@"))
+					qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
 			}
 
 		}
@@ -569,7 +611,7 @@ public class QuickRepMetaData {
 			cp = utils.findColByCol(rsm.getColumnName(i + 1), listcols);
 			scp = utils.getJSONCP(cp);
 			tmp1 += "," + scp;
-			
+
 			met += (met.length() > 0 ? "," : "") + "{" + tmp1 + "}";
 
 		}

@@ -65,8 +65,8 @@ public class UserRoute {
 			if (!instanceInfo.isMlogonSuccessed())
 				throw new SQLException("Access denied !");
 
-			DBClass dbc = instanceInfo.getConnection();
-			lctb.createDBClassFromConnection(dbc.getDbConnection());
+			//DBClass dbc = new DBClass(instanceInfo.getmDbc().getDbConnection());
+			lctb.createDBClassFromConnection(instanceInfo.getmDbc().getDbConnection());
 			sql = buildSql(params);
 			lctb.executeQuery(sql, true);
 
@@ -194,14 +194,14 @@ public class UserRoute {
 		if (!qrm.txtGroup2.isEmpty()) {
 			strg = qrm.txtGroup2;
 		}
-
+		
 		String sq = "select indexno,initcap(nvl(DISPLAY_NAME,FIELD_NAME)) FIELD_NAME,'Y' SELECTION ,COLWIDTH DISPLAY_WIDTH ,'' FILTER_TEXT,datatypex "
 				+ "FROM INVQRYCOLS2 WHERE CODE='" + rid
 				+ "' and  group_name is null and iswhere is null and cp_hidecol is null"
-				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg + "')" + " and field_name in ("
+				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg.trim() + "')" + " and field_name in ("
 				+ cols + ")" + "  order by indexno ";
 		qrm.data_cols.createDBClassFromConnection(con);
-		qrm.data_cols.executeQuery(sq, true);
+		qrm.data_cols.executeQuery(sq, true);		
 		ret= qrm.buildJson(rid, params);
 		
 		return ret;
@@ -223,9 +223,11 @@ public class UserRoute {
 			if (key.startsWith("and-equal-"))
 				wc.add(key.replace("and-equal-", "") + "='" + params.get(key) + "'");
 		}
+		
 		String tn = params.get("tablename");
+		
 		String c = "", w = "", o = "", sql = "";
-
+		
 		for (String v : ordby)
 			o += (o.length() == 0 ? "" : ",") + v;
 		for (String v : cols)

@@ -43,18 +43,27 @@ sap.ui.controller("chainel1.QuickReport", {
     preview: function () {
         var view = this.getView();
         var oSplitApp = sap.ui.getCore().byId("oSplitApp");
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
         if (view.colData == undefined)
             return;
         var ps = "";
         for (var i = 0; i < view.colData.parameters.length; i++) {
-
             var vl = Util.nvl(view.byId("para_" + i).getValue(), "");
+            if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
+                vl = "@" + df.format((view.byId("para_" + i).getDateValue()));
+            if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
+                vl = view.byId("para_" + i).getSelectedItem().getKey();
+
             ps += (ps.length > 0 ? "&" : "") + "_para_" + view.colData.parameters[i].PARAM_NAME + "=" + vl;
         }
 
 
         var grp1 = Util.nvl(view.byId("txtGroupHeader").getValue(), "");
         var grp2 = Util.nvl(view.byId("txtGroupDetail").getValue(), "");
+
+
+
         ps += "&report-id=" + view.byId("txtSubGroup").getSelectedItem().getKey()
             + "&group1=" + grp1 + "&group2=" + grp2;
         var ca = "";
@@ -88,7 +97,14 @@ sap.ui.controller("chainel1.QuickReport", {
             // (view.byId("tbl") != undefined ? view.byId("tbl").destroy() : null);
             // view.qv = new QueryView(view.createId("tbl"));
             // view.QueryPage.addContent(view.qv.mTable);
+
             view.qv.setJsonStr(data);
+
+            if (grp1.length > 0 && grp2.length > 0 && view.qv.mLctb.cols.length > 1) {
+                view.qv.mLctb.cols[0].mGrouped = true;
+                view.qv.mLctb.cols[1].mGrouped = true;
+            }
+
             view.qv.loadData();
 
 

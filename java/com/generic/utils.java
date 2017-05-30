@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 
+import com.controller.InstanceInfo;
+
 /**
  * 
  * @author yusuf
@@ -962,8 +964,7 @@ public class utils {
 
 	}
 
-	public static ColumnProperty findColByDescr(String des,
-			List<ColumnProperty> lstItemCols) {
+	public static ColumnProperty findColByDescr(String des, List<ColumnProperty> lstItemCols) {
 		for (Iterator iterator = lstItemCols.iterator(); iterator.hasNext();) {
 			ColumnProperty prop = (ColumnProperty) iterator.next();
 			if (prop.descr.equals(des)) {
@@ -973,8 +974,7 @@ public class utils {
 		return null;
 	}
 
-	public static ColumnProperty findColByCol(String des,
-			List<ColumnProperty> lstItemCols) {
+	public static ColumnProperty findColByCol(String des, List<ColumnProperty> lstItemCols) {
 		for (Iterator iterator = lstItemCols.iterator(); iterator.hasNext();) {
 			ColumnProperty prop = (ColumnProperty) iterator.next();
 			if (prop.colname.toUpperCase().equals(des.toUpperCase())) {
@@ -993,7 +993,7 @@ public class utils {
 		}
 		return null;
 	}
-	
+
 	public static void roundDate(Date dt) {
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(dt);
@@ -1112,6 +1112,45 @@ public class utils {
 		ret += "," + getJSONStr("descr", cp.descr, false);
 
 		return ret;
+	}
+
+	public static String getParaValue(String vl, InstanceInfo inf) {
+		Calendar cln = Calendar.getInstance();
+		cln.setTimeInMillis(System.currentTimeMillis());
+		cln.set(Calendar.HOUR, 0);
+		cln.set(Calendar.MINUTE, 0);
+		cln.set(Calendar.SECOND, 0);
+		cln.set(Calendar.MILLISECOND, 0);
+
+		Object ret = "";
+		String rets = "";
+
+		if (vl.equals("$FIRSTDATEOFYEAR")) {
+			cln.set(Calendar.MONTH, 0);
+			cln.set(Calendar.DAY_OF_MONTH, 1);
+			ret = new java.util.Date(cln.getTimeInMillis());
+		}
+		if (vl.equals("$TODAY"))
+			ret = new java.util.Date(cln.getTimeInMillis());
+
+		if (vl.equals("$FIRSTDATEOFMONTH")) {
+			cln.set(Calendar.DAY_OF_MONTH, 1);
+			ret = new java.util.Date(cln.getTimeInMillis());
+		}
+
+		if (vl.equals("$DEFAULT_STORE"))
+			ret = inf.getMmapVar().get("DEFAULT_STORE");
+
+		if (vl.equals("$DEFAULT_LOCATION"))
+			ret = inf.getMmapVar().get("DEFAULT_LOCATION");
+
+		rets = nvl(ret, "");
+		if (ret instanceof Date) {
+			SimpleDateFormat sdf = new SimpleDateFormat(inf.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
+			rets = sdf.format((Date) ret);
+		}
+
+		return rets;
 	}
 
 }
