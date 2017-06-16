@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.controller.InstanceInfo;
 
 /**
@@ -425,26 +427,24 @@ public class utils {
 		return lst;
 	}
 
-	public static List<Row> convertRows(PreparedStatement ps, ResultSet rsp, String filterstring) throws SQLException {
+	public static List<Row> convertRows(ResultSet rsp, String filterstring) throws SQLException {
 		List<Row> lsr = new ArrayList<Row>();
 		int tmp = 0;
+		if (rsp == null)
+			return null;
 		ResultSetMetaData rsm = null;
 		ResultSet rs = null;
 
-		if (rsp == null) {
-			rs = ps.executeQuery();
-		} else {
-			rs = rsp;
-		}
+		rs = rsp;
 
 		DataFilter df = new DataFilter();
 		localTableModel datax = new localTableModel();
 		boolean fnd = true;
 
 		try {
-			if (ps == null) {
-				return null;
-			}
+			// if (ps == null) {
+			// return null;
+			// }
 			// rs = ps.executeQuery();
 			rsm = rs.getMetaData();
 
@@ -574,7 +574,7 @@ public class utils {
 		String pnm = getParamName(sq, 1);
 		while (pnm.length() > 0) {
 			pnm = getParamName(sq, parano);
-			pnm = pnm.toUpperCase();
+			pnm = pnm.toUpperCase().trim();
 			if (pnm.length() > 0) {
 
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_STRING)) {
@@ -1016,9 +1016,15 @@ public class utils {
 
 	public static String getJSONStr(String var, Object val, boolean includeBracket) {
 		String tmp1 = (includeBracket ? "{" : "");
+		char slash = 92;
 		tmp1 += "\"" + decodeEscape(var) + "\":";
+		// if (!val.toString().contains("\""))
+		// tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + "" : "\"" +
+		// decodeEscape((nvl(val, "")) + "\""));
+		// else
 		tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + ""
-				: "\"" + decodeEscape(nvl(val, "").replace("\"", "'") + "\""));
+				: "\"" + decodeEscape(StringEscapeUtils.escapeJson((nvl(val, ""))) + "\""));
+
 		tmp1 += (includeBracket ? "}" : "");
 		return tmp1;
 	}
@@ -1087,7 +1093,9 @@ public class utils {
 	}
 
 	public static String decodeEscape(String v) {
-		return v.replace("\\", "\\\\").replace("'", "\\\\'").replace("\n", "\\n");
+
+		return /* v.replaceAll("'", "\\\\'") */v.replaceAll("\n", "\\\\r").replaceAll("\r", "\\\\r")
+				.replaceAll("\u201c", "\"");
 	}
 
 	public static boolean isNumber(int datatype) {
@@ -1107,9 +1115,11 @@ public class utils {
 		ret += "," + getJSONStr("display_format", cp.display_format, false);
 		ret += "," + getJSONStr("display_align", cp.display_align, false);
 		ret += "," + getJSONStr("summary", cp.summary, false);
-		ret += "," + getJSONStr("display_align", cp.display_align, false);
 		ret += "," + getJSONStr("display_width", cp.display_width, false);
 		ret += "," + getJSONStr("descr", cp.descr, false);
+		ret += "," + getJSONStr("grouped", (cp.isGrouped ? "true" : "false"), false);
+		ret += "," + getJSONStr("qtree_type", cp.qtree_type, false);
+		ret += "," + getJSONStr("hide_col", (cp.hide_col ? "true" : "false"), false);
 
 		return ret;
 	}

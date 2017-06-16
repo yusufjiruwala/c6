@@ -47,8 +47,11 @@ public class ColumnProperty {
 	public SelectionListener SearchSelecitonEvent = null;
 	public Object defaultValue = null;
 	public Map<String, String> mapReturns = null;
-	public String other_info="";
-	
+	public String other_info = "";
+	public boolean isGrouped = false;
+	public String qtree_type = "";
+	public boolean hide_col=false;
+
 	@Override
 	public String toString() {
 		return descr;
@@ -84,9 +87,9 @@ public class ColumnProperty {
 	public interface SelectionListner {
 		public void onSelection();
 	}
+
 	public static interface SelectionListener {
 		public void onSelection();
 	};
 
-	
 }

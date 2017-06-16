@@ -6,6 +6,7 @@ package com.generic;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -70,6 +71,11 @@ public class localTableModel implements TableModel, Serializable {
 
 		}
 		return col;
+	}
+
+	public void setShortDateFormat(String fmt) {
+		this.shortDateFormat = fmt;
+
 	}
 
 	public String getMasterRowStatus(int rowno) {
@@ -475,6 +481,7 @@ public class localTableModel implements TableModel, Serializable {
 
 	private int cols = 0;
 	private String sqlString = "";
+	private String shortDateFormat = "dd/MM/yyyy";
 
 	public localTableModel() {
 		this.cols = 0;
@@ -538,6 +545,21 @@ public class localTableModel implements TableModel, Serializable {
 
 	public int getHeaderCount() {
 		return headerText.size();
+	}
+
+	public void fetchData(ResultSet rs, boolean add) throws SQLException {
+		int tmp = 0;
+		if (rs != null) {
+			if (!add) {
+				ResultSetMetaData rm = rs.getMetaData();
+				cols = rm.getColumnCount();
+				qrycols.clear();
+				qrycols.addAll(utils.getColumnsList(rs));
+				visbleQrycols.addAll(qrycols);
+			}
+			appendRows(utils.convertRows(rs, filterStr));
+			cursorNo = rows.size() - 1;
+		}
 	}
 
 	public void fetchData(int nextNos) throws SQLException {
@@ -980,11 +1002,15 @@ public class localTableModel implements TableModel, Serializable {
 		String d1 = "";
 		String dr = "";
 		String d2 = "";
+		Object vl = "";
+		SimpleDateFormat sdf = new SimpleDateFormat(shortDateFormat);
 		for (int i = 0; i < getRowCount(); i++) {
 			dr = "";
 			for (qryColumn qc : visbleQrycols) {
-				d2 = " \"" + qc.getColname() + "\":\"" + getFieldValue(i, qc.getColname()) + "\"";
-				dr += (dr.length() > 0 ? "," : "") + d2.replace("\\", "\\\\");
+				vl = getFieldValue(i, qc.getColname());
+				if (qc.isDateTime())
+					vl = sdf.format(vl);
+				dr += (dr.length() > 0 ? "," : "") + utils.getJSONStr(qc.getColname(), vl, false);
 			}
 			d1 += (d1.length() > 0 ? "," : "") + "{" + dr + "}";
 		}

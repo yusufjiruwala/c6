@@ -28,6 +28,7 @@ sap.ui.controller("chainel1.SplitPage", {
         //console.log(valx);
         //sap.m.MessageToast.show(valx.getKey());
         sap.ui.getCore().byId("SplitPage").setProfile({"code": valx.getKey(), "name": val});
+
     }
 
 });

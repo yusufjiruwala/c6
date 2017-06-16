@@ -22,13 +22,8 @@ sap.ui.controller('chainel1.test', {
      * This hook is the same one that SAPUI5 controls get after being rendered.
      * @memberOf chainel1.test **/
     onAfterRendering: function () {
-        this.getView().setHeight("100%");
-        var he="600px";
-        // if (this.getView().$().height()!="0" && this.getView().$().height()!=undefined)
-        //     he=this.getView().$().height()+"px";
-
-            this.getView().table.setHeight(he);
-
+        this.gauges = [];
+        this.createGauge("Plant1Availability", "Plant1 - Availability");
     }
     ,
 
@@ -38,33 +33,29 @@ sap.ui.controller('chainel1.test', {
      **/
     onExit: function () {
 
+    },
+    createGauge: function (name, label, min, max) {
+
+        var config =
+            {
+                size: 125,
+                label: label,
+                min: undefined != min ? min : 0,
+                max: undefined != max ? max : 100,
+                value:50,
+                minorTicks: 5
+            }
+
+        var range = config.max - config.min;
+        config.greenZones = [{from: config.min, to: config.min + range * 0.75}];
+        config.yellowZones = [{from: config.min + range * 0.75, to: config.min + range * 0.9}];
+        config.redZones = [{from: config.min + range * 0.9, to: config.max}];
+
+        var Gauge = sap.ui.require("sap/ui/chainel1/util/generic/Gauge");
+        this.gauges[name] = new Gauge(name + "GaugeContainer", config);
+        this.gauges[name].render();
+        this.gauges[name].redraw(90);
     }
-    ,
-    hitme: function () {
-        Util.doAjaxJson("test", {sql: "select reference,descr2 from items", ret: "none"}, false).done(function (data) {
-            console.log(data.ret);
-            var dt=JSON.parse("{"+data.ret+"}");
-            console.log(dt);
-        }).fail(function (data) {
-            alert('failed');
-            console.log(data);
-
-        });
-    },
-
-    getModel: function(){
-
-        var oDataUrl = "/sap/opu/odata/SAP/Your oData Service/";
-
-        var oModel = new sap.ui.model.odata.v2.ODataModel(oDataUrl, true);
-
-        oModel.setDefaultCountMode(sap.ui.model.odata.CountMode.Request);
-
-        var oView = this.getView();
-
-        oView.setModel(oModel);
-
-    },
 
 
 });

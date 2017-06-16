@@ -15,6 +15,11 @@
 
 }
 
+.paraResultInput {
+
+    width: 150px !important;
+}
+
 .simpleBtn {
     width: 80%;
     padding-left: 30% !Important;
@@ -29,4 +34,22 @@
     font-weight: bold !important;
     font-size: 14px !important;
     color: maroon !important;
+}
+
+.qtFirstLevel {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    background-color: rgba(216,201,201,1);
+}
+
+.qtSecondLevel {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    background-color: rgba(239,227,227,1);
+}
+
+.menuicon:after {
+    content: '\2807';
+    font-size: 30px;
+    padding: 10px;
 }

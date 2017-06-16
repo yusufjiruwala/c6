@@ -27,6 +27,46 @@ public class QuickRepMetaData {
 
 	private InstanceInfo instanceInfo;
 
+	public boolean isCt = false;
+	public boolean showColSection = true;
+	public boolean showGroup1 = true;
+	public boolean showGroup2 = true;
+	private String sqlstr = "";
+	private String sqlCols = "";
+	private String sqlOrdby = "";
+	private String sqlGroupby = "";
+	private String sqlWhere = "";
+	private String sqlView = "";
+	public String sqlCPDistinctRow = "";
+	public String sqlCPDistinctCol = "";
+	public String CtValueCol = "";
+	public String CtValueColTotTitle = "";
+	public String strExecbefore = "";
+	public boolean ctSort = false;
+	private boolean mode_query = false;
+	public boolean showSavedParams = true;
+	private String parentCol = "";
+	private String codeCol = "";
+	private List<Parameter> listParas = new ArrayList<Parameter>();
+	public String added_sql_clause = "";
+	public String added_where_clause = "";
+	public List<Parameter> added_filter_parameters = new ArrayList<Parameter>();
+	public List<Parameter> added_query_parameters = new ArrayList<Parameter>();
+	public Map<String, dataCell> actionMap = new HashMap<String, dataCell>();
+	public List<dataCell> actionList = new ArrayList<dataCell>();
+	public List<Parameter> listConditions = new ArrayList<Parameter>();;
+	public List<String> ctRowsCol = new ArrayList<String>();
+	public List<String> ctHeaderCol = new ArrayList<String>();
+	public localTableModel data_cols = new localTableModel();
+	private final List<ColumnProperty> lstItemCols = new ArrayList<ColumnProperty>();
+	private List<Parameter> listParams = new ArrayList<Parameter>();
+	private Map<String, List<String>> sqlMap = new HashMap<String, List<String>>();
+	private List<ColumnProperty> listcols = new ArrayList<ColumnProperty>();
+	private List<ColumnProperty> listcolstemp = new ArrayList<ColumnProperty>();
+
+	public String txtGroup1 = "";
+	public String txtGroup2 = "";
+
 	private String id = "";
 	private String report_name = "";
 	private String report_where = "";
@@ -81,11 +121,17 @@ public class QuickRepMetaData {
 			grps += (grps.length() == 0 ? "" : ",") + utils.getJSONStr("group_name", grp, true);
 
 		String pms = getJSONparameters();
+		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where rep_id='" + id + "' order by rep_pos", con);
+
+		String subreps = "";
+		if (rs != null && rs.first())
+			subreps = utils.getJSONsql("subreps", rs, con, "", "");
 		ret += "\"cols\":" + "[" + cols + "]";
 		ret += ",\"groups\":[" + grps + "]";
 		ret += "," + pms;
+		if (subreps.trim().length() > 0)
+			ret += "," + subreps;
 		return "{" + ret + "}";
-
 	}
 
 	public String getJSONparameters() throws SQLException {
@@ -171,46 +217,6 @@ public class QuickRepMetaData {
 		}
 	}
 
-	public boolean isCt = false;
-	public boolean showColSection = true;
-	public boolean showGroup1 = true;
-	public boolean showGroup2 = true;
-	private String sqlstr = "";
-	private String sqlCols = "";
-	private String sqlOrdby = "";
-	private String sqlGroupby = "";
-	private String sqlWhere = "";
-	private String sqlView = "";
-	public String sqlCPDistinctRow = "";
-	public String sqlCPDistinctCol = "";
-	public String CtValueCol = "";
-	public String CtValueColTotTitle = "";
-	public String strExecbefore = "";
-	public boolean ctSort = false;
-	private boolean mode_query = false;
-	public boolean showSavedParams = true;
-	private String parentCol = "";
-	private String codeCol = "";
-	private List<Parameter> listParas = new ArrayList<Parameter>();
-	public String added_sql_clause = "";
-	public String added_where_clause = "";
-	public List<Parameter> added_filter_parameters = new ArrayList<Parameter>();
-	public List<Parameter> added_query_parameters = new ArrayList<Parameter>();
-	public Map<String, dataCell> actionMap = new HashMap<String, dataCell>();
-	public List<dataCell> actionList = new ArrayList<dataCell>();
-	public List<Parameter> listConditions = new ArrayList<Parameter>();;
-	public List<String> ctRowsCol = new ArrayList<String>();
-	public List<String> ctHeaderCol = new ArrayList<String>();
-	public localTableModel data_cols = new localTableModel();
-	private final List<ColumnProperty> lstItemCols = new ArrayList<ColumnProperty>();
-	private List<Parameter> listParams = new ArrayList<Parameter>();
-	private Map<String, List<String>> sqlMap = new HashMap<String, List<String>>();
-	private List<ColumnProperty> listcols = new ArrayList<ColumnProperty>();
-	private List<ColumnProperty> listcolstemp = new ArrayList<ColumnProperty>();
-
-	public String txtGroup1 = "";
-	public String txtGroup2 = "";
-
 	public String buildSql(String idno) throws Exception {
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 		isCt = false;
@@ -222,6 +228,9 @@ public class QuickRepMetaData {
 		String strgroup1 = "";
 		parentCol = "";
 		codeCol = "";
+		this.id = idno;
+		setAutoGroup();
+
 		if (txtGroup1 != null && txtGroup1.length() > 0) {
 			strgroup1 = txtGroup1;
 		}
@@ -229,6 +238,7 @@ public class QuickRepMetaData {
 		if (txtGroup2 != null && txtGroup2.length() > 0) {
 			strgroup2 = txtGroup2;
 		}
+
 		int summary_count = 0;
 		String indexin = "";
 
@@ -252,11 +262,13 @@ public class QuickRepMetaData {
 		sqlMap.put("HIDECOL", new ArrayList<String>());
 		sqlMap.put("COLS_TEMP", new ArrayList<String>());
 		sqlMap.put("SUMMARY_COLS", new ArrayList<String>());
+
 		String order_by[] = new String[] { "", "", "", "", "", "", "", "" };
 
 		if (con == null) {
 			throw new Exception("no connection to query builder");
 		}
+
 		indexin = getIndexNoIn(idno);
 		PreparedStatement ps_1 = con.prepareStatement("select *from INVQRYCOLS1 where code='" + idno + "'",
 				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -325,14 +337,18 @@ public class QuickRepMetaData {
 				cp.display_align = rs_2.getString("CP_ALIGN");
 				cp.display_format = rs_2.getString("cp_format");
 				cp.data_type = rs_2.getString("DATATYPEX");
+				cp.qtree_type = rs_2.getString("QTREE_TYPE");
 				cp.summary = "";
+				cp.hide_col = (utils.nvl(rs_2.getString("CP_HIDECOL"), "N").toUpperCase().equals("Y") ? true : false);
 				if (rs_2.getString("HASGROSS") != null) {
 					if (rs_2.getString("HASGROSS_COLUMN") == null) {
 						cp.summary = rs_2.getString("HASGROSS");
 					}
 				}
+
 				if ((strgroup1.length() > 0 && strgroup2.length() > 0)
 						&& (strgroup1.equals(rs_2.getString("group_name")))) {
+					cp.isGrouped = true;
 					if (listcolstemp.size() > 0) {
 						listcolstemp.add(cp);
 					} else {
@@ -353,7 +369,6 @@ public class QuickRepMetaData {
 				whereclause = col + rs_2.getString("WHEREOPERATOR") + Stringquot + rs_2.getString("WHERECLAUSE")
 						+ Stringquot;
 				sqlMap.get("WHERE").add(whereclause);
-
 			}
 			if (summary_count > 0 && (rs_2.getString("SUMBY") == null || rs_2.getString("SUMBY").length() == 0)
 					&& (rs_2.getString("formulahassum") == null || rs_2.getString("formulahassum").length() == 0)
@@ -361,7 +376,7 @@ public class QuickRepMetaData {
 				sqlMap.get("GROUP").add(col);
 			}
 			if (rs_2.getString("orderno") != null && rs_2.getString("orderno").length() > 0) {
-				order_by[rs_2.getInt("orderno")] = col + " " + utils.nvl(rs_2.getString("ordertype"),"ASC");
+				order_by[rs_2.getInt("orderno")] = col + " " + utils.nvl(rs_2.getString("ordertype"), "ASC");
 			}
 			if ((rs_2.getString("CP_HIDECOL") != null && rs_2.getString("CP_HIDECOL").length() > 0)) {
 				sqlMap.get("HIDECOL").add(coldisp);
@@ -411,6 +426,7 @@ public class QuickRepMetaData {
 		for (int i = sqlMap.get("COLS_TEMP").size() - 1; i > -1; i--) {
 			sqlMap.get("COLS").add(0, sqlMap.get("COLS_TEMP").get(i));
 		}
+
 		for (int i = listcolstemp.size() - 1; i > -1; i--) {
 			listcols.add(0, listcolstemp.get(i));
 		}
@@ -518,20 +534,20 @@ public class QuickRepMetaData {
 		ps_1.close();
 
 		sqlstr = "select " + sqlCols + " from " + sqlView + " " + sqlWhere + " " + sqlGroupby + " " + sqlOrdby;
-		return sqlstr;
-		/**
-		 * later on to add this.. for qucik rows and columns if (isCt) { for
-		 * (int i = 0; i < ctHeaderCol.size(); i++) {
-		 * 
-		 * } }
-		 */
+		return sqlstr;/**
+						 * later on to add this.. for qucik rows and columns if
+						 * (isCt) { for (int i = 0; i < ctHeaderCol.size(); i++)
+						 * {
+						 * 
+						 * } }
+						 */
 	}
 
 	public String getIndexNoIn(String idno) throws SQLException {
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 		String indexin = "";
 		List<String> ltmp = new ArrayList<String>();
-		String sq = "select *from invqrycols2 where code='" + idno + "' and group_name is not null  order by indexno";
+
 		String strgroup1 = "";
 		if (txtGroup1 != null) {
 			strgroup1 = txtGroup1;
@@ -540,11 +556,18 @@ public class QuickRepMetaData {
 		if (txtGroup2 != null) {
 			strgroup2 = txtGroup2;
 		}
+		String sq = "select *from invqrycols2 where code='" + idno + "' and group_name is not null  order by indexno";
+		if (strgroup1.isEmpty() && strgroup2.isEmpty())
+			sq = "select *from invqrycols2 where code='" + idno + "'   order by indexno";
 
 		ltmp.clear();
 		PreparedStatement psq = con.prepareStatement(sq, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		ResultSet rsq = psq.executeQuery();
 		while (rsq.next()) {
+			if (strgroup1.isEmpty() && strgroup2.isEmpty()) {
+				ltmp.add(rsq.getString("indexno"));
+				continue;
+			}
 			if (strgroup1.equals(rsq.getString("group_name"))) {
 				ltmp.add(rsq.getString("indexno"));
 			}
@@ -577,6 +600,29 @@ public class QuickRepMetaData {
 		String sql = buildSql(rid);
 		System.out.println(sql);
 
+		if (strExecbefore != null && !strExecbefore.isEmpty()) {
+			try {
+				QueryExe qqe = new QueryExe(strExecbefore, con);
+				for (String key : params.keySet()) {
+					if (key.startsWith("_para_")) {
+						System.out.println("para # " + key + " = " + params.get(key));
+						qqe.setParaValue(key.replace("_para_", ""), params.get(key));
+						if (params.get(key).startsWith("@"))
+							qqe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+					}
+				}
+				qqe.execute();
+				con.commit();
+			} catch (SQLException ex) {
+				try {
+					con.rollback();
+				} catch (SQLException ex1) {
+				}
+				throw ex;
+
+			}
+		}
+
 		QueryExe qe = new QueryExe(sql, con);
 		for (String key : params.keySet()) {
 			if (key.startsWith("_para_")) {
@@ -587,6 +633,7 @@ public class QuickRepMetaData {
 			}
 
 		}
+
 		ResultSet rs = qe.executeRS();
 		ret = "{" + getJSONsqlMetaData(rs, con, "", "") + "}";
 		qe.close();
@@ -634,4 +681,30 @@ public class QuickRepMetaData {
 		return ret;
 	}
 
+	private void setAutoGroup() throws SQLException {
+		String strgroup1 = utils.nvl(txtGroup1, "");
+		String strgroup2 = utils.nvl(txtGroup2, "");
+
+		if (!strgroup1.isEmpty() || !strgroup2.isEmpty())
+			return;
+		Connection con = instanceInfo.getmDbc().getDbConnection();
+
+		ResultSet rs = QueryExe.getSqlRS("select group_name from invqrycols2 where CODE='" + id
+				+ "' and group_name is not null order by INDEXNO", con);
+		if (rs == null)
+			return;
+		rs.beforeFirst();
+		int i = 0;
+		while (rs.next()) {
+			if (i == 0)
+				txtGroup1 = rs.getString("group_name");
+			if (i == 1 && !txtGroup1.equals(rs.getString("group_name")))
+				txtGroup2 = rs.getString("group_name");
+			if (i == 2 && !txtGroup1.equals(rs.getString("group_name")))
+				txtGroup2 = rs.getString("group_name");
+			i++;
+		}
+		rs.close();
+
+	}
 }

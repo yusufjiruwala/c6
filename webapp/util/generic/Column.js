@@ -9,15 +9,17 @@ sap.ui.define(["./DataCell"], function (DataCell) {
             styleName: "",
             display_width: "300px",
             isVisible: true,
-            display_align:"begin"
+            display_align: "begin"
         };
         this.mColpos = 0;
         this.mColName = "";
         this.mList = "";
         this.mColClass = "";
         this.mTitle = "";
-        this.mGrouped=false;
-        this.mSummary="";
+        this.mGrouped = false;
+        this.mSummary = "";
+        this.mQtreeType = "";
+        this.mHideCol=false;
 
     }
 

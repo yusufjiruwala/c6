@@ -211,6 +211,9 @@ sap.ui.jsview("chainel1.SplitPage", {
 
         //sap.ui.getCore().byId("SplitPage").byId("lblTitle").setText(st);
 
+        this.oSplitApp.toDetail(this.oPage2);
+        this.oSplitApp.hideMaster();
+
 
         if (toe == "QUICKREP") {
             if (!this.oSplitApp.getDetailPages().indexOf(this.oPgQuickRep) > -1)
@@ -218,18 +221,35 @@ sap.ui.jsview("chainel1.SplitPage", {
             this.oSplitApp.toDetail(this.oPgQuickRep);
             this.oSplitApp.hideMaster();
             this.oPgQuickRep.showReportPara(el);
-        } else {
-            this.oSplitApp.toDetail(this.oPage2);
+        }
+        if (toe == "QUERY") {
+            if (!this.oSplitApp.getDetailPages().indexOf(this.oPgQuery) > -1)
+                this.oSplitApp.addDetailPage(this.oPgQuery);
+            this.oSplitApp.toDetail(this.oPgQuery);
             this.oSplitApp.hideMaster();
+            this.oPgQuery.showReportPara(el);
+        }
+        if (toe == "QTREE") {
+            if (!this.oSplitApp.getDetailPages().indexOf(this.oPgTree) > -1)
+                this.oSplitApp.addDetailPage(this.oPgTree);
+            this.oSplitApp.toDetail(this.oPgTree);
+            this.oSplitApp.hideMaster();
+            this.oPgTree.showReportPara(el);
         }
 
     },
 
     createQuickReportPage: function () {
 
-        if (this.oPgQuickRep != undefined)
-            return;
-        this.oPgQuickRep = sap.ui.jsview("pgQuickRep", "chainel1.QuickReport");
+        if (this.oPgQuickRep == undefined)
+            this.oPgQuickRep = sap.ui.jsview("pgQuickRep", "chainel1.QuickReport");
+
+        if (this.oPgQuery == undefined)
+            this.oPgQuery = sap.ui.jsview("pgQuery", "chainel1.Query");
+
+        if (this.oPgTree == undefined)
+            this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
+
 
     }
 

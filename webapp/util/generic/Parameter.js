@@ -81,7 +81,6 @@ sap.ui.define([], function () {
         },
         set: function (value) {
             this._name = value;
-            alert(value);
         },
         enumerable: true,
         configurable: true

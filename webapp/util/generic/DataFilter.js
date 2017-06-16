@@ -1,5 +1,5 @@
-sap.ui.define(["./LocalTableData",],
-    function (LocalTableData) {
+sap.ui.define(["./LocalTableData", "./Parameter"],
+    function (LocalTableData, Parameter) {
         'use strict'
         function DataFilter() {
             this.fields = [];
@@ -8,8 +8,9 @@ sap.ui.define(["./LocalTableData",],
             this.data = null;
             this.dlmFieldName = /[A-Za-z ]+/;
             this.dlmOp = ["&&", "||"];
-            this.dlmConditionalOp = [">=", ">=", "<=", ">", "<", "=", "%%", "@@"];
-            this.dlmConitionalOpR = /[>=,>=,<=,>,<,=,%%,@@]/;
+            this.dlmConditionalOp = ["!=", "<>", ">=", "<=", "%%", "@@", ">", "<", "="];
+            this.dlmConitionalOpR = ["!=", ">=", "<=", "%%", "@@", ">", "<", "="];
+
             this.dlmFieldRangeOp = [".."];
             this.data = new LocalTableData();
             this.init();
@@ -29,6 +30,7 @@ sap.ui.define(["./LocalTableData",],
             },
             set: function (value) {
                 this._filterString = value;
+                this.buildDataStructure();
             },
             enumerable: true,
             configurable: true
@@ -59,10 +61,29 @@ sap.ui.define(["./LocalTableData",],
                 fv1 = pm.value.toString();
                 fv2 = pm.default_value.toString();
                 var cp = datax.getColPos(pm.name);
+
                 var s = r.cells[cp].getValue();
+                if (typeof s == "number" && typeof fv1 == "string")
+                    fv1 = parseFloat(fv1);
                 if (pm.operator == "=")
                     if (fv1 == s)
                         fnd++;
+                if (pm.operator == "%%" || pm.operator == "%")
+                    if ((s + "").toLowerCase().indexOf((fv1 + "").toLowerCase()) >= 0)
+                        fnd++;
+                if (pm.operator == ">")
+                    fnd += (s > fv1 ? 1 : 0);
+                if (pm.operator == "<")
+                    fnd += (s < fv1 ? 1 : 0);
+                if (pm.operator == ">=")
+                    fnd += (s >= fv1 ? 1 : 0);
+                if (pm.operator == "<=")
+                    fnd += (s <= fv1 ? 1 : 0);
+                if (pm.operator == "!=")
+                    fnd += (s != fv1 ? 1 : 0);
+                if (pm.operator == "<>")
+                    fnd += (s != fv1 ? 1 : 0);
+
             }
             if (fnd == no_of_find)
                 result = true;
@@ -70,13 +91,13 @@ sap.ui.define(["./LocalTableData",],
                 result = false;
             return result;
         };
-        DataFilter.prototype.doFilter = function (datax) {
+        DataFilter.prototype.doFilter = function (pLctb) {
             if (this._filterString == "") {
-                datax.rows = [];
-                datax.rows = datax.masterRows.slice(0);
+                pLctb.rows = [];
+                pLctb.rows = pLctb.masterRows.slice(0);
                 return;
             }
-            datax.rows = [];
+            pLctb.rows = [];
             var no_of_fnd = 0;
             for (var i = 0; i < this.params.length; i++) {
                 if (this.params[i].value.toString().length > 0) {
@@ -84,20 +105,20 @@ sap.ui.define(["./LocalTableData",],
                 }
             }
             if (no_of_fnd == 0) {
-                datax.rows = [];
-                datax.rows = datax.masterRows.slice(0);
+                pLctb.rows = [];
+                pLctb.rows = pLctb.masterRows.slice(0);
                 return;
             }
             var fnd = 0;
             var r;
             var s = "";
             var fv1 = "", fv2 = "";
-            for (var i = 0; i < datax.masterRows.length; i++) {
+            for (var i = 0; i < pLctb.masterRows.length; i++) {
                 fnd = 0;
-                r = datax.masterRows[i];
+                r = pLctb.masterRows[i];
                 for (var j = 0; j < this.params.length; j++) {
-                    if (this.canFilterRow(r, datax))
-                        datax.rows.push(r);
+                    if (this.canFilterRow(r, pLctb))
+                        pLctb.rows.push(r);
                 }
             }
         };
@@ -105,29 +126,24 @@ sap.ui.define(["./LocalTableData",],
             this.init();
             if (this._filterString.length <= 0)
                 return;
-            var ss = Utils_1.Utils.splitString(this._filterString, this.dlmOp);
+            var ss = Util.splitString(this._filterString, this.dlmOp);
             for (var i = 0; i < ss.length; i++) {
                 var s = ss[i];
-                var mv = s.match(this.dlmConitionalOpR);
-                var vl = Utils_1.Utils.splitString(ss[i], this.dlmConditionalOp);
+                var mv = Util.matchArray(s, this.dlmConitionalOpR);
+                var vl = Util.splitString(ss[i], this.dlmConditionalOp);
+
                 if (vl.length == 0 || vl[0] == ss[i] || vl.length > 2) {
                     console.error("cant parse -->" + ss[i]);
                     return;
                 }
-                var pm = new Parameter_1.Parameter(vl[0].trim());
-                console.log("pm 1" + pm.name);
+                var pm = new Parameter(vl[0].trim());
+                pm.name = vl[0].trim();
+
                 pm.value = "";
                 if (vl.length == 2)
                     pm.value = vl[1].trim();
-                // if (mv[0]=="=" && vl.length>1 && vl[1].contains("..") ) {
-                //     var vl2=Utils.splitString(vl[1],this.dlmFieldRangeOp);
-                //     pm.value=vl2[0].trim();
-                //     if (vl2.length>1)
-                //         pm.default_value=vl2[1].trim();
-                // }
                 pm.operator = mv[0];
                 this.params.push(pm);
-                console.log(this.params);
             }
         };
         return DataFilter;

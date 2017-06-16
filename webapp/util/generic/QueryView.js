@@ -1,26 +1,34 @@
-sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
-    function (LocalTableData) {
+sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./DataFilter"],
+    function (LocalTableData, DataFilter) {
         'use strict'
         function QueryView(tableId) {
+            var that = this;
             this.mJsonString = "";
             this.tableId = tableId;
-            this.refreshCmd = new sap.m.Button({
-                text: "Refresh",
-                press: function () {
-                    sap.m.MessageToast.show("Show");
-                }
-            });
-            this.toolbar = new sap.m.Toolbar({content: [refreshCmd]});
+            this.mViewSettings = {}
+            this.colMerged = false;
+            this.mOnAfterLoad = null;
 
             this.mTable = new sap.ui.table.Table(tableId, {
                 visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
                 firstVisibleRow: 3,
-                selectionMode: sap.ui.table.SelectionMode.Single,
-                selectionBehavior: sap.ui.table.SelectionBehavior.Row,
-                enableGrouping: true,
-                fixedBottomRowCount: 1
-
+                selectionMode: sap.ui.table.SelectionMode.MultiToggle,
+                // selectionBehavior: sap.ui.table.SelectionBehavior.Row,
+                //enableGrouping: true,
+                fixedBottomRowCount: 1,
+                rowSelectionChange: function (ev) {
+                    if (that.mLctb.cols.length < 0) return;
+                    if (!ev.getParameters().userInteraction)
+                        return;
+                    var oData = that.mTable.getContextByIndex(ev.getParameters().rowIndex);
+                    var data = oData.getProperty(oData.getPath());
+                    if (that.mLctb.cols[0].mGrouped &&
+                        data[that.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))) {
+                        that.selectGroup(data[that.mLctb.cols[1].mColName], ev.getParameters().rowIndex);
+                    }
+                }
             });
+
             var that = this;
             $("#" + this.mTable.getId() + "-vsb").scroll(function () {
                 console.log("scrolling");
@@ -43,29 +51,20 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             q.mJsonObject = q.mLctb.getData();
             return q;
         };
-
-        QueryView.prototype.createView=function () {
-            var v=[];
-            this.toolbar.removeAllContent();
-            this.toolbar.destroyContent();
-
-            this.toolbar.addContent(this.refreshCmd);
-            v.push(this.toolbar);
-
-            v.push(this.mTable);
-            return v;
-
-        };
         QueryView.prototype.constructor = QueryView;
 
 
         QueryView.prototype.setJsonStr = function (strJson) {
+            this.colMerged = false;
             this.mJsonString = strJson;
+            this.mViewSettings = {};
             this.mLctb.parse(strJson);
             this.mJosnObject = this.mLctb.getData();
 
         };
-
+        QueryView.prototype.attachOnAfterLoad = function (fn) {
+            this.mOnAfterLoad = fn;
+        }
 
         QueryView.prototype.loadData = function () {
             //resetingg,
@@ -116,29 +115,20 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
 
             if (this.mLctb.cols.length > 0 && this.mLctb.cols[0].mGrouped)
                 this.mTable.getColumns()[0].setVisible(false);
-
+            if (this.mOnAfterLoad != undefined)
+                this.mOnAfterLoad(this);
 
             this.scroll = setInterval(function () {
-                // that.mTable._oVSb.attachScroll(function () {
-                //
-                //     that.colorRows()
-                // });
-                //console.log('interval resume..');
                 that.colorRows();
                 $("#" + that.mTable.getId() + "-vsb").off("scroll");
                 $("#" + that.mTable.getId() + "-vsb").scroll(function () {
-                    // console.log('scrolling..');
                     that.colorRows();
                 });
-                // $("#" + that.mTable.getId() + "-vsb").scroll(function () {
-                //     console.log('scrolling..');
-                //     that.colorRows();
-                // });
             }, 1000);
 
         };
 
-        QueryView.prototype._sort = function (pCol) {
+        QueryView.prototype._sort = function (pCol, updateMR) {
             this.mLctb.rows.sort(function (a, b) {
                 var vl1 = a.cells[pCol].getValue();
                 var vl2 = b.cells[pCol].getValue();
@@ -147,8 +137,13 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 if (vl1 > vl2)
                     return 1;
                 return 0;
-            })
+            });
+            if (updateMR) {
+                this.mLctb.masterRows = [];
+                this.mLctb.masterRows = this.mLctb.rows.slice(0);
+            }
         };
+
         QueryView.prototype._getDistinctGroup = function (pCol, o) {
             var grp = "";
             var h = [];
@@ -161,8 +156,6 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
         };
 
         QueryView.prototype.buildJsonData = function () {
-
-
             // this.mLctb.cols[0].mGrouped = true;
             // this.mLctb.cols[1].mGrouped = true;
             if (this.mLctb.cols.length == 0)
@@ -172,16 +165,26 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             var grpCol = "";
             var grouped = false;
             // merging first and second column
-            if (this.mLctb.cols[0].mGrouped &&
+
+            if (this.colMerged == false &&
+                this.mLctb.cols[0].mGrouped &&
                 this.mLctb.cols.length > 1 &&
                 this.mLctb.cols[1].mGrouped) {
-                this.mLctb.setColumnMerge(0, 1);
-                this._sort(0);
-                var v = this.mLctb.cols[0].mColName;
+                this.mLctb.setColumnMerge(0, 1, true);
+                this.colMerged = true;
+                this._sort(0, true);
+
                 if (this.mLctb.cols.length > 1)
                     grpCol = this.mLctb.cols[1].mColName;
-                grouped = true;
+                //grouped = true;
             }
+
+            if (this.colMerged) {
+                grouped = this.colMerged;
+                grpCol = this.mLctb.cols[1].mColName;
+            }
+
+            this.applySettings();
             var o = this.mLctb.getData(true);
 
             var footer = {};
@@ -193,12 +196,12 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             var sett = sap.ui.getCore().getModel("settings").getData();
             var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
             var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+
             for (var i = 0; i < o.length; i++) {
                 cnt = 0;
                 for (var v in o[i]) {
                     if (grouped && cnt === 0) {
                         footer[v] = String.fromCharCode(4095) + "";
-
                         footerg[v] = String.fromCharCode(4095);
                         cnt++;
                         t = v;
@@ -305,7 +308,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
                 }
                 var cellValue = oModel.getProperty(this.mLctb.cols[0].mColName, currentRowContext);
 
-                if (cellValue != undefined && cellValue.startsWith(String.fromCharCode(4095))) {
+                if (cellValue != undefined && (cellValue + "").startsWith(String.fromCharCode(4095))) {
                     for (var k = 0 + cellAdd; k < cellsCount; k++) {
                         var cv = oModel.getProperty(this.mLctb.cols[k].mColName, currentRowContext);
                         if (cv != undefined && (cv + "").trim().length > 0)
@@ -313,7 +316,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
 
                     }
                 }
-                if (cellValue != undefined && cellValue.startsWith(String.fromCharCode(4094))) {
+                if (cellValue != undefined && (cellValue + "").startsWith(String.fromCharCode(4094))) {
                     this.mTable.getRows()[i].getCells()[0].$().addClass("qrGroup");
                     this.mTable.getRows()[i].getCells()[0].$().parent().parent().attr("colspan", (cellAdd + 1) + "");
                 }
@@ -387,11 +390,55 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData",],
             }, 1000);
         };
 
+        QueryView.prototype.selectGroup = function (grp, startRow) {
+            if (this.mLctb.cols.length < 0) return;
+            if (!this.mLctb.cols[0].mGrouped) return;
 
+            var that = this;
+            var end = startRow;
+            var fc = that.mLctb.cols[0].mColName;
+            var dt = this.mTable.getModel().getData();
+
+            for (var i = startRow + 1; i < dt.length; i++) {
+                if (dt[i][fc] != grp)
+                    break;
+                end++;
+            }
+
+            var slices = that.mTable.getSelectedIndices();
+            var sel = (slices.indexOf(startRow) <= -1 ? false : true);
+
+            if (sel)
+                that.mTable.addSelectionInterval(startRow, end);
+            else
+                that.mTable.removeSelectionInterval(startRow, end);
+
+
+        };
+        QueryView.prototype.setViewSettings = function (vs, refresh) {
+            this.mViewSettings = vs;
+            if (refresh)
+                this.loadData();
+
+        }
+        QueryView.prototype.applySettings = function () {
+            if (this.mViewSettings == undefined)
+                return;
+            var fls = "";
+            if (this.mViewSettings.filterStr != undefined) {
+                var df = new DataFilter();
+                df.filterString = this.mViewSettings.filterStr;
+                df.doFilter(this.mLctb);
+            } else {
+                this.mLctb.rows = [];
+                this.mLctb.rows = this.mLctb.masterRows.slice(0);
+            }
+
+
+        };
         return QueryView;
     }
-)
-;
+);
 
 
 

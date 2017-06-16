@@ -20,6 +20,18 @@ td, th {
     color: maroon !important;
 }
 
+.qtFirstLevel {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    background-color: rgba(216,201,201,1);
+}
+
+.qtSecondLevel {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    background-color: rgba(239,227,227,1);
+}
+
 @media print
 {
     table { page-break-after:auto }

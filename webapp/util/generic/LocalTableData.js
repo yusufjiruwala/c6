@@ -12,6 +12,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             this.cursorNo = 0;
             this.cols = [];
             this.rows = [];
+            this.masterRows = [];
         }
 
         LocalTableData.prototype.constructor = LocalTableData;
@@ -84,10 +85,10 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 c.getMUIHelper().display_align = Util.nvl(this.dataJson.metadata[key].display_align, "").replace("ALIGN_", "").toLowerCase();
                 c.mTitle = this.dataJson.metadata[key].descr;
                 c.mSummary = this.dataJson.metadata[key].summary;
-
+                c.mGrouped = (this.dataJson.metadata[key].grouped == "true" ? true : false);
+                c.mQtreeType = Util.nvl(this.dataJson.metadata[key].qtree_type, "");
+                c.mHideCol = Util.nvl(this.dataJson.metadata[key].hide_col, "false") == "true" ? true : false;
                 this.cols.push(c);
-
-
             }
             for (var rn in this.dataJson.data) {
                 var r = new Row(this.cols.length);
@@ -97,6 +98,9 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 }
                 this.rows.push(r);
             }
+            this.masterRows = [];
+            this.masterRows = this.rows.slice(0);
+
         };
         LocalTableData.prototype.format = function () {
             if (this.cols <= 0)
@@ -110,7 +114,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             }
             metastr += tmpstr + "]";
             if (this.rows.length == 0)
-                return metastr;
+                return metastr + "}";
             datastr = '"data": [';
             tmpstr = "";
             var rstr = "";
@@ -120,7 +124,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                     rstr += (rstr.length == 0 ? "" : ",") + '"' +
                         this.cols[c].mColName + '":' +
                         (typeof this.rows[r].cells[c].getValue() == "number" ? this.rows[r].cells[c].getValue() :
-                        '"' + this.rows[r].cells[c].getValue().replace(/\\/g, "\\\\") + '"');
+                        '"' + this.rows[r].cells[c].getValue().replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
                 }
                 rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
                 tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";
@@ -146,7 +150,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             return -1;
         };
 
-        LocalTableData.prototype.setColumnMerge = function (iCol1, iCol2) {
+        LocalTableData.prototype.setColumnMerge = function (iCol1, iCol2, updateMR) {
             for (var i = 0; i < this.rows.length; i++) {
                 var f1 = this.cols[iCol1].mColName;
                 var f2 = this.cols[iCol2].mColName;
@@ -154,12 +158,33 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 this.setFieldValue(i, f1, v);
             }
             this.deleteCol(iCol2);
+            if (updateMR) {
+                this.masterRows = [];
+                this.masterRows = this.rows.slice(0);
+            }
+
         };
 
         LocalTableData.prototype.deleteCol = function (col) {
             this.cols.splice(col, 1);
             for (var i = 0; i < this.rows.length; i++)
                 this.rows[i].cells.splice(col, 1);
+        };
+
+        LocalTableData.prototype.sortCol = function (pColNo, updateMR) {
+            this.rows.sort(function (a, b) {
+                var vl1 = a.cells[pColNo].getValue();
+                var vl2 = b.cells[pColNo].getValue();
+                if (vl1 < vl2)
+                    return -1;
+                if (vl1 > vl2)
+                    return 1;
+                return 0;
+            });
+            if (updateMR) {
+                this.masterRows = [];
+                this.masterRows = this.rows.slice(0);
+            }
         };
 
         return LocalTableData;
