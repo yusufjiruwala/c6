@@ -50,6 +50,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             var row = this.rows[rowno];
             return row.cells[cp].setValue(value);
         };
+
         LocalTableData.prototype.setFieldDisplay = function (rowno, fieldName, value) {
             var cp = this.getColPos(fieldName);
             if (cp < 0)
@@ -68,9 +69,9 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             } else {
                 dt = this.dataJson.data;
             }
-
             return dt;
         };
+
         LocalTableData.prototype.parse = function (strData) {
             this.resetData();
             this.dataJson = JSON.parse(strData);
@@ -81,9 +82,9 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 c.mColpos = key;
                 c.getMUIHelper().data_type = this.dataJson.metadata[key].data_type;
                 c.getMUIHelper().display_format = this.dataJson.metadata[key].display_format;
-                c.getMUIHelper().display_width = this.dataJson.metadata[key].display_width * 2;
+                c.getMUIHelper().display_width = Util.nvl(this.dataJson.metadata[key].display_width, 75) * 2;
                 c.getMUIHelper().display_align = Util.nvl(this.dataJson.metadata[key].display_align, "").replace("ALIGN_", "").toLowerCase();
-                c.mTitle = this.dataJson.metadata[key].descr;
+                c.mTitle = Util.nvl(this.dataJson.metadata[key].descr, c.mColName);
                 c.mSummary = this.dataJson.metadata[key].summary;
                 c.mGrouped = (this.dataJson.metadata[key].grouped == "true" ? true : false);
                 c.mQtreeType = Util.nvl(this.dataJson.metadata[key].qtree_type, "");

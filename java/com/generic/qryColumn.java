@@ -40,6 +40,8 @@ public class qryColumn implements Serializable {
 	private int datatype = 0;
 	private boolean canEdit = true;
 
+	public ColumnProperty columnUIProperties = null;
+
 	public boolean isCanEdit() {
 		return canEdit;
 	}
@@ -71,8 +73,7 @@ public class qryColumn implements Serializable {
 	}
 
 	public boolean isDateTime() {
-		if (datatype == Types.DATE || datatype == Types.TIME
-				|| datatype == Types.TIMESTAMP) {
+		if (datatype == Types.DATE || datatype == Types.TIME || datatype == Types.TIMESTAMP) {
 			return true;
 		}
 		return false;

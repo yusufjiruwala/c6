@@ -1106,12 +1106,13 @@ public class utils {
 
 	}
 
-	public static String getJSONCP(ColumnProperty cp) throws Exception {
+	public static String getJSONCP(ColumnProperty cp)  {
 		if (cp == null)
 			return "";
 		String ret = "";
 
 		ret = getJSONStr("data_type", cp.data_type, false);
+		ret += "," + getJSONStr("colname", cp.colname, false);
 		ret += "," + getJSONStr("display_format", cp.display_format, false);
 		ret += "," + getJSONStr("display_align", cp.display_align, false);
 		ret += "," + getJSONStr("summary", cp.summary, false);
@@ -1120,7 +1121,7 @@ public class utils {
 		ret += "," + getJSONStr("grouped", (cp.isGrouped ? "true" : "false"), false);
 		ret += "," + getJSONStr("qtree_type", cp.qtree_type, false);
 		ret += "," + getJSONStr("hide_col", (cp.hide_col ? "true" : "false"), false);
-
+		
 		return ret;
 	}
 

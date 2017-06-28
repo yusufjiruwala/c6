@@ -26,7 +26,7 @@ public class ColumnProperty {
 	public static final String ALIGN_CENTER = "ALIGN_CENTER";
 	public String colname = "";
 	public String display_type = "";
-	public int display_width = 0;
+	public int display_width = 70;
 	public String descr = "";
 	public int pos = 0;
 	public String display_align = "";

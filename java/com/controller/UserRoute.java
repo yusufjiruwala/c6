@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.generic.DBClass;
+import com.generic.Parameter;
 import com.generic.QueryExe;
 import com.generic.localTableModel;
 import com.generic.qryColumn;
@@ -183,6 +185,83 @@ public class UserRoute {
 		return new ResponseEntity<SQLJson>(sql, HttpStatus.OK);
 	}
 
+	@RequestMapping(value = "/sqlmetadata", method = RequestMethod.POST)
+	public ResponseEntity<SQLJson> testm(@RequestBody SQLJson sql) {
+		sql.setRet("ok");
+		String retdata = "";
+		try {
+			Connection con = instanceInfo.getmDbc().getDbConnection();
+			ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);
+			retdata = utils.getJSONsqlMetaData(rs, con, "", "");
+			sql.setData(retdata);
+			sql.setRet("SUCCESS");
+			rs.close();
+		} catch (SQLException e) {
+			sql.setRet("server_error : " + e.getMessage());
+			sql.setData("");
+			e.printStackTrace();
+		}
+
+		return new ResponseEntity<SQLJson>(sql, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/gaugedata", method = RequestMethod.GET)
+	public String gaugedata(@RequestParam Map<String, String> params) {
+		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
+		String retdata = "";
+		try {
+
+			String sq = "select *from C6_DB_GAUGES where profiles like '%\""
+					+ instanceInfo.getMmapVar().get("PROFILENO") + "\"%' ORDER BY KEYFLD";
+			Connection con = instanceInfo.getmDbc().getDbConnection();
+			localTableModel lctb = new localTableModel();
+			lctb.createDBClassFromConnection(con);
+			lctb.executeQuery(sq, true);
+			double val = 0;
+			for (int i = 0; i < lctb.getRowCount(); i++) {
+				String sqv = utils.nvl(lctb.getFieldValue(i, "SQL_VAL"), "");
+				QueryExe qe = new QueryExe(sqv, con);
+				for (String key : params.keySet()) {
+					qe.setParaValue(key.replace("_para_", ""), params.get(key));
+					if (params.get(key).startsWith("@"))
+						qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+				}
+				ResultSet rs = qe.executeRS();
+				if (rs != null) {
+					rs.first();
+					lctb.setFieldValue(i, "SQL_VAL", rs.getDouble(1));
+					rs.close();
+					qe.close();
+				}
+
+				if (!utils.nvl(lctb.getFieldValue(i, "PRIOR_FUNC_VAL"), "").isEmpty()) {
+					sqv = utils.nvl(lctb.getFieldValue(i, "PRIOR_FUNC_VAL"), "");
+					qe = new QueryExe(sqv, con);
+					for (String key : params.keySet()) {
+						qe.setParaValue(key.replace("_para_", ""), params.get(key));
+						if (params.get(key).startsWith("@"))
+							qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+					}
+					rs = qe.executeRS();
+					if (rs != null) {
+						rs.first();
+						lctb.setFieldValue(i, "PRIOR_FUNC_VAL", rs.getDouble(1));
+						rs.close();
+						qe.close();
+					}
+				}
+			}
+
+			retdata = lctb.getJSONData();
+
+		} catch (SQLException | ParseException e) {
+			e.printStackTrace();
+
+		}
+
+		return retdata;
+	}
+
 	@RequestMapping(value = "/sqlexe", method = RequestMethod.POST)
 	public ResponseEntity<SQLJson> sqlExe(@RequestBody SQLJson sql) {
 		sql.setRet("ok");
@@ -234,9 +313,9 @@ public class UserRoute {
 				+ "' and  group_name is null and iswhere is null and cp_hidecol is null"
 				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg.trim() + "')"
 				+ " and field_name in (" + cols + ")" + "  order by indexno ";
-		qrm.data_cols.createDBClassFromConnection(con);		
+		qrm.data_cols.createDBClassFromConnection(con);
 		qrm.data_cols.executeQuery(sq, true);
-		
+
 		ret = qrm.buildJson(rid, params);
 
 		return ret;
@@ -310,7 +389,7 @@ public class UserRoute {
 			for (String key : params.keySet()) {
 				if (key.startsWith("_flds_0_")) {
 					lstf.add(key.replace("_flds_0_", ""));
-					flds += (flds.isEmpty() ? "" : ",") + " '' " + key.replace("_flds_0_", "");					
+					flds += (flds.isEmpty() ? "" : ",") + " '' " + key.replace("_flds_0_", "");
 				}
 			}
 
@@ -341,6 +420,57 @@ public class UserRoute {
 
 		}
 
+		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where keyfld=" + params.get("_keyfld"), con);
+		if (rs != null) {
+			rs.first();
+			if (rs.getString("REP_TYPE").equals("TABLE")) {
+				if (!utils.nvl(rs.getString("groups"), "").isEmpty()) {
+					String[] sp = utils.nvl(rs.getString("groups"), "").split(",");
+					for (String s : sp) {
+						qryColumn qc = lctb.getColByName(s);
+						lctb.applyDefaultCP(qc);
+						qc.columnUIProperties.isGrouped = true;
+					}
+				}
+				if (!utils.nvl(rs.getString("hidden_fields"), "").isEmpty()) {
+					String[] sp = utils.nvl(rs.getString("hidden_fields"), "").split(",");
+					for (String s : sp) {
+						qryColumn qc = lctb.getColByName(s);
+						lctb.applyDefaultCP(qc);
+						qc.columnUIProperties.hide_col = true;
+					}
+				}
+				if (!utils.nvl(rs.getString("sum_fields"), "").isEmpty()) {
+					String[] sp = utils.nvl(rs.getString("sum_fields"), "").split(",");
+					for (String s : sp) {
+						qryColumn qc = lctb.getColByName(s);
+						lctb.applyDefaultCP(qc);
+						qc.columnUIProperties.summary = "SUM";
+					}
+				}
+				if (!utils.nvl(rs.getString("WIDTH_FIELDS"), "").isEmpty()) {
+					String[] sp = utils.nvl(rs.getString("WIDTH_FIELDS"), "").split(",");
+					for (String s : sp) {
+						String[] ss = s.split("=");
+						qryColumn qc = lctb.getColByName(ss[0]);
+						lctb.applyDefaultCP(qc);
+						qc.columnUIProperties.display_width = Integer.valueOf(ss[1]);
+					}
+				}
+				if (!utils.nvl(rs.getString("FORMAT_FIELDS"), "").isEmpty()) {
+					String[] sp = utils.nvl(rs.getString("FORMAT_FIELDS"), "").split(",");
+					for (String s : sp) {
+						String[] ss = s.split("=");
+						qryColumn qc = lctb.getColByName(ss[0]);
+						lctb.applyDefaultCP(qc);
+						qc.columnUIProperties.display_format = ss[1];
+					}
+				}
+
+			}
+			rs.close();
+		}
+
 		for (int i = 0; i < lctb.getVisbleQrycols().size(); i++) {
 			qryColumn qc = lctb.getVisbleQrycols().get(i);
 			if (qc.isNumber() && qc.getColname().endsWith("_BAL")) {
@@ -367,7 +497,8 @@ public class UserRoute {
 
 			}
 		}
-		lctb.setShortDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT")+"");
+
+		lctb.setShortDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
 		ret = lctb.getJSONData();
 		return ret;
 	}

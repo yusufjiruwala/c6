@@ -27,7 +27,8 @@ sap.ui.controller("chainel1.SplitPage", {
         var valx = event.getParameters().selectedItem.getCustomData()[0];
         //console.log(valx);
         //sap.m.MessageToast.show(valx.getKey());
-        sap.ui.getCore().byId("SplitPage").setProfile({"code": valx.getKey(), "name": val});
+        this.getView().setProfile({"code": valx.getKey(), "name": val});
+        sap.ui.getCore().byId("pgDashboardView").refreshData(true);
 
     }
 

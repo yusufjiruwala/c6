@@ -376,6 +376,16 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     s += ch;
 
                 return s;
+            },
+            toOraDateString: function (dt) {
+                var sett = sap.ui.getCore().getModel("settings").getData();
+
+                if (typeof dt == "string") {
+                    return "to_date(" + dt + ",'" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
+                } else if (dt instanceof Date) {
+                    var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+                    return "to_date(" + sf.format(dt) + ",'" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
+                }
             }
         };
 

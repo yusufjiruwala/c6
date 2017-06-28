@@ -128,7 +128,7 @@ public class QuickRepMetaData {
 			subreps = utils.getJSONsql("subreps", rs, con, "", "");
 		ret += "\"cols\":" + "[" + cols + "]";
 		ret += ",\"groups\":[" + grps + "]";
-		ret += "," + pms;
+		ret += (pms.trim().isEmpty()?"":",") + pms;
 		if (subreps.trim().length() > 0)
 			ret += "," + subreps;
 		return "{" + ret + "}";
@@ -654,12 +654,13 @@ public class QuickRepMetaData {
 		ResultSetMetaData rsm = rs.getMetaData();
 		for (int i = 0; i < rsm.getColumnCount(); i++) {
 
-			tmp1 = utils.getJSONStr("colname", rsm.getColumnName(i + 1), false);
+			// tmp1 = utils.getJSONStr("colname", rsm.getColumnName(i + 1),
+			// false);
 			cp = utils.findColByCol(rsm.getColumnName(i + 1), listcols);
 			scp = utils.getJSONCP(cp);
-			tmp1 += "," + scp;
+			//tmp1 += scp;
 
-			met += (met.length() > 0 ? "," : "") + "{" + tmp1 + "}";
+			met += (met.length() > 0 ? "," : "") + "{" + scp + "}";
 
 		}
 

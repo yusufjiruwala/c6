@@ -986,12 +986,31 @@ public class localTableModel implements TableModel, Serializable {
 		}
 
 	}
+	public void applyDefaultCP(qryColumn qc){
+		applyDefaultCP(qc,false);
+	}
+	
+	public void applyDefaultCP(qryColumn qc,boolean recreate) {
+		ColumnProperty cp =qc.columnUIProperties;
+		if (cp==null || recreate) cp=new ColumnProperty();
+		cp.colname = qc.getColname();
+		cp.data_type = (qc.isDateTime() ? "DATE" : qc.isNumber() ? "NUMBER" : "VARCHAR2");
+		cp.descr = cp.colname;
+		cp.display_align = (qc.isNumber() ? "RIGHT" : "LEFT");
+		qc.columnUIProperties = cp;
+
+	}
 
 	public String getJSONMetaData() {
 		String md1 = "";
 		String md2 = "";
 		for (qryColumn qc : visbleQrycols) {
-			md2 = "{ \"colname\":\"" + qc.getColname() + "\",\"width\":\"30\"}";
+			ColumnProperty cp = qc.columnUIProperties;
+			if (qc.columnUIProperties == null) {
+				applyDefaultCP(qc);
+				cp=qc.columnUIProperties;
+			}
+			md2 = "{"+utils.getJSONCP(cp)+"}";
 			md1 += (md1.length() > 0 ? "," : "") + md2;
 		}
 		return "\"metadata\":[ " + md1 + " ]";

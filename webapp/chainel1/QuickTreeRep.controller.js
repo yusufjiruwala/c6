@@ -80,6 +80,10 @@ sap.ui.controller("chainel1.QuickTreeRep", {
             this.show_graph_sql(rep);
             return;
         }
+        if (rep.REP_TYPE == "TABLE") {
+            this.show_query(rep);
+            return;
+        }
 
         var view = this.getView();
         var that = this;
@@ -129,6 +133,11 @@ sap.ui.controller("chainel1.QuickTreeRep", {
             this.show_graph(rep);
             return;
         }
+        if (rep.REP_TYPE == "TABLE") {
+            this.show_query(rep);
+            return;
+        }
+
 
         var view = this.getView();
         var that = this;
@@ -363,7 +372,90 @@ sap.ui.controller("chainel1.QuickTreeRep", {
 
 
         view.GraphPage.addContent(oVizFrame);
+    },
+    show_query: function (rep) {
+        var view = this.getView();
+        var that = this;
+        var mTree = view.qv.mTree;
+
+        view.GraphPage.removeAllContent();
+        view.GraphPage.destroyContent();
+        (view.byId("gp") != undefined ? view.byId("gp").destroy() : null);
+        if (this.subqry === undefined) {
+            var QueryView = sap.ui.require("sap/ui/chainel1/util/generic/QueryView");
+            this.subqry = new QueryView(view.createId("subqry"));
+        }
+
+        view.GraphPage.addContent(this.subqry.mTable);
+
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+        var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+
+
+        //get data according to dimensions and measures.
+        var selectedIndices = mTree.getSelectedIndices();
+        var selectedEntries = [];
+        var tableData = mTree.getModel().getData();
+        for (var i = 0; i < selectedIndices.length; i++) {
+            var oData = mTree.getContextByIndex(selectedIndices[i]);
+            var data = oData.getProperty(oData.getPath());
+            var fnd = true;
+            // do not add selectedEntries if subgroup or summary line..
+            if (view.qv.mLctb.cols[0].mGrouped && (
+                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+                ))
+                fnd = false;
+            if (fnd)
+                selectedEntries.push(data);
+        }
+        var dt = {};
+        var gData = [];
+        var ps = "";
+        if (selectedEntries.length <= 0) {
+            sap.m.MessageToast.show("No any record selected !");
+            return;
+        }
+        var ia = "";
+
+        for (var i = 0; i < view.colData.parameters.length; i++) {
+            var vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+            if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
+                vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));
+            if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
+                vl = view.byId("para_" + ia + i).getSelectedItem().getKey();
+
+            ps += (ps.length > 0 ? "&" : "") + "_para_" + view.colData.parameters[i].PARAM_NAME + "=" + vl;
+        }
+
+
+        var rcv_flds = Util.nvl(rep.RCV_FLDS, "").split(",");  // finding out to recieve how many fields in array ...
+
+        for (var i = 0; i < selectedEntries.length; i++)
+            for (var k in selectedEntries[i]) {
+                if (k == "_rowid") continue;
+                if (rcv_flds.indexOf(k) < 0) continue;
+
+                var s = "_flds_" + i + "_" + k + "=" + selectedEntries[i][k];
+                if (view.qv.mLctb.getColByName(k).getMUIHelper().data_type === "date")
+                    s = "_flds_" + i + "_" + k + "=@" + sdf.format(selectedEntries[0][k]);
+                if (view.qv.mLctb.getColByName(k).getMUIHelper().data_type === "number")
+                    s = "_flds_" + i + "_" + k + "=" + df.formatBack(selectedEntries[0][k]);
+
+                ps += (ps.length > 0 ? "&" : "") + s;
+            }
+        ps += (ps.length > 0 ? "&" : "") + "_total_no=" + selectedEntries.length;
+
+        ps += (ps.length > 0 ? "&" : "") + "_keyfld=" + rep.KEYFLD;
+        Util.doAjaxGet("exe?command=get-graph-query&" + (ps), "", true).done(function (data) {
+            //gData = JSON.parse(data).data;
+            that.subqry.setJsonStr(data);
+            that.subqry.loadData();
+
+        });
     }
+
 
 })
 ;

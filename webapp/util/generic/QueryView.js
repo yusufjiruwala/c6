@@ -102,6 +102,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
                 col.push(c);
                 c.setMenu(null);
                 this.mTable.addColumn(c);
+                if (cc.mHideCol)
+                    c.setVisible(false);
+
 
             }
             this.col = col;
@@ -293,7 +296,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
                 console.log('stopped interval scroll..');
                 return;
             }
-
+            for (var i = 0; i < this.mLctb.cols.length; i++)
+                if (this.mLctb.cols[i].mHideCol)
+                    ++cellAdd;
             var currentRowContext;
             for (var i = 0; i < rowCount; i++) {
 
@@ -302,16 +307,19 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
                 (this.mTable.getRows()[i]).$().removeClass("qrGroup");
                 this.mTable.getRows()[i].getCells()[0].$().parent().parent().removeAttr("colspan");
 
-                for (var j = 0 + cellAdd; j < cellsCount; j++) {
-                    this.mTable.getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("yellow");
-                    this.mTable.getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("qrGroup");
-                }
+                for (var j = 0 + cellAdd; j < cellsCount; j++)
+                    if (this.mTable.getRows()[i].getCells()[j - cellAdd] != undefined) {
+                        this.mTable.getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("yellow");
+                        this.mTable.getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("qrGroup");
+                    }
+
                 var cellValue = oModel.getProperty(this.mLctb.cols[0].mColName, currentRowContext);
 
                 if (cellValue != undefined && (cellValue + "").startsWith(String.fromCharCode(4095))) {
                     for (var k = 0 + cellAdd; k < cellsCount; k++) {
                         var cv = oModel.getProperty(this.mLctb.cols[k].mColName, currentRowContext);
-                        if (cv != undefined && (cv + "").trim().length > 0)
+                        if (cv != undefined && (cv + "").trim().length > 0 &&
+                            this.mTable.getRows()[i].getCells()[k - cellAdd] != undefined)
                             this.mTable.getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("yellow");
 
                     }

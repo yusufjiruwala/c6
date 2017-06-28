@@ -101,17 +101,17 @@ sap.ui.jsview("chainel1.SplitPage", {
             })
         ;
 
-        this.oPage2 = new sap.m.Page("pgDashboard", {
-
-            showNavButton: sap.ui.Device.system.phone,
-            navButtonPress: function () {
-                app.toMaster("pgMenus", "flip");
-            },
-            title: "Dashboard",
-            content: [this.table]
-
-        });
-
+        // this.oPage2 = new sap.m.Page("pgDashboard", {
+        //
+        //     showNavButton: sap.ui.Device.system.phone,
+        //     navButtonPress: function () {
+        //         app.toMaster("pgMenus", "flip");
+        //     },
+        //     title: "Dashboard",
+        //     content: [this.table]
+        //
+        // });
+        this.oPage2=sap.ui.jsview("pgDashboardView", "chainel1.dashboard");
 
         this.oSplitApp.addMasterPage(this.oPage1);
         this.oSplitApp.addDetailPage(this.oPage2);
