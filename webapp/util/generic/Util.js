@@ -59,6 +59,32 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                 }
                 return jQuery.ajax(params);
             },
+            doXhr: function (path,
+                             async, onld) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', path, async);
+                xhr.responseType = 'arraybuffer';
+                xhr.onload = onld;
+                xhr.send();
+                return xhr;
+            },
+            doAjaxPost: function (path,
+                                 content,
+                                 async) {
+                var params = {
+                    url: "/" + path,
+                    context: this,
+                    cache: false
+                };
+                params["type"] = "POST";
+                if (async === false) {
+                    params["async"] = async;
+                }
+                if (content) {
+                    params["data"] = content;
+                }
+                return jQuery.ajax(params);
+            },
             doAjaxJson: function (path,
                                   content,
                                   async) {
@@ -79,6 +105,13 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                 }
                 // console.log(content);
                 return jQuery.ajax(params);
+            },
+            getServerValue: function (str) {
+                var ret;
+                this.doAjaxGet(str, null, false).done(function (data) {
+                    ret = JSON.parse(data).return;
+                });
+                return ret;
             },
             nvl: function (val1, val2) {
                 return ((val1 == null || val1 == undefined || val1.length == 0) ? val2 : val1);
@@ -249,13 +282,13 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                 var sett = sap.ui.getCore().getModel("settings").getData();
                 var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
                 var combobox = sap.m.ComboBox;
+                var searchfield = sap.m.SearchField;
                 var input = sap.m.Input;
                 var datepicker = sap.m.DatePicker;
                 var label = sap.m.Label;
                 //if (view.advance_para==und)
 
                 for (var i = 0; i < dtx.parameters.length; i++) {
-
                     var p, pl, vls;
                     vls = "";
                     if (dtx.parameters[i].PARA_DEFAULT != undefined)
@@ -265,19 +298,65 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     (thatView.byId("lblpara_" + ia + i) != undefined ? thatView.byId("lblpara_" + ia + i).destroy() : null);
                     if (dtx.parameters[i].LISTNAME != undefined && dtx.parameters[i].LISTNAME.toString().trim().length > 0) {
                         var dtlist = dtx.parameters[i].LISTNAME;
-                        p = new combobox(thatView.createId("para_" + ia + i),
+
+                        p = new searchfield(thatView.createId("para_" + ia + i),
                             {
-                                items: {
-                                    path: "/",
-                                    template: new sap.ui.core.ListItem({
-                                        text: "{TITLE} - {CODE}",
-                                        key: "{CODE}"
-                                    }),
-                                    templateShareable: true
-                                },
-                                selectedKey: vls
+                                value: vls,
+                                width: "100%",
+                                customData: [{key: dtlist}],
+                                search: function (e) {
+
+                                    if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed)
+                                        return;
+                                    var src = e.getSource();
+                                    var dtlist2 = src.getCustomData()[0].getKey();
+                                    var q = e.getParameters("query").query;
+                                    if ((q == undefined || q.trim() == "") && (thatView.searchNullFirstTime == undefined || thatView.searchNullFirstTime == false)) {
+                                        thatView.searchNullFirstTime = true;
+                                        return;
+                                    }
+
+                                    thatView.searchNullFirstTime = false;
+
+                                    var v = dtlist2.replace(/&SEARCHTITLE/g, q).replace(/&SEARCHCODE/g, "%");
+                                    if (q != undefined && q.endsWith("%")) {
+                                        v = dtlist2.replace(/&SEARCHCODE/g, q);
+                                        v = v.replace(/&SEARCHTITLE/g, '');
+                                    }
+
+                                    Util.doAjaxJson("sqlmetadata", {
+                                        sql: v,
+                                        ret: "NONE",
+                                        data: null
+                                    }, false).done(function (data) {
+                                        console.log(data);
+                                        var dt = JSON.parse("{" + data.data + "}").data;
+                                        sap.ui.getCore().setModel(new sap.ui.model.json.JSONModel(dt), "searchList");
+                                        var t = {
+                                            frag_liveChange: function (event) {
+                                                var val = event.getParameter("value");
+                                                var filter = new sap.ui.model.Filter("TITLE", sap.ui.model.FilterOperator.Contains, val);
+                                                var binding = event.getSource().getBinding("items");
+                                                binding.filter(filter);
+                                            },
+                                            frag_confirm: function (event) {
+                                                var val = event.getParameters().selectedItem.getTitle();
+                                                var valx = event.getParameters().selectedItem.getCustomData()[0];
+                                                //console.log(valx+"- "+val);
+                                                sap.m.MessageToast.show(valx.getKey());
+                                                src.setValue(valx.getKey());
+
+                                            }
+                                        };
+                                        var oFragment = sap.ui.jsfragment("chainel1.searchList", t);
+                                        oFragment.open();
+
+
+                                    });
+                                }
                             }).addStyleClass(st);
-                        p.setModel(new sap.ui.model.json.JSONModel(dtlist));
+                        //p.setModel(new sap.ui.model.json.JSONModel(dtlist));
+
 
                     } else {
                         p = new input(thatView.createId("para_" + ia + i), {
@@ -356,9 +435,11 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                                 }
                             if (cols.indexOf(view.colData.subreps[i].MEASURES) <= -1)
                                 fnd = false;
-                        } else if (view.colData.subreps[i].REP_TYPE == "SQL") {
+                        } else if (view.colData.subreps[i].REP_TYPE == "SQL" || view.colData.subreps[i].REP_TYPE == "PDF" ) {
                             fnd = true;
-                            // var rf=Util.nvl(view.colData.subreps[i].RCV_FLDS,"").split(",");
+                        } else if (view.colData.subreps[i].REP_TYPE.startsWith("FIX_")) {
+                            fnd = false;
+                            //break;
                         }
                         if (fnd)
                             menu11.addItem(new sap.m.MenuItem({
@@ -386,11 +467,92 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
                     return "to_date(" + sf.format(dt) + ",'" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
                 }
+            },
+            createGrid2Obj: function (grid, layoutData1, layoutData2, lblStr, inputObjClass) {
+                var ld1 = layoutData1, ld2 = layoutData2;
+                if (typeof ld1 == "string")
+                    ld1 = {span: ld1};
+                if (typeof ld2 == "string")
+                    ld2 = {span: ld2};
+
+                var o = new inputObjClass({width: "100%"});
+                o.setLayoutData(new sap.ui.layout.GridData(ld2));
+                var l = new sap.m.Label({text: lblStr, layoutData: ld1});
+                grid.addContent(l);
+                grid.addContent(o);
+                return {label: l, obj: o};
+            },
+            fillCombo: function (combo, sq, async) {
+                var sq2 = {
+                    sql: sq,
+                    ret: "NONE",
+                    data: null
+                };
+                if (typeof sq == "string")
+                    this.doAjaxJson("sqldata", sq2, (async == undefined ? false : async)).done(function (data) {
+                        if (data.ret != "SUCCESS") {
+                            sap.m.MessageToast.show(data.ret);
+                            return;
+                        }
+                        for (var i = combo.getItems().length; i > -1; i--)
+                            if (combo.getItems()[i] != undefined) combo.getItems()[i].destroy();
+                        combo.removeAllItems();
+                        combo.destroyItems();
+                        combo.destroyAggregation("items");
+                        var dtx = JSON.parse("{" + data.data + "}").data;
+                        combo.setModel(null);
+                        combo.setModel(new sap.ui.model.json.JSONModel(dtx));
+                        var f1 = "", f2 = "", cnt = -1;
+                        if (dtx != null && dtx.length > 0)
+                            for (var k in dtx[0]) {
+                                cnt++;
+                                if (cnt == 0)
+                                    f1 = k;
+                                if (cnt == 1)
+                                    f2 = k;
+                            }
+                        f2 = Util.nvl(f2, f1);
+                        var k = new sap.ui.core.ListItem({text: "{" + f2 + "}", key: "{" + f1 + "}"});
+                        combo.bindAggregation("items", "/", k);
+                        if (combo.getItems().length > 0)
+                            combo.setSelectedItem(combo.getItems()[0]);
+                    });
+                if (typeof sq == "object") {
+                    var dtx = sq;
+                    var f1 = "", f2 = "", cnt = -1;
+                    if (dtx.length > 0)
+                        for (var k in dtx[0]) {
+                            cnt++;
+                            if (cnt == 0)
+                                f1 = k;
+                            if (cnt == 1)
+                                f2 = k;
+                        }
+                    f2 = Util.nvl(f2, f1);
+                    combo.setModel(new sap.ui.model.json.JSONModel(dtx));
+                    var k = new sap.ui.core.ListItem({text: "{" + f2 + "}", key: "{" + f1 + "}"});
+                    combo.bindAggregation("items", "/", k);
+                }
+                if (combo.getItems().length > 0)
+                    combo.setSelectedItem(combo.getItems()[0]);
+
+            },
+            setComboValue: function (combo, value) {
+                for (var i = 0; i < combo.getItems().length; i++) {
+                    if (combo.getItems()[i].getKey() == value) {
+                        combo.setSelectedItem(combo.getItems()[i]);
+                        combo.fireSelectionChange();
+                        break;
+                    }
+
+                }
             }
+
         };
 
 
         return Util;
-    });
+    })
+;
 
 

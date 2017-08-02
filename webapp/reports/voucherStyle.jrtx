@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperTemplate PUBLIC "-//JasperReports//DTD Template//EN" "http://jasperreports.sourceforge.net/dtds/jaspertemplate.dtd">
+
+<jasperTemplate>
+	<style name="strColHeader" fontName="Times New Roman" fontSize="12" isBold="false" isUnderline="false"/>
+	<style name="strColHeader_color" fontName="Times New Roman" fontSize="12" isBold="false" isUnderline="false"/>
+	<style name="strDetails" vAlign="Middle" fontName="Times New Roman" fontSize="10"/>
+	<style name="strSummary" fontName="Times New Roman" fontSize="12"/>
+	<style name="strTitle" forecolor="#006666" hAlign="Center" vAlign="Middle" fontName="Times New Roman" fontSize="12" isBold="true" isUnderline="true"/>
+	<style name="strCompanyName" forecolor="#006666" hAlign="Left" vAlign="Middle" fontName="DejaVu Serif" fontSize="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+	<style name="strCompanySpec" forecolor="#006666" backcolor="#FFFFFF" fill="Solid" fontName="DejaVu Serif" fontSize="8" isBold="true"/>
+	<style name="numQtyRight" hAlign="Right" vAlign="Middle" fontName="Times New Roman" fontSize="10" isBold="false"/>
+	<style name="numQtyCenter" hAlign="Center" vAlign="Middle" pattern="###0.##;-###0.##" fontName="Times New Roman" fontSize="10"/>
+	<style name="numMoney" hAlign="Right" vAlign="Middle" pattern="#,##0.000;-#,##0.000" fontName="Times New Roman" fontSize="10"/>
+	<style name="frameColHeader" fill="Solid">
+		<box>
+			<topPen lineWidth="1.25"/>
+			<bottomPen lineWidth="1.25"/>
+		</box>
+	</style>
+	<style name="frameDetails">
+		<box>
+			<bottomPen lineWidth="0.75"/>
+		</box>
+	</style>
+	<style name="frameSummary">
+		<box>
+			<topPen lineWidth="0.75"/>
+		</box>
+	</style>
+	<style name="strHeader" isBlankWhenNull="true" fontName="Times New Roman" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+	<style name="labelHeader" hAlign="Left" fontName="Times New Roman" fontSize="12" isBold="true" isItalic="false" isUnderline="true" isStrikeThrough="false"/>
+	<style name="headerColored" mode="Opaque" backcolor="#FFFFCC"/>
+	<style name="field" fontName="DejaVu Sans">
+		<box topPadding="2" leftPadding="3">
+			<pen lineWidth="0.25"/>
+			<topPen lineWidth="0.25"/>
+			<leftPen lineWidth="0.25"/>
+			<bottomPen lineWidth="0.25"/>
+			<rightPen lineWidth="0.25"/>
+		</box>
+	</style>
+	<style name="labelPara" vAlign="Middle" fontName="Times New Roman" fontSize="10"/>
+	<style name="strPara" vAlign="Middle" fontName="Times New Roman" fontSize="10">
+		<box leftPadding="5">
+			<pen lineWidth="0.25"/>
+			<topPen lineWidth="0.5" lineColor="#999999"/>
+			<leftPen lineWidth="0.5" lineColor="#999999"/>
+			<bottomPen lineWidth="0.5" lineColor="#999999"/>
+			<rightPen lineWidth="0.5" lineColor="#999999"/>
+		</box>
+	</style>
+</jasperTemplate>

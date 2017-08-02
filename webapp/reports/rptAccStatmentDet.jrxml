@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAccStatmentDet" language="groovy" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7a2fff24-9733-4a66-9dff-e9221e0a4c93">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<style name="Row_lvl" mode="Opaque" markup="none" fontSize="10">
+		<box leftPadding="3" rightPadding="3">
+			<pen lineWidth="0.25"/>
+			<topPen lineWidth="0.25"/>
+			<leftPen lineWidth="0.25"/>
+			<bottomPen lineWidth="0.25"/>
+			<rightPen lineWidth="0.25"/>
+		</box>
+	</style>
+	<queryString>
+		<![CDATA[select *from g_l
+order by accno,pos]]>
+	</queryString>
+	<field name="ACCNO" class="java.lang.String"/>
+	<field name="NAME" class="java.lang.String"/>
+	<field name="VOU_DATE" class="java.sql.Timestamp"/>
+	<field name="DESCR" class="java.lang.String"/>
+	<field name="VOU_NO" class="java.math.BigDecimal"/>
+	<field name="TYPE_DESCR" class="java.lang.String"/>
+	<field name="DEBIT" class="java.math.BigDecimal"/>
+	<field name="CREDIT" class="java.math.BigDecimal"/>
+	<field name="BALANCE" class="java.math.BigDecimal"/>
+	<field name="PATH" class="java.lang.String"/>
+	<field name="DRTOT" class="java.math.BigDecimal"/>
+	<field name="CRTOT" class="java.math.BigDecimal"/>
+	<field name="VOU_CODE" class="java.math.BigDecimal"/>
+	<field name="VOU_TYPE" class="java.math.BigDecimal"/>
+	<field name="KEYFLD" class="java.math.BigDecimal"/>
+	<field name="POS" class="java.math.BigDecimal"/>
+	<field name="USERNM" class="java.lang.String"/>
+	<field name="COSTCENT" class="java.lang.String"/>
+	<field name="FCCODE" class="java.lang.String"/>
+	<field name="FC_AMT" class="java.math.BigDecimal"/>
+	<field name="FC_RATE" class="java.math.BigDecimal"/>
+	<field name="FC_MAIN" class="java.lang.String"/>
+	<field name="FC_MAIN_RATE" class="java.math.BigDecimal"/>
+	<columnHeader>
+		<band height="15">
+			<staticText>
+				<reportElement style="strColHeader_color" x="13" y="0" width="82" height="15" uuid="809b075a-cc23-4e6e-b6d3-c4fcd9f5a06e"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" x="204" y="0" width="151" height="15" uuid="79d246ee-210a-4df0-8e94-54467ea1bd95"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Descr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="146" y="0" width="58" height="15" uuid="6fd8ec00-d357-4ca3-b602-8c1236dd8b33"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vou No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="355" y="0" width="75" height="15" uuid="db9fef2e-982c-4049-93ba-df0dfd3ea4c4"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Debit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="505" y="0" width="75" height="15" uuid="d4dc9305-68bf-4811-8be8-2028c21f1170"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Balance]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="430" y="0" width="75" height="15" uuid="ab6ec39b-3908-4761-aa24-dbb7b9a02deb"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Credit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="95" y="0" width="51" height="15" uuid="1d4efcfc-0da6-4a2d-a7f4-d9973535607f"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vou Type]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13" splitType="Stretch">
+			<frame>
+				<reportElement stretchType="RelativeToBandHeight" x="13" y="0" width="562" height="13" uuid="5a4d0d38-16e8-4d05-b194-f157431e4d01"/>
+				<box>
+					<bottomPen lineWidth="0.5" lineColor="#000000"/>
+				</box>
+			</frame>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="strDetails" mode="Transparent" x="505" y="0" width="75" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="b41a56bd-5335-4e94-b62e-52692f040924"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25" lineColor="#000000"/>
+					<topPen lineWidth="0.25" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BALANCE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="strDetails" mode="Transparent" x="430" y="0" width="75" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="c2d99fce-58d5-4e9b-a816-ada49e975430"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25" lineColor="#000000"/>
+					<topPen lineWidth="0.25" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CREDIT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="strDetails" mode="Transparent" x="355" y="0" width="75" height="13" backcolor="#F1EFEF" uuid="9cd93a58-ce54-4987-a0c6-72d48351b311"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DEBIT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="strDetails" mode="Transparent" x="146" y="0" width="58" height="13" backcolor="#F1EFEF" uuid="4c63b92a-3173-4c7a-bf90-ad6c4dac3d48"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VOU_NO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+				<reportElement style="strDetails" mode="Transparent" x="13" y="0" width="82" height="13" uuid="37145e29-0dcb-4e69-b613-7ea61ab85c00"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph spacingBefore="1"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VOU_DATE}]]></textFieldExpression>
+				<anchorNameExpression><![CDATA[new String("a")]]></anchorNameExpression>
+				<hyperlinkReferenceExpression><![CDATA["http://localhost:8080/reports/mainRep"]]></hyperlinkReferenceExpression>
+				<hyperlinkParameter name="report">
+					<hyperlinkParameterExpression><![CDATA["rpt_graph_tov.jasper"]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="-s-YEAR">
+					<hyperlinkParameterExpression><![CDATA["2010"]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="strDetails" mode="Transparent" x="95" y="0" width="51" height="13" backcolor="#F1EFEF" uuid="c6252207-323c-4088-8bdf-9c4f817b3a7e"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{TYPE_DESCR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strDetails" mode="Transparent" x="204" y="0" width="151" height="13" uuid="a0cf12e5-6931-42db-bc83-3cfddfba7407"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph spacingBefore="1"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DESCR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

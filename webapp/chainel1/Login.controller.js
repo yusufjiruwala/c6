@@ -59,7 +59,7 @@ sap.ui.controller('chainel1.Login', {
             sap.m.MessageToast.show(dt.errorMsg);
             return;
         }
-        pth = "exe?command=get-profile-list"
+        pth = "exe?command=get-profile-list";
         Util.doAjaxGet(pth, "", false).done(function (data) {
             if (data != undefined) {
                 var dt = JSON.parse(data);

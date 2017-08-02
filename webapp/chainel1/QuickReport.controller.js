@@ -469,7 +469,7 @@ sap.ui.controller("chainel1.QuickReport", {
         this.executeGraph(rep, selectedEntries, gData);
     },
 
-    executeGraph(rep, selectedEntries, gData) {
+    executeGraph: function (rep, selectedEntries, gData) {
 
 
         var view = this.getView();

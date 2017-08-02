@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAccStatmentDet2" language="groovy" pageWidth="595" pageHeight="842" columnWidth="588" leftMargin="0" rightMargin="7" topMargin="7" bottomMargin="7" uuid="28fcc65d-e58e-4bdb-beea-e193a4510963">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<style name="Row_lvl" mode="Transparent" markup="none" fontSize="10">
+		<box leftPadding="3" rightPadding="3">
+			<pen lineWidth="0.25"/>
+			<topPen lineWidth="0.25"/>
+			<leftPen lineWidth="0.25"/>
+			<bottomPen lineWidth="0.25"/>
+			<rightPen lineWidth="0.25"/>
+		</box>
+	</style>
+	<parameter name="BALANCE" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="PACCNO" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[select *from C6_GL2
+order by pos]]>
+	</queryString>
+	<field name="ACCNO" class="java.lang.String"/>
+	<field name="NAME" class="java.lang.String"/>
+	<field name="VOU_DATE" class="java.sql.Timestamp"/>
+	<field name="DESCR" class="java.lang.String"/>
+	<field name="VOU_NO" class="java.math.BigDecimal"/>
+	<field name="TYPE_DESCR" class="java.lang.String"/>
+	<field name="DEBIT" class="java.math.BigDecimal"/>
+	<field name="CREDIT" class="java.math.BigDecimal"/>
+	<field name="BALANCE" class="java.math.BigDecimal"/>
+	<field name="ACPATH" class="java.lang.String"/>
+	<field name="DRTOT" class="java.math.BigDecimal"/>
+	<field name="CRTOT" class="java.math.BigDecimal"/>
+	<field name="VOU_CODE" class="java.math.BigDecimal"/>
+	<field name="VOU_TYPE" class="java.math.BigDecimal"/>
+	<field name="KEYFLD" class="java.math.BigDecimal"/>
+	<field name="POS" class="java.math.BigDecimal"/>
+	<field name="USERNM" class="java.lang.String"/>
+	<field name="COSTCENT" class="java.lang.String"/>
+	<field name="FCCODE" class="java.lang.String"/>
+	<field name="FC_AMT" class="java.math.BigDecimal"/>
+	<field name="FC_RATE" class="java.math.BigDecimal"/>
+	<field name="FC_MAIN" class="java.lang.String"/>
+	<field name="FC_MAIN_RATE" class="java.math.BigDecimal"/>
+	<variable name="SUMDR" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{DEBIT}]]></variableExpression>
+	</variable>
+	<variable name="SUMCR" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{CREDIT}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="15" splitType="Stretch">
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="0" y="0" width="82" height="15" backcolor="#FFFF00" uuid="ea091fc9-57b3-44c8-a9ee-c7022e343775"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[Date]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="191" y="0" width="151" height="15" backcolor="#FFFF00" uuid="ea1f100d-e482-4bd5-9e00-986d0fcb44a3"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Descr]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="133" y="0" width="58" height="15" backcolor="#FFFF00" uuid="c96d1482-640d-4784-be09-e05c59696493"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vou No]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="342" y="0" width="75" height="15" backcolor="#FFFF00" uuid="e1eb51da-4db3-4b18-9454-fd25cbe1297a"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Debit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="492" y="0" width="75" height="15" backcolor="#FFFF00" uuid="94f4a442-6a7c-43df-b2f8-466f58d4b80b"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Balance]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="417" y="0" width="75" height="15" backcolor="#FFFF00" uuid="34972da4-4a6d-4958-83b9-bd4e9ec2796d"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Credit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strColHeader_color" mode="Opaque" x="82" y="0" width="51" height="15" backcolor="#FFFF00" uuid="d8691f4c-3286-40ae-8637-92228f553ecf"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vou Type]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13" splitType="Stretch">
+			<frame>
+				<reportElement style="Row_lvl" stretchType="RelativeToBandHeight" x="0" y="0" width="567" height="13" uuid="62b2b03d-29ee-441a-bd09-dcb09023113f"/>
+				<box>
+					<bottomPen lineWidth="0.5" lineColor="#000000"/>
+				</box>
+			</frame>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Transparent" x="133" y="0" width="58" height="13" backcolor="#F1EFEF" uuid="777a7321-2f00-4410-b38f-5747beb41d6c"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VOU_NO}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Transparent" x="492" y="0" width="75" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="8a773e4a-904f-48aa-8dac-9ea1e9e974e9"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25" lineColor="#000000"/>
+					<topPen lineWidth="0.25" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{BALANCE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Transparent" x="417" y="0" width="75" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="c7914ed7-daa3-455e-8a0a-913d52d4df49"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25" lineColor="#000000"/>
+					<topPen lineWidth="0.25" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CREDIT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Transparent" x="342" y="0" width="75" height="13" backcolor="#F1EFEF" uuid="dffbbc78-f330-43b0-b7fb-b1f43c653310"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DEBIT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+				<reportElement style="Row_lvl" mode="Transparent" x="0" y="0" width="82" height="13" uuid="533452ef-fd83-40c8-9146-e7230b3e514d"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph spacingBefore="1"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{VOU_DATE}]]></textFieldExpression>
+				<anchorNameExpression><![CDATA[new String("a")]]></anchorNameExpression>
+				<hyperlinkReferenceExpression><![CDATA["http://localhost:8080/reports/mainRep"]]></hyperlinkReferenceExpression>
+				<hyperlinkParameter name="report">
+					<hyperlinkParameterExpression><![CDATA["rpt_graph_tov.jasper"]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+				<hyperlinkParameter name="-s-YEAR">
+					<hyperlinkParameterExpression><![CDATA["2010"]]></hyperlinkParameterExpression>
+				</hyperlinkParameter>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Transparent" x="82" y="0" width="51" height="13" backcolor="#F1EFEF" uuid="7bcff159-32d3-427c-abb3-c4eb1f0e7d57"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{TYPE_DESCR}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Transparent" x="191" y="0" width="151" height="13" uuid="cca69d51-dd79-432c-ba77-bcaae733948d"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph spacingBefore="1"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{DESCR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="14" splitType="Stretch">
+			<textField pattern="#,##0.000;-#,##0.000">
+				<reportElement mode="Opaque" x="492" y="0" width="75" height="13" backcolor="#FFFF00" uuid="b96ca05a-d05c-4c9e-abe2-86383fdded35"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{BALANCE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
+				<reportElement style="Row_lvl" mode="Opaque" x="417" y="0" width="75" height="13" backcolor="#FFFF00" uuid="6067d4dc-3e12-4380-a9fe-e2ebd38bd776"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUMCR}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000;-#,##0.000">
+				<reportElement mode="Opaque" x="342" y="0" width="75" height="13" backcolor="#FFFF00" uuid="049ac924-c8aa-4779-8693-44191ca7b5eb"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUMDR}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

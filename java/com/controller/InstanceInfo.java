@@ -1,5 +1,7 @@
 package com.controller;
 
+import java.io.FileOutputStream;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
 import com.generic.DBClass;
 import com.generic.QueryExe;
 import com.generic.utils;
+
+import net.sf.jasperreports.engine.JasperRunManager;
 
 @Component
 @Scope("session")
@@ -155,13 +159,13 @@ public class InstanceInfo {
 		String user = params.get("user").toUpperCase();
 		String password = params.get("password");
 		String file = params.get("file");
-		String owner = setOwnerFile(servletContext.getRealPath("") + file);		
+		String owner = setOwnerFile(servletContext.getRealPath("") + file);
 		Integer vl = Integer.valueOf(QueryExe.getSqlValue("select nvl(max(profileno),-1) from \"" + owner + "\"."
 				+ "cp_users where upper(USERNAME)='" + user + "' and password='" + password + "'",
 				getmDbc().getDbConnection(), "-1") + "");
 		if (vl <= -1)
 			throw new Exception("Invalid user name or password !");
-		
+
 		setmLoginUserPN(vl);
 		setmLoginUser(user);
 		setmLoginPassword(password);
@@ -197,30 +201,48 @@ public class InstanceInfo {
 		}
 		qn.close();
 		// ---------------------------------------company-variable
-		ResultSet rst = QueryExe.getSqlRS("select name,namea,SPECIFICATION,SPECIFICATIONA from company where crnt='X'",
+		ResultSet rst = QueryExe.getSqlRS(
+				"select name,namea,SPECIFICATION,SPECIFICATIONA,FILENAME from company where crnt='X'",
 				getmDbc().getDbConnection());
 		getMmapVar().put("COMPANY_NAME", rst.getString("NAME"));
 		getMmapVar().put("COMPANY_NAMEA", rst.getString("NAME"));
 		getMmapVar().put("COMPANY_SPECS", rst.getString("NAME"));
 		getMmapVar().put("COMPANY_SPECSA", rst.getString("NAME"));
+		getMmapVar().put("COMPANY_LOGO", rst.getString("FILENAME"));
 		getMmapVar().put("PROFILENO", getmLoginUserPN());
 		rst.close();
 		// ---------------------------------------profile-names
 		getmMapProfiles().clear();
 		getmListProfiles().clear();
 		rst = QueryExe.getSqlRS(
-				"select *from  CP_MAIN_GROUPS where profiles like '%\"" + getmLoginUserPN() + "\"%' ORDER BY CODE ",
+				"select *from  C6_MAIN_GROUPS where profiles like '%\"" + getmLoginUserPN() + "\"%' ORDER BY CODE ",
 				getmDbc().getDbConnection());
 		rst.beforeFirst();
 		while (rst.next()) {
 			getmListProfiles().add(rst.getString("CODE"));
 			getmMapProfiles().put(rst.getString("CODE"), rst.getString("title"));
-			
+
 		}
 		rst.close();
 
 		setmCurrentProfile(utils.nvl(getMmapVar().get("CURRENT_PROFILE_CODE"), ""));
 
+	}
+
+	public byte[] storeReport(final String filename, final Map map, boolean useTimestamp) throws Exception {
+		Connection con = this.mDbc.getDbConnection();
+		byte[] b = null;
+		String fl = servletContext.getRealPath("") + "reports/";
+		fl = fl.replace("\\", "/");
+		b = JasperRunManager.runReportToPdf(fl + filename + ".jasper", map, con);
+		String pdffile = servletContext.getRealPath("") + "reports/" + filename + ".pdf";
+		if (useTimestamp) {
+			pdffile = servletContext.getRealPath("") + "reports/" + filename + System.currentTimeMillis() + ".pdf";
+		}
+		FileOutputStream fos = new FileOutputStream(pdffile);
+		fos.write(b);
+		fos.close();
+		return b;
 	}
 
 }

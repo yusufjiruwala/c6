@@ -1,15 +1,13 @@
-sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./DataFilter"],
+sap.ui.define("sap/ui/chainel1/util/generic/DataTree2", ["./LocalTableData", "./DataFilter"],
     function (LocalTableData, DataFilter) {
         'use strict'
-        function QueryView(tableId) {
+        function DataTree2(tableId) {
             var that = this;
             this.mJsonString = "";
             this.tableId = tableId;
             this.mViewSettings = {}
             this.colMerged = false;
             this.mOnAfterLoad = null;
-            this.lastSelIndex = -1;
-            this.lastSelectedCode="";
 
             this.mTable = new sap.ui.table.Table(tableId, {
                 visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
@@ -45,18 +43,18 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
 //            this.mJsonObject = JSON.parse(jsonStr);
         }
 
-        QueryView.create = function (tableId, jsonStr) {
-            var q = new QueryView(tableId);
+        DataTree2.create = function (tableId, jsonStr) {
+            var q = new DataTree2(tableId);
             q.tableId = tableId;
             q.mJsonString = jsonStr;
             q.mLctb.parse(jsonStr);
             q.mJsonObject = q.mLctb.getData();
             return q;
         };
-        QueryView.prototype.constructor = QueryView;
+        DataTree2.prototype.constructor = DataTree2;
 
 
-        QueryView.prototype.setJsonStr = function (strJson) {
+        DataTree2.prototype.setJsonStr = function (strJson) {
             this.colMerged = false;
             this.mJsonString = strJson;
             this.mViewSettings = {};
@@ -64,11 +62,11 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
             this.mJosnObject = this.mLctb.getData();
 
         };
-        QueryView.prototype.attachOnAfterLoad = function (fn) {
+        DataTree2.prototype.attachOnAfterLoad = function (fn) {
             this.mOnAfterLoad = fn;
         }
 
-        QueryView.prototype.loadData = function () {
+        DataTree2.prototype.loadData = function () {
             //resetingg,
             var col = [];
             var cells = [];
@@ -133,7 +131,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
 
         };
 
-        QueryView.prototype._sort = function (pCol, updateMR) {
+        DataTree2.prototype._sort = function (pCol, updateMR) {
             this.mLctb.rows.sort(function (a, b) {
                 var vl1 = a.cells[pCol].getValue();
                 var vl2 = b.cells[pCol].getValue();
@@ -149,7 +147,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
             }
         };
 
-        QueryView.prototype._getDistinctGroup = function (pCol, o) {
+        DataTree2.prototype._getDistinctGroup = function (pCol, o) {
             var grp = "";
             var h = [];
             for (var i = 0; i < o.length; i++)
@@ -160,7 +158,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
             return h;
         };
 
-        QueryView.prototype.buildJsonData = function () {
+        DataTree2.prototype.buildJsonData = function () {
             // this.mLctb.cols[0].mGrouped = true;
             // this.mLctb.cols[1].mGrouped = true;
             if (this.mLctb.cols.length == 0)
@@ -224,11 +222,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
                         if (this.mLctb.getColByName(v).mSummary == "SUM") {
                             footerg[v] = (footerg[v] == undefined ? 0 : footerg[v]) + o[i][v];
                             footer[v] = (footer[v] == undefined ? 0 : footer[v]) + o[i][v];
-                        } else if (this.mLctb.getColByName(v).mSummary == "LAST") {
-                            footerg[v] = o[i][v];
-                            footer[v] = o[i][v];
-                        }
-                        else {
+                        } else {
                             footerg[v] = "";
                             footer[v] = "";
                         }
@@ -288,7 +282,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
 
         };
 
-        QueryView.prototype.colorRows = function () {
+        DataTree2.prototype.colorRows = function () {
             if (this.mLctb.cols.length <= 0)                return;
             var oModel = this.mTable.getModel();
             var rowCount = this.mTable.getVisibleRowCount(); //number of visible rows
@@ -339,7 +333,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
 
         };
 
-        QueryView.prototype.printHtml = function () {
+        DataTree2.prototype.printHtml = function () {
             if (this.mLctb.cols.length <= 0) return;
             var h = "", dt = "", rs = "";           // table header data
             var oData = this.mTable.getModel().getData();
@@ -404,7 +398,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
             }, 1000);
         };
 
-        QueryView.prototype.selectGroup = function (grp, startRow) {
+        DataTree2.prototype.selectGroup = function (grp, startRow) {
             if (this.mLctb.cols.length < 0) return;
             if (!this.mLctb.cols[0].mGrouped) return;
 
@@ -429,13 +423,13 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
 
 
         };
-        QueryView.prototype.setViewSettings = function (vs, refresh) {
+        DataTree2.prototype.setViewSettings = function (vs, refresh) {
             this.mViewSettings = vs;
             if (refresh)
                 this.loadData();
 
         }
-        QueryView.prototype.applySettings = function () {
+        DataTree2.prototype.applySettings = function () {
             if (this.mViewSettings == undefined)
                 return;
             var fls = "";
@@ -450,7 +444,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/QueryView", ["./LocalTableData", "./
 
 
         };
-        return QueryView;
+        return DataTree2;
     }
 );
 

@@ -125,7 +125,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                     rstr += (rstr.length == 0 ? "" : ",") + '"' +
                         this.cols[c].mColName + '":' +
                         (typeof this.rows[r].cells[c].getValue() == "number" ? this.rows[r].cells[c].getValue() :
-                        '"' + this.rows[r].cells[c].getValue().replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
+                        '"' + Util.nvl(this.rows[r].cells[c].getValue(),"").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
                 }
                 rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
                 tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";

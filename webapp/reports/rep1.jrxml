@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAccStatment" language="groovy" pageWidth="595" pageHeight="842" columnWidth="567" leftMargin="14" rightMargin="14" topMargin="20" bottomMargin="20" uuid="5e445352-963a-4db7-859a-662fb444736b">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<style name="Row_lvl" mode="Opaque" markup="none" fontSize="10">
+		<box leftPadding="3" rightPadding="3"/>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[]]></conditionExpression>
+			<style mode="Opaque" backcolor="#CCCCCC"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[]]></conditionExpression>
+			<style mode="Opaque" backcolor="#CCCCCC"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#CCCCCC"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[]]></conditionExpression>
+			<style mode="Opaque" forecolor="#000000" backcolor="#CCCCCC"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PACCNO" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CP_USER" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LEVEL_NO" class="java.lang.Double" isForPrompting="false">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PACCNO_DISPLAY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="COMPANY_IMAGE" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["COMPANY_LOGO.bmp"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SURPRESS_0" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA['Y']]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["chaine"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="FROMDATE" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="TODATE" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="COST_CENTER" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="COST_CENTER_DISPLAY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PRFR" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PRFR_DISPLAY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["D:\\yaali\\products\\channelPlus_others\\channel_reports\\repserver\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_SPECSA" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="COMPANY_SPECS" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT *FROM G_L1 where usernm=$P{CP_USER}
+ORDER BY ACPATH]]>
+	</queryString>
+	<field name="IDNO" class="java.math.BigDecimal"/>
+	<field name="USERNM" class="java.lang.String"/>
+	<field name="KEYSTR" class="java.lang.String"/>
+	<field name="ACCNO" class="java.lang.String"/>
+	<field name="COST_CENT" class="java.lang.String"/>
+	<field name="RFR" class="java.lang.String"/>
+	<field name="RFR_NAME" class="java.lang.String"/>
+	<field name="COST_CENT_NAME" class="java.lang.String"/>
+	<field name="ACNAME" class="java.lang.String"/>
+	<field name="FIELD3" class="java.lang.String"/>
+	<field name="FROMDATE" class="java.sql.Timestamp"/>
+	<field name="TODATE" class="java.sql.Timestamp"/>
+	<field name="ACBAL" class="java.math.BigDecimal"/>
+	<field name="B30" class="java.math.BigDecimal"/>
+	<field name="B60" class="java.math.BigDecimal"/>
+	<field name="B90" class="java.math.BigDecimal"/>
+	<field name="B120" class="java.math.BigDecimal"/>
+	<field name="B150" class="java.math.BigDecimal"/>
+	<field name="ACPATH" class="java.lang.String"/>
+	<field name="AGEING" class="java.lang.String"/>
+	<field name="TER" class="java.lang.String"/>
+	<pageHeader>
+		<band height="172" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="1f7df372-3f17-4423-b572-61c27e990205" style="labelPara" x="136" y="115" width="147" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{COST_CENT_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="73a6bf7b-dcdc-4a22-aec6-6b99b31531aa" style="labelPara" x="70" y="115" width="66" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{COST_CENT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="fee8f898-9d2d-4532-aae0-840a4e131eab" style="labelPara" x="2" y="115" width="68" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Cost Center]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="cf8d8928-66ff-426c-837d-1cff13b6e51f" style="labelPara" x="435" y="115" width="56" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="false" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[From Date :]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement uuid="6271cefb-d25e-4703-84f8-57910a12d306" style="strPara" x="491" y="115" width="76" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="false" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{FROMDATE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="799c9bfd-33bd-4b68-946f-2d2a4cd011a3" style="labelPara" x="435" y="129" width="56" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="false" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[To Date :]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy">
+				<reportElement uuid="e2da5e2b-c274-460a-97fc-cdd3e219d908" style="strPara" x="491" y="129" width="76" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="false" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{TODATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="cafbe5c6-f075-4a97-b66d-2a912017b5fc" style="labelPara" x="136" y="129" width="147" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ACNAME}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="15e29c6d-ad05-4cb6-9b11-f02e6b448048" style="labelPara" x="2" y="129" width="68" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Account]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="5d47eefa-6681-43d3-a8ca-bd40f91b9f4e" style="labelPara" x="70" y="129" width="66" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ACCNO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="2a022048-6ad9-4eef-a7bc-b4761603ab24" style="labelPara" x="136" y="143" width="147" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{RFR_NAME}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="3e61eeb1-3051-4b3b-9951-bb594d83006c" style="labelPara" x="2" y="143" width="68" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Customer Code]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="b55eb33d-f24b-4839-bdc5-79a6a1255dff" style="labelPara" x="70" y="143" width="66" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{RFR}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="c4c4c5b6-82e7-44b0-b11c-47cf00f78f40" style="strTitle" x="2" y="85" width="563" height="25"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Account Statment]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="67894bdf-c171-4152-a3aa-2809f861e1ef" style="strCompanySpec" x="321" y="32" width="248" height="52"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{COMPANY_SPECSA}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame">
+				<reportElement uuid="e623f6f5-7f24-4ef8-947d-1223f1605756" x="260" y="30" width="61" height="54"/>
+				<imageExpression><![CDATA["company_logo.bmp"]]></imageExpression>
+			</image>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="3e9bbd29-b75f-4ee2-b828-f129a511b480" style="strCompanyName" x="14" y="0" width="282" height="30"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{COMPANY_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="5e979797-8adf-45ea-a54b-01bff4d95eb6" style="strCompanyName" x="296" y="1" width="271" height="30"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{COMPANY_NAMEA}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="82350b5a-0bcd-4887-b17a-1a7d87f824fc" style="strCompanySpec" x="14" y="30" width="246" height="52"/>
+				<textElement>
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{COMPANY_SPECS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="0b250460-06f2-4ee1-a0b3-8f204118028c" style="labelPara" x="2" y="157" width="68" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Address]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="b8a73ec2-85b5-495f-8300-79e192d314d5" style="labelPara" x="70" y="157" width="365" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{RFR}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="4a551b45-9040-4a42-b1ed-7e7e37aa12b1" style="labelPara" x="435" y="157" width="56" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" isBold="false" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[Telelphone]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="b238a2f0-7635-4291-89fa-96017da5855c" style="labelPara" x="491" y="157" width="74" height="14"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{COST_CENT}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="29" splitType="Stretch">
+			<subreport>
+				<reportElement uuid="992e3832-2cf6-44e9-be45-4dcba3057b31" x="-1" y="0" width="568" height="27"/>
+				<subreportParameter name="PACCNO">
+					<subreportParameterExpression><![CDATA[$F{ACCNO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="BALANCE">
+					<subreportParameterExpression><![CDATA[$F{ACBAL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "rptAccStatmentDet2.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement uuid="38091d7c-c4fc-49fb-9580-32b1ca28f6d2" x="433" y="0" width="80" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH.mm.ss">
+				<reportElement uuid="e6514d93-4a46-4fbb-96dc-fe07c39fc070" x="-1" y="0" width="160" height="20"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement uuid="bac034fd-7d59-42c5-9c0d-5a33ecc7514f" x="513" y="0" width="40" height="20"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="a1bee42d-ce22-4608-9621-4b3e8c4d8787" style="Row_lvl" mode="Transparent" x="160" y="0" width="273" height="20"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Printed By :" + $P{CP_USER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="80">
+			<staticText>
+				<reportElement uuid="c2812d75-e8be-4572-b30e-900d33f26ae5" x="37" y="45" width="100" height="20"/>
+				<textElement>
+					<font isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Approved By ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="89bfd4ad-7a63-4b27-bf75-0918f851d061" x="182" y="45" width="100" height="20"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Audited  By ]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

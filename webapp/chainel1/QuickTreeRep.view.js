@@ -25,7 +25,6 @@ sap.ui.jsview("chainel1.QuickTreeRep", {
         this.advance_para = [];
         this.createViewResult();
         return this.QueryPage;
-
     },
     createViewResult: function () {
         var that = this;
@@ -176,9 +175,11 @@ sap.ui.jsview("chainel1.QuickTreeRep", {
                             if (!oSplitApp.getDetailPages().indexOf(that.GraphPage) > -1) {
                                 oSplitApp.addDetailPage(that.GraphPage);
                             }
+                            var rep = oItem.getCustomData()[1].getValue();
+                            if (rep.REP_TYPE == "TABLE" || rep.REP_TYPE == "SQL" || rep.REP_TYPE == "DATASET")
+                                oSplitApp.toDetail(that.GraphPage);
 
-                            oSplitApp.toDetail(that.GraphPage);
-                            that.oController.show_graph(oItem.getCustomData()[1].getValue());
+                            that.oController.show_graph(rep);
                         }
                     }
                 });

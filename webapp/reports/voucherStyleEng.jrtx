@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperTemplate PUBLIC "-//JasperReports//DTD Template//EN" "http://jasperreports.sourceforge.net/dtds/jaspertemplate.dtd">
+
+<jasperTemplate>
+	<style name="strColHeader" fontName="Times New Roman" fontSize="14" isBold="true" isUnderline="false" pdfFontName="Times-Roman"/>
+	<style name="strDetails" vAlign="Middle" fontName="Times New Roman" fontSize="10" pdfFontName="Times-Roman"/>
+	<style name="strSummary" fontName="Times New Roman" fontSize="12" pdfFontName="Times-Roman"/>
+	<style name="strTitle" forecolor="#006666" hAlign="Center" vAlign="Middle" fontName="Times New Roman" fontSize="18" isBold="true" isUnderline="true" pdfFontName="Times-Roman"/>
+	<style name="strCompanyName" forecolor="#006666" hAlign="Left" vAlign="Middle" fontName="Times New Roman" fontSize="24" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Times-Roman"/>
+	<style name="strCompanySpec" forecolor="#006666" backcolor="#FFFFFF" fill="Solid" fontName="Times New Roman" fontSize="12" isBold="true" pdfFontName="Times-Roman"/>
+	<style name="numQtyRight" hAlign="Right" vAlign="Middle" fontName="Times New Roman" fontSize="10" isBold="false" pdfFontName="Times-Roman"/>
+	<style name="numQtyCenter" hAlign="Center" vAlign="Middle" pattern="###0.##;-###0.##" fontName="Times New Roman" fontSize="10" pdfFontName="Times-Roman"/>
+	<style name="numMoney" hAlign="Right" vAlign="Middle" pattern="#,##0.000;-#,##0.000" fontName="Times New Roman" fontSize="10" pdfFontName="Times-Roman"/>
+	<style name="frameColHeader" fill="Solid" fontName="Times New Roman" pdfFontName="Times-Roman">
+		<box>
+			<topPen lineWidth="1.25"/>
+			<bottomPen lineWidth="1.25"/>
+		</box>
+	</style>
+	<style name="frameDetails" fontName="Times New Roman" pdfFontName="Times-Roman">
+		<box>
+			<bottomPen lineWidth="0.75"/>
+		</box>
+	</style>
+	<style name="frameSummary" fontName="Times New Roman" pdfFontName="Times-Roman">
+		<box>
+			<topPen lineWidth="0.75"/>
+		</box>
+	</style>
+	<style name="strHeader" isBlankWhenNull="true" fontName="Times New Roman" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Times-Roman"/>
+	<style name="labelHeader" hAlign="Left" fontName="Times New Roman" fontSize="12" isBold="true" isItalic="false" isUnderline="true" isStrikeThrough="false" pdfFontName="Times-Roman"/>
+	<style name="headerColored" mode="Opaque" backcolor="#FFFFCC" fontName="Times New Roman" pdfFontName="Times-Roman"/>
+</jasperTemplate>

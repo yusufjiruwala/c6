@@ -23,8 +23,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
                 enableColumnReordering: true,
                 expandFirstLevel: true,
                 visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
-                mode: sap.m.ListMode.SingleSelectMaster,
-
+                mode: sap.m.ListMode.SingleSelectMaster
             });
 
         };
@@ -261,7 +260,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
                 if (this.mLctb.cols[i].mQtreeType == "LEVEL")
                     this.mColLevel = this.mLctb.cols[i].mColName;
                 if (this.mLctb.cols[i].mQtreeType == "PATH")
-                    this.mColParent = this.mLctb.cols[i].mColName;
+                    this.mColpath = this.mLctb.cols[i].mColName;
                 if (this.mLctb.cols[i].mQtreeType == "PARENT")
                     this.mColParent = this.mLctb.cols[i].mColName;
                 if (this.mLctb.cols[i].mQtreeType == "CHILDCOUNT")
@@ -285,7 +284,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
 
             h = "<thead><tr>" + h + "</tr></thead>";
             this.childCount = 0;
-            dt = this.getTb(oData, 0);
+            dt = this.getTbHtml(oData, 0);
             dt = "<tbody>" + dt + "</tbody>";
             h = "<table>" + h + dt + "</table>"
             var newWin = window.open("");
@@ -296,18 +295,18 @@ sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
             }, 1000);
         };
 
-        DataTree.prototype.getTb = function (oData, startRow) {
+        DataTree.prototype.getTbHtml = function (oData, startRow) {
             var tmpv1 = "", tmpv2 = "", tmpv3 = "";
             var cellValue = "", rs = "", dt = "", rw = "";
             var cnt = 0;
             for (var i = 0; i < oData.length; i++) {
-            //for (var i = 0; i < this.mLctb.rows.length; i++) {
+                //for (var i = 0; i < this.mLctb.rows.length; i++) {
                 cnt = 0;
                 rs = tmpv2 = tmpv3 = rw = "";
                 for (var v in oData[i]) {
                     if (!v.startsWith("childeren_") && this.mLctb.getColByName(v).mHideCol) continue;
                     if (v.startsWith("childeren_")) {
-                        rw += (this.mTree.isExpanded(i) ? this.getTb([oData[i][v]], i) : "");
+                        rw += (this.mTree.isExpanded(i) ? this.getTbHtml([oData[i][v]], i) : "");
                     }
                     else {
                         var l = (oData[i][this.mColLevel] - (this.minLevel - 1)) * 1;   // get count of spaces b4 first column

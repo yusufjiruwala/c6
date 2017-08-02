@@ -235,13 +235,13 @@ public class utils {
 		return p;
 	}
 
-	public static String generateMenuPath(String group, String parent, String cod) {
+	public static String generateMenuPath(String group, String parent, String cod, Connection dbConn) {
 		if (dbConn == null) {
 			return null;
 		}
 
 		String p = getSqlValue(
-				"select menu_path from cp_main_menus where menu_code='" + parent + "' and group_code='" + group + "'",
+				"select menu_path from c6_main_menus where menu_code='" + parent + "' and group_code='" + group + "'",
 				dbConn);
 		if (p == null || p.length() == 0) {
 			p = "XXX\\" + cod + "\\";
@@ -1052,9 +1052,9 @@ public class utils {
 				cn = rsm.getColumnName(i + 1);
 				tmp1 += (tmp1.length() == 0 ? "" : ",") + getJSONStr(cn, nvl(rs.getString(cn), ""), false);
 			}
-			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
+			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";			
 		}
-
+		
 		ret = (var.length() == 0 ? "" : "\"" + var + "\":") + "[" + ret + "]";
 
 		return ret;
@@ -1106,7 +1106,7 @@ public class utils {
 
 	}
 
-	public static String getJSONCP(ColumnProperty cp)  {
+	public static String getJSONCP(ColumnProperty cp) {
 		if (cp == null)
 			return "";
 		String ret = "";
@@ -1121,7 +1121,7 @@ public class utils {
 		ret += "," + getJSONStr("grouped", (cp.isGrouped ? "true" : "false"), false);
 		ret += "," + getJSONStr("qtree_type", cp.qtree_type, false);
 		ret += "," + getJSONStr("hide_col", (cp.hide_col ? "true" : "false"), false);
-		
+
 		return ret;
 	}
 

@@ -84,6 +84,10 @@ sap.ui.controller("chainel1.QuickTreeRep", {
             this.show_query(rep);
             return;
         }
+        if (rep.REP_TYPE == "PDF") {
+            this.show_pdf(rep);
+            return;
+        }
 
         var view = this.getView();
         var that = this;
@@ -138,6 +142,10 @@ sap.ui.controller("chainel1.QuickTreeRep", {
             return;
         }
 
+        if (rep.REP_TYPE == "PDF") {
+            this.show_pdf(rep);
+            return;
+        }
 
         var view = this.getView();
         var that = this;
@@ -449,11 +457,43 @@ sap.ui.controller("chainel1.QuickTreeRep", {
 
         ps += (ps.length > 0 ? "&" : "") + "_keyfld=" + rep.KEYFLD;
         Util.doAjaxGet("exe?command=get-graph-query&" + (ps), "", true).done(function (data) {
-            //gData = JSON.parse(data).data;
             that.subqry.setJsonStr(data);
             that.subqry.loadData();
-
         });
+    },
+    show_pdf: function (rep) {
+
+        var view = this.getView();
+        var that = this;
+        var mTree = view.qv.mTree;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+        var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+        var ps = "";
+        var ia = "";
+
+        for (var i = 0; i < view.colData.parameters.length; i++) {
+            var vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+            if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
+                vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));
+            if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
+                vl = view.byId("para_" + ia + i).getSelectedItem().getKey();
+
+            ps += (ps.length > 0 ? "&" : "") + "_para_" + view.colData.parameters[i].PARAM_NAME + "=" + vl;
+        }
+
+
+        Util.doXhr("report?reportfile=" + rep.DIMENSIONS + "&" + ps, true, function (e) {
+            if (this.status == 200) {
+                var blob = new Blob([this.response], {type: "application/pdf"});
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = rep.DIMENSIONS + new Date() + ".pdf";
+                link.click();
+            }
+        });
+
+
     }
 
 

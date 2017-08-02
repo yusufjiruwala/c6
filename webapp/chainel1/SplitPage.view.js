@@ -22,30 +22,30 @@ sap.ui.jsview("chainel1.SplitPage", {
         var controller = this.oController;
         var oData = null;
         var sData = "";
-        if (!!sap.ui.Device.browser.webkit
-
-            && !document.width) {
-
-            jQuery.sap.require("sap.ui.core.ScrollBar");
-
-            var fnOrg = sap.ui.core.ScrollBar.prototype.onAfterRendering;
-
-            sap.ui.core.ScrollBar.prototype.onAfterRendering = function () {
-
-                document.width = window.outerWidth;
-
-                fnOrg.apply(this, arguments);
-
-                document.width = undefined;
-
-            };
-
-        }
+        // if (!!sap.ui.Device.browser.webkit
+        //
+        //     && !document.width) {
+        //
+        //     jQuery.sap.require("sap.ui.core.ScrollBar");
+        //
+        //     var fnOrg = sap.ui.core.ScrollBar.prototype.onAfterRendering;
+        //
+        //     sap.ui.core.ScrollBar.prototype.onAfterRendering = function () {
+        //
+        //         document.width = window.outerWidth;
+        //
+        //         fnOrg.apply(this, arguments);
+        //
+        //         document.width = undefined;
+        //
+        //     };
+        //
+        // }
 
         this.setDisplayBlock(true);
+        var that = this;
 
         Util.doAjaxGet("exe?command=get-current-profile", "", false).done(function (dt) {
-
             sap.ui.getCore().setModel(null, "current_profile");
 
             if (dt == null || dt == undefined) return;
@@ -60,8 +60,7 @@ sap.ui.jsview("chainel1.SplitPage", {
                 sap.m.MessageToast.show("No default profile....");
                 return;
             }
-            sap.ui.getCore().byId("SplitPage").setProfile(dtx);
-            // this.setProfile(dtx);
+            that.setProfile(dtx);
         });
 
 
@@ -74,7 +73,22 @@ sap.ui.jsview("chainel1.SplitPage", {
                 press: function () {
                     document.location.href = "/";
                 }
-            })],
+            }),
+                new sap.m.Button({
+                    icon: "sap-icon://folder-blank",
+                    press: function () {
+                        oController.create_new_group();
+                    }
+
+                }),
+                new sap.m.Button({
+                    icon: "sap-icon://add-document",
+                    press: function () {
+                        oController.create_new_item();
+                    }
+                })
+
+            ],
             contentMiddle: [new sap.m.Label({
                 text: "{selectedP>/name}",
                 textAlign: "Center",
@@ -98,23 +112,23 @@ sap.ui.jsview("chainel1.SplitPage", {
                 content: [
                     this.dt.mTree
                 ]
-            })
-        ;
+            });
 
-        // this.oPage2 = new sap.m.Page("pgDashboard", {
-        //
-        //     showNavButton: sap.ui.Device.system.phone,
-        //     navButtonPress: function () {
-        //         app.toMaster("pgMenus", "flip");
-        //     },
-        //     title: "Dashboard",
-        //     content: [this.table]
-        //
-        // });
-        this.oPage2=sap.ui.jsview("pgDashboardView", "chainel1.dashboard");
+        this.oPagePara = new sap.m.Page("pgPara",
+            {
+                showNavButton: true,
+                navButtonPress: function () {
+                    app.backMaster();
+                },
+                content: []
+            });
+
+        this.oPage2 = sap.ui.jsview("pgDashboardView", "chainel1.dashboard");
 
         this.oSplitApp.addMasterPage(this.oPage1);
+        this.oSplitApp.addMasterPage(this.oPagePara);
         this.oSplitApp.addDetailPage(this.oPage2);
+
         // this.oSplitApp.addDetailPage(this.oPgQuickRep);
         this.oSplitApp.setInitialDetail(this.oPage2);
         // jQuery("#pgMenus").height("90%");
@@ -123,7 +137,7 @@ sap.ui.jsview("chainel1.SplitPage", {
 
     setProfile: function (dtx) {
         var sData;
-        Util.doAjaxGet(`sqltojson?tablename=cp_main_menus&ordby1-menu_code=menu_code&col-1=menu_title&col-2=menu_code&col-3=parent_menucode&col-4=menu_path&col-5=type_of_exec&col-6=exec_line&and-equal-group_code=` + dtx.code, "", false).done(function (data) {
+        Util.doAjaxGet(`sqltojson?tablename=c6_main_menus&ordby1-menu_code=menu_code&col-1=menu_title&col-2=menu_code&col-3=parent_menucode&col-4=menu_path&col-5=type_of_exec&col-6=exec_line&and-equal-group_code=` + dtx.code, "", false).done(function (data) {
             //oData = JSON.parse(data);
             sData = data;
         });
@@ -155,7 +169,7 @@ sap.ui.jsview("chainel1.SplitPage", {
         var lctbb = this.lctb;
         var lastSelIndex = -1;
         var lastSelItem;
-        var lastSelectedCode = "";
+        this.lastSelectedCode = "";
 
         if (this.attachDone === undefined) {
             dtt.mTree.attachEvent("rowSelectionChange", function () {
@@ -167,23 +181,18 @@ sap.ui.jsview("chainel1.SplitPage", {
                 var currentRowContext = arguments[0].getParameter("rowContext");
 
                 var oSystemDetailsML = dtt.mTree.getModel();
-                lastSelectedCode = oSystemDetailsML.getProperty("MENU_CODE", currentRowContext);
+                this.lastSelectedCode = oSystemDetailsML.getProperty("MENU_CODE", currentRowContext);
 
 
                 if (sap.ui.Device.system.phone)
-                    sap.ui.getCore().byId("SplitPage").select_menu(lastSelectedCode);
+                    sap.ui.getCore().byId("SplitPage").select_menu(this.lastSelectedCode);
 
             });
-
 
             this.dt.mTree.attachBrowserEvent("dblclick", function () {
                 //var s = lctbb.getFieldValue(lastSelIndex, "MENU_CODE");
-                sap.ui.getCore().byId("SplitPage").select_menu(lastSelectedCode);
-
-
+                sap.ui.getCore().byId("SplitPage").select_menu(this.lastSelectedCode);
             });
-
-
             this.attachDone = true;
         }
         // removing all columns
@@ -193,13 +202,13 @@ sap.ui.jsview("chainel1.SplitPage", {
             }
         }
         this.dt.mTree.getColumns()[0].setWidth("100%");
-
         return sData;
     },
 
     select_menu: function (cod) {
         if (cod === undefined)
             return;
+
         var rowno = this.lctb.find("MENU_CODE", cod);
         var st = this.lctb.getFieldValue(rowno, "MENU_TITLE");
         var toe = this.lctb.getFieldValue(rowno, "TYPE_OF_EXEC");
@@ -208,8 +217,6 @@ sap.ui.jsview("chainel1.SplitPage", {
 
         sap.ui.getCore().getModel("detailP").getData().pageTitle = st;
         sap.ui.getCore().getModel("detailP").refresh(true);
-
-        //sap.ui.getCore().byId("SplitPage").byId("lblTitle").setText(st);
 
         this.oSplitApp.toDetail(this.oPage2);
         this.oSplitApp.hideMaster();
@@ -236,6 +243,13 @@ sap.ui.jsview("chainel1.SplitPage", {
             this.oSplitApp.hideMaster();
             this.oPgTree.showReportPara(el);
         }
+        if (toe == "FORM") {
+            if (!this.oSplitApp.getDetailPages().indexOf(this.oPgTree) > -1)
+                this.oSplitApp.addDetailPage(this.oPgTree);
+            this.oSplitApp.toDetail(this.oPgTree);
+            this.oSplitApp.hideMaster();
+            this.oPgTree.showForm(el);
+        }
 
     },
 
@@ -250,6 +264,11 @@ sap.ui.jsview("chainel1.SplitPage", {
         if (this.oPgTree == undefined)
             this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
 
+        if (this.oPgTree == undefined)
+            this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
+
+    },
+    show_menu_panel: function (pnl) {
 
     }
 

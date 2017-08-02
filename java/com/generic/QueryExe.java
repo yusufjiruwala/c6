@@ -164,7 +164,7 @@ public class QueryExe {
 		if (parse) {
 			ps_exe = con
 					.prepareStatement(utils.replaceParameters(sqlStr),
-							ResultSet.TYPE_SCROLL_SENSITIVE,
+							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
 		}
 		utils.setParams(sqlStr, ps_exe, mapParameters);

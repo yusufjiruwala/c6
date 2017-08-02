@@ -128,17 +128,21 @@ public class QuickRepMetaData {
 			subreps = utils.getJSONsql("subreps", rs, con, "", "");
 		ret += "\"cols\":" + "[" + cols + "]";
 		ret += ",\"groups\":[" + grps + "]";
-		ret += (pms.trim().isEmpty()?"":",") + pms;
+		ret += (pms.trim().isEmpty() ? "" : ",") + pms;
 		if (subreps.trim().length() > 0)
 			ret += "," + subreps;
 		return "{" + ret + "}";
 	}
 
+	/**
+	 * @return
+	 * @throws SQLException
+	 */
 	public String getJSONparameters() throws SQLException {
 		String var = "parameters";
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 
-		ResultSet rs = QueryExe.getSqlRS("select *from invqrycolspara where code='" + id + "' order by inddexno", con);
+		ResultSet rs = QueryExe.getSqlRS("select *from c6_qrypara where code='" + id + "' order by inddexno", con);
 
 		if (rs == null || !rs.first())
 			return "";
@@ -155,13 +159,16 @@ public class QuickRepMetaData {
 				if (cn.equals("PARA_DEFAULT") && vl.startsWith("$"))
 					vl = utils.getParaValue(vl, instanceInfo);
 
-				if (cn.equals("LISTNAME") && vl.length() > 0) { // getting list
-																// of values ..
-					ResultSet rss = QueryExe.getSqlRS(vl, con);
-					vl = utils.getJSONsql("", rss, con, "", "");
-					tmp1 += (tmp1.length() == 0 ? "" : ",") + "\"LISTNAME\":" + vl;
-				} else
-					tmp1 += (tmp1.length() == 0 ? "" : ",") + utils.getJSONStr(cn, vl, false);
+				// if (cn.equals("LISTNAME") /* && vl.length() > 0 */) { //
+				// getting
+				// // list
+				// // of values ..
+				// // ResultSet rss = QueryExe.getSqlRS(vl, con);
+				// // vl = utils.getJSONsql("", rss, con, "", "");
+				// tmp1 += (tmp1.length() == 0 ? "" : ",") +
+				// utils.getJSONStr("LISTNAME", vl, false);
+				// } else
+				tmp1 += (tmp1.length() == 0 ? "" : ",") + utils.getJSONStr(cn, vl, false);
 
 			}
 			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
@@ -176,11 +183,10 @@ public class QuickRepMetaData {
 		listSubReports.clear();
 
 		Connection con = instanceInfo.getmDbc().getDbConnection();
-		report_name = QueryExe.getSqlValue("select max(titlearb) from invqrycols1 where code='" + id + "'", con, "")
-				+ "";
+		report_name = QueryExe.getSqlValue("select max(titlearb) from c6_qry1 where code='" + id + "'", con, "") + "";
 		// --------sub report addings
 		QueryExe qe = new QueryExe(con);
-		qe.setSqlStr("select code,titlearb from invqrycols1 where parentrep=:id order by code");
+		qe.setSqlStr("select code,titlearb from c6_qry1 where parentrep=:id order by code");
 		qe.setParaValue("id", id);
 		ResultSet rs = qe.executeRS();
 		if (rs != null) {
@@ -197,7 +203,7 @@ public class QuickRepMetaData {
 
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 		QueryExe qe = new QueryExe(con);
-		qe.setSqlStr("select  *from invqrycols2  where code=:id order by code,indexno");
+		qe.setSqlStr("select  *from c6_qry2  where code=:id order by code,indexno");
 		qe.setParaValue("id", id);
 		ResultSet rs = qe.executeRS();
 		if (rs != null) {
@@ -270,11 +276,11 @@ public class QuickRepMetaData {
 		}
 
 		indexin = getIndexNoIn(idno);
-		PreparedStatement ps_1 = con.prepareStatement("select *from INVQRYCOLS1 where code='" + idno + "'",
+		PreparedStatement ps_1 = con.prepareStatement("select *from c6_qry1 where code='" + idno + "'",
 				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
 		PreparedStatement ps_2 = con.prepareStatement(
-				"select *from INVQRYCOLS2 where code='" + idno + "' and (indexno in (" + utils.nvl(indexin, "null")
+				"select *from c6_qry2 where code='" + idno + "' and (indexno in (" + utils.nvl(indexin, "null")
 						+ ") or (iswhere='Y' or cp_hidecol='Y')  ) ORDER BY INDEXNO",
 				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
@@ -556,9 +562,9 @@ public class QuickRepMetaData {
 		if (txtGroup2 != null) {
 			strgroup2 = txtGroup2;
 		}
-		String sq = "select *from invqrycols2 where code='" + idno + "' and group_name is not null  order by indexno";
+		String sq = "select *from c6_qry2 where code='" + idno + "' and group_name is not null  order by indexno";
 		if (strgroup1.isEmpty() && strgroup2.isEmpty())
-			sq = "select *from invqrycols2 where code='" + idno + "'   order by indexno";
+			sq = "select *from c6_qry2 where code='" + idno + "'   order by indexno";
 
 		ltmp.clear();
 		PreparedStatement psq = con.prepareStatement(sq, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -658,7 +664,7 @@ public class QuickRepMetaData {
 			// false);
 			cp = utils.findColByCol(rsm.getColumnName(i + 1), listcols);
 			scp = utils.getJSONCP(cp);
-			//tmp1 += scp;
+			// tmp1 += scp;
 
 			met += (met.length() > 0 ? "," : "") + "{" + scp + "}";
 
@@ -690,8 +696,9 @@ public class QuickRepMetaData {
 			return;
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 
-		ResultSet rs = QueryExe.getSqlRS("select group_name from invqrycols2 where CODE='" + id
-				+ "' and group_name is not null order by INDEXNO", con);
+		ResultSet rs = QueryExe.getSqlRS(
+				"select group_name from c6_qry2 where CODE='" + id + "' and group_name is not null order by INDEXNO",
+				con);
 		if (rs == null)
 			return;
 		rs.beforeFirst();

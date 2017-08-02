@@ -1,6 +1,12 @@
 package com.controller;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -8,24 +14,35 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.generic.DBClass;
-import com.generic.Parameter;
 import com.generic.QueryExe;
 import com.generic.localTableModel;
 import com.generic.qryColumn;
@@ -142,6 +159,12 @@ public class UserRoute {
 				ret = buildJsonGraphQuery(params);
 			}
 
+			if (params.get("command").equals("get-menu-path")) {
+				ret = utils.generateMenuPath(params.get("group"), params.get("parent"), params.get("code"),
+						instanceInfo.getmDbc().getDbConnection());
+				ret = utils.getJSONStr("return", ret, true);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "{\"errorMsg\":\"" + e.getMessage() + "\"} ";
@@ -175,7 +198,8 @@ public class UserRoute {
 			retdata = utils.getJSONsql("data", rs, con, "", "");
 			sql.setData(retdata);
 			sql.setRet("SUCCESS");
-			rs.close();
+			if (rs != null)
+				rs.close();
 		} catch (SQLException e) {
 			sql.setRet("server_error : " + e.getMessage());
 			sql.setData("");
@@ -195,7 +219,8 @@ public class UserRoute {
 			retdata = utils.getJSONsqlMetaData(rs, con, "", "");
 			sql.setData(retdata);
 			sql.setRet("SUCCESS");
-			rs.close();
+			if (rs != null)
+				rs.close();
 		} catch (SQLException e) {
 			sql.setRet("server_error : " + e.getMessage());
 			sql.setData("");
@@ -288,6 +313,89 @@ public class UserRoute {
 		return new ResponseEntity<SQLJson>(sql, HttpStatus.OK);
 	}
 
+	@RequestMapping(value = "/report", method = RequestMethod.POST, produces = "application/pdf")
+	public ResponseEntity<InputStreamResource> getReportPdf(@RequestParam Map<String, String> params) {
+		String filename = servletContext.getRealPath("") + "reports/" + params.get("reportfile");
+
+		byte[] pdfFile = null;
+		try {
+			pdfFile = getReport(params);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.parseMediaType("application/pdf"));
+			headers.add("Access-Control-Allow-Origin", "*");
+			headers.add("Access-Control-Allow-Methods", "GET, POST, PUT");
+			headers.add("Access-Control-Allow-Headers", "Content-Type");
+			headers.add("Content-Disposition", "filename=" + filename);
+			headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+			headers.add("Pragma", "no-cache");
+			headers.add("Expires", "0");
+			ByteArrayInputStream bt = new ByteArrayInputStream(pdfFile);
+			ResponseEntity<InputStreamResource> response = new ResponseEntity<InputStreamResource>(
+					new InputStreamResource(bt), headers, HttpStatus.OK);
+			return response;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
+
+	}
+
+	@PostMapping("/upload/report/pic")
+	public ResponseEntity<?> uploadFileMulti(@RequestParam("extraField") String extraField,
+			@RequestParam("files") MultipartFile[] uploadfiles) {
+
+		// Get file name
+		String uploadedFileName = Arrays.stream(uploadfiles).map(x -> x.getOriginalFilename())
+				.filter(x -> !StringUtils.isEmpty(x)).collect(Collectors.joining(" , "));
+
+		if (StringUtils.isEmpty(uploadedFileName)) {
+			return new ResponseEntity("please select a file!", HttpStatus.OK);
+		}
+
+		try {
+
+			saveUploadedFiles(Arrays.asList(uploadfiles));
+
+		} catch (IOException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		return new ResponseEntity("Successfully uploaded - " + uploadedFileName, HttpStatus.OK);
+
+	}
+
+	@RequestMapping(value = "/uploadImage2", method = RequestMethod.POST)
+	public @ResponseBody String uploadImage(@RequestParam Map<String, String> params, HttpServletRequest request) {
+		String imageValue = params.get("imageValue");
+		try {
+			byte[] imageByte = Base64.decodeBase64(imageValue);
+			String directory = servletContext.getRealPath("/") + "reports/sample.jpg";
+			new FileOutputStream(directory).write(imageByte);
+			return "success ";
+		} catch (Exception e) {
+			return "error = " + e;
+		}
+
+	}
+
+	@PostMapping("/uploadImageRep")
+	public ResponseEntity<?> uploadImageRep(@RequestParam("data") MultipartFile avatar,
+			@RequestParam("filename") String fn) {
+		try {
+			byte[] bytes = avatar.getBytes();
+			String directory = servletContext.getRealPath("/") + "reports/"+fn+".jpg";
+			new FileOutputStream(directory).write(bytes);
+			return new ResponseEntity("Successfully uploaded ", HttpStatus.OK);
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	// ---------------all--helper-functions---
 
 	private String quickRepData(Map<String, String> params) throws Exception {
@@ -378,6 +486,9 @@ public class UserRoute {
 		String ret = "";
 		String sql = QueryExe.getSqlValue("select sql from c6_subreps where keyfld=" + params.get("_keyfld"), con, "")
 				+ "";
+		String b4_sql = QueryExe.getSqlValue(
+				"select BEFORE_SQL_EXE from c6_subreps where keyfld=" + params.get("_keyfld"), con, "") + "";
+
 		if (sql.isEmpty())
 			return "";
 		// getting all fields in list from first row
@@ -393,23 +504,45 @@ public class UserRoute {
 				}
 			}
 
+		QueryExe qep = null;
+		if (!b4_sql.isEmpty()) {
+			qep = new QueryExe(con);
+			qep.setSqlStr(b4_sql);
+			qep.parse();
+		}
+
 		QueryExe qe = new QueryExe(con);
 		qe.setSqlStr(sql);
 		qe.parse();
+
 		for (int i = 0; i < fn; i++) {
 			for (String key : params.keySet()) {
 				qe.setParaValue(key.replace("_para_", ""), params.get(key));
+				if (qep != null)
+					qep.setParaValue(key.replace("_para_", ""), params.get(key));
+
 				if (params.get(key).startsWith("@"))
 					qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+				if (qep != null && params.get(key).startsWith("@"))
+					qep.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
 			}
 			for (String l : lstf) {
 				String p = params.get("_flds_" + i + "_" + l);
 				if (p != null && !p.isEmpty()) {
 					qe.setParaValue(l.replaceAll(" ", "_"), p);
+					if (qep != null)
+						qep.setParaValue(l.replaceAll(" ", "_"), p);
+
 					if (p.startsWith("@"))
 						qe.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
+					if (qep != null && p.startsWith("@"))
+						qep.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
+
 				}
 			}
+
+			if (qep != null)
+				qep.execute(true);
 
 			ResultSet rs = qe.executeRS(true);
 			if (rs == null)
@@ -418,6 +551,13 @@ public class UserRoute {
 			lctb.fetchData(rs, (i != 0));
 			rs.close();
 
+		}
+		try {
+			con.commit();
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+			con.rollback();
+			throw ex;
 		}
 
 		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where keyfld=" + params.get("_keyfld"), con);
@@ -501,6 +641,45 @@ public class UserRoute {
 		lctb.setShortDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
 		ret = lctb.getJSONData();
 		return ret;
+	}
+
+	private byte[] getReport(Map<String, String> params) throws Exception {
+		Map<String, Object> mp = new HashMap<String, Object>();
+		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
+		String reportfile = params.get("reportfile");
+		for (String key : params.keySet()) {
+			if (key.contains("_para_")) {
+				mp.put(key.replace("_para_", ""), params.get(key));
+				if (params.get(key).startsWith("@"))
+					mp.put(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+			}
+		}
+		mp.put("COMPANY_NAME", instanceInfo.getMmapVar().get("COMPANY_NAME"));
+		mp.put("COMPANY_NAMEA", instanceInfo.getMmapVar().get("COMPANY_NAMEA"));
+		mp.put("COMPANY_SPECS", instanceInfo.getMmapVar().get("COMPANY_SPECS"));
+		mp.put("COMPANY_SPECSA", instanceInfo.getMmapVar().get("COMPANY_SPECSA"));
+		mp.put("COMPANY_LOGO", instanceInfo.getMmapVar().get("COMPANY_LOGO"));
+
+		byte[] pdfFile = instanceInfo.storeReport(reportfile, mp, false);
+		return pdfFile;
+
+	}
+
+	// save file
+	private void saveUploadedFiles(List<MultipartFile> files) throws IOException {
+
+		for (MultipartFile file : files) {
+
+			if (file.isEmpty()) {
+				continue; // next pls
+			}
+
+			byte[] bytes = file.getBytes();
+			Path path = Paths.get(servletContext.getRealPath("") + "report/tmp/" + file.getOriginalFilename());
+			Files.write(path, bytes);
+
+		}
+
 	}
 
 }
