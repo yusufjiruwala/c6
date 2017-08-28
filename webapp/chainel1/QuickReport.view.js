@@ -183,15 +183,14 @@ sap.ui.jsview("chainel1.QuickReport", {
                 that.oController.showFilterWindow();
             }
         }));
+
         c.push(new sap.m.Button({
                 text: "Print",
                 press: function (e) {
                     that.qv.printHtml();
                 }
             })
-        )
-        ;
-
+        );
 
         return new sap.m.Toolbar({content: c});
     }

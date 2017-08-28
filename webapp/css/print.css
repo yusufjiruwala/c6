@@ -1,7 +1,7 @@
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
-    width: 100%;
+    /*width: 100%;*/
 }
 
 td, th {
@@ -31,14 +31,40 @@ td, th {
     font-size: 14px !important;
     background-color: rgba(239,227,227,1);
 }
+.paras{
+    font-size:12px;
+}
+.paraLabel{
+    border:0px;
+    text-align:end;
+}
+.paraText{
+
+}
+.company{
+    font-size: 24px;
+    font-weight: bold;
+    color: darkgreen;
+    text-align: center;
+}
+.reportTitle{
+    font-size: 16px;
+    font-weight: bold;
+    color: darkgreen;
+    text-align: center;
+}
 
 @media print
 {
+    thead { display:table-header-group;}
     table { page-break-after:auto }
     tr    { page-break-inside:avoid; page-break-after:auto }
     td    { page-break-inside:avoid; page-break-after:auto }
     thead { display:table-header-group;}
     tfoot { display:table-footer-group;}
+    header .paras {
+        display: block;
+    }
 }
 
 @media print {

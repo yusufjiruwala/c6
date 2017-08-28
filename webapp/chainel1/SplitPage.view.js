@@ -44,7 +44,6 @@ sap.ui.jsview("chainel1.SplitPage", {
 
         this.setDisplayBlock(true);
         var that = this;
-
         Util.doAjaxGet("exe?command=get-current-profile", "", false).done(function (dt) {
             sap.ui.getCore().setModel(null, "current_profile");
 
@@ -113,20 +112,34 @@ sap.ui.jsview("chainel1.SplitPage", {
                     this.dt.mTree
                 ]
             });
+        this.pgParaTitle = new sap.m.Label({
+            text: "",
+            textAlign: "Center",
+            design: "Bold"
+        });
+        this.pgParaBar = new sap.m.Bar({
+            contentLeft: [new sap.m.Button({
+                icon: "sap-icon://nav-back",
+                press: function () {
+                    that.oSplitApp.backMaster();
+                    that.oSplitApp.backDetail();
+                }
+            })
+            ],
+            contentMiddle: [this.pgParaTitle],
+            contentRight: []
+        });
 
-        this.oPagePara = new sap.m.Page("pgPara",
+        this.oPgPara = new sap.m.Page("pgPara",
             {
-                showNavButton: true,
-                navButtonPress: function () {
-                    app.backMaster();
-                },
+                customHeader: this.pgParaBar,
                 content: []
-            });
+            }).addStyleClass("menuPage");
 
         this.oPage2 = sap.ui.jsview("pgDashboardView", "chainel1.dashboard");
 
         this.oSplitApp.addMasterPage(this.oPage1);
-        this.oSplitApp.addMasterPage(this.oPagePara);
+        this.oSplitApp.addMasterPage(this.oPgPara);
         this.oSplitApp.addDetailPage(this.oPage2);
 
         // this.oSplitApp.addDetailPage(this.oPgQuickRep);
@@ -156,6 +169,7 @@ sap.ui.jsview("chainel1.SplitPage", {
             this.lctb = new this.LocalTableData();
 
         this.lctb.parse(sData);
+
         if (this.DataTree === undefined)
             this.DataTree = sap.ui.require("sap/ui/chainel1/util/generic/DataTree");
         if (this.dt === undefined)
@@ -193,6 +207,7 @@ sap.ui.jsview("chainel1.SplitPage", {
                 //var s = lctbb.getFieldValue(lastSelIndex, "MENU_CODE");
                 sap.ui.getCore().byId("SplitPage").select_menu(this.lastSelectedCode);
             });
+
             this.attachDone = true;
         }
         // removing all columns
@@ -218,7 +233,7 @@ sap.ui.jsview("chainel1.SplitPage", {
         sap.ui.getCore().getModel("detailP").getData().pageTitle = st;
         sap.ui.getCore().getModel("detailP").refresh(true);
 
-        this.oSplitApp.toDetail(this.oPage2);
+        //this.oSplitApp.toDetail(this.oPage2);
         this.oSplitApp.hideMaster();
 
 
@@ -268,7 +283,13 @@ sap.ui.jsview("chainel1.SplitPage", {
             this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
 
     },
-    show_menu_panel: function (pnl) {
+    show_menu_panel: function (pnl, tit) {
+        var that = this;
+        this.oPgPara.removeAllContent();
+        this.oPgPara.destroyContent();
+        this.pgParaTitle.setText(Util.nvl(tit, "Enter Parameters.."));
+        this.oSplitApp.toMaster("pgPara");
+        this.oPgPara.addContent(pnl);
 
     }
 

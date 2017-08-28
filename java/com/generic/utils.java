@@ -1052,9 +1052,9 @@ public class utils {
 				cn = rsm.getColumnName(i + 1);
 				tmp1 += (tmp1.length() == 0 ? "" : ",") + getJSONStr(cn, nvl(rs.getString(cn), ""), false);
 			}
-			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";			
+			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
 		}
-		
+
 		ret = (var.length() == 0 ? "" : "\"" + var + "\":") + "[" + ret + "]";
 
 		return ret;
@@ -1117,11 +1117,15 @@ public class utils {
 		ret += "," + getJSONStr("display_align", cp.display_align, false);
 		ret += "," + getJSONStr("summary", cp.summary, false);
 		ret += "," + getJSONStr("display_width", cp.display_width, false);
+		ret += "," + getJSONStr("display_style", cp.display_style, false);
 		ret += "," + getJSONStr("descr", cp.descr, false);
 		ret += "," + getJSONStr("grouped", (cp.isGrouped ? "true" : "false"), false);
 		ret += "," + getJSONStr("qtree_type", cp.qtree_type, false);
 		ret += "," + getJSONStr("hide_col", (cp.hide_col ? "true" : "false"), false);
-
+		ret += "," + getJSONStr("cf_operator", cp.cf_operator, false);
+		ret += "," + getJSONStr("cf_value", cp.cf_value, false);
+		ret += "," + getJSONStr("cf_true", cp.cf_true, false);
+		ret += "," + getJSONStr("cf_false", cp.cf_false, false);
 		return ret;
 	}
 
@@ -1162,6 +1166,16 @@ public class utils {
 		}
 
 		return rets;
+	}
+
+	public static String insertStringAfter(String str, String str_insert, String str_after) {
+		int startIndex = str.toUpperCase().indexOf(str_after.toUpperCase());
+		if (startIndex < 0)
+			return "";
+
+		String b4_str = str.substring(0, startIndex + str_after.length());
+
+		return b4_str + str_insert + str.substring(b4_str.length() + 1, str.length());
 	}
 
 }

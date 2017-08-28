@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.generic.DBClass;
@@ -55,6 +56,8 @@ import com.tools.utilities.SQLJson;
 public class UserRoute {
 
 	private String path = "";
+
+	private String sessionId = "";
 
 	@Autowired
 	private ServletContext servletContext;
@@ -165,6 +168,32 @@ public class UserRoute {
 				ret = utils.getJSONStr("return", ret, true);
 			}
 
+			if (params.get("command").equals("get-subrep")) {
+				String id = params.get("report-id");
+				ret = getSubRepJson("subrep", id);
+			}
+
+			if (params.get("command").equals("get-option-subreps")) {
+				String id = params.get("report-id");
+				ret = "";
+				Connection con = instanceInfo.getmDbc().getDbConnection();
+				ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where rep_id='" + id + "'order by rep_pos",
+						con);
+				String subreps = "";
+				if (rs != null && rs.first()) {
+					if (rs.getString("REP_TYPE").equals("OPTIONS")) {
+						String[] op = rs.getString("sql").split(",");
+						for (int i = 0; i < op.length; i++) {
+							String[] sop = op[i].split("=");
+							String js = getSubRepJson(sop[0], sop[1]);
+							ret += (ret.length() == 0 ? "" : ",") + js;
+						}
+					}
+					ret = "{" + ret + "}";
+					rs.close();
+				}
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "{\"errorMsg\":\"" + e.getMessage() + "\"} ";
@@ -180,6 +209,11 @@ public class UserRoute {
 			if (!params.containsKey("user") || !params.containsKey("password") || !params.containsKey("file"))
 				throw new Exception("require parameters .user , password , file");
 			ret = instanceInfo.loginUser(params);
+			sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+			instanceInfo.sessionId = sessionId;
+			QueryExe.execute("begin c6_session.delete_cache('" + instanceInfo.getmLoginUser() + "');end;",
+					instanceInfo.getmDbc().getDbConnection());
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "{\"errorMsg\":\"" + e.getMessage() + "\"," + "\"sql\": \" sql -> " + "" + "\" } ";
@@ -210,21 +244,28 @@ public class UserRoute {
 	}
 
 	@RequestMapping(value = "/sqlmetadata", method = RequestMethod.POST)
-	public ResponseEntity<SQLJson> testm(@RequestBody SQLJson sql) {
+	public ResponseEntity<SQLJson> testm(@RequestBody SQLJson sql, @RequestParam Map<String, String> params) {
 		sql.setRet("ok");
 		String retdata = "";
+		Connection con = instanceInfo.getmDbc().getDbConnection();
 		try {
-			Connection con = instanceInfo.getmDbc().getDbConnection();
-			ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);
-			retdata = utils.getJSONsqlMetaData(rs, con, "", "");
+
+			// ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);
+			retdata = executeSQlMetaData(sql.getSql(), params);
+			// retdata = executeMetaData()//utils.getJSONsqlMetaData(rs, con,
+			// "", "");
 			sql.setData(retdata);
 			sql.setRet("SUCCESS");
-			if (rs != null)
-				rs.close();
-		} catch (SQLException e) {
+			con.commit();
+		} catch (Exception e) {
 			sql.setRet("server_error : " + e.getMessage());
 			sql.setData("");
 			e.printStackTrace();
+
+			try {
+				con.rollback();
+			} catch (SQLException e1) {
+			}
 		}
 
 		return new ResponseEntity<SQLJson>(sql, HttpStatus.OK);
@@ -385,7 +426,7 @@ public class UserRoute {
 			@RequestParam("filename") String fn) {
 		try {
 			byte[] bytes = avatar.getBytes();
-			String directory = servletContext.getRealPath("/") + "reports/"+fn+".jpg";
+			String directory = servletContext.getRealPath("/") + "reports/" + fn + ".jpg";
 			new FileOutputStream(directory).write(bytes);
 			return new ResponseEntity("Successfully uploaded ", HttpStatus.OK);
 
@@ -417,7 +458,7 @@ public class UserRoute {
 		}
 
 		String sq = "select indexno,initcap(nvl(DISPLAY_NAME,FIELD_NAME)) FIELD_NAME,'Y' SELECTION ,COLWIDTH DISPLAY_WIDTH ,'' FILTER_TEXT,datatypex "
-				+ "FROM INVQRYCOLS2 WHERE CODE='" + rid
+				+ "FROM c6_qry2 WHERE CODE='" + rid
 				+ "' and  group_name is null and iswhere is null and cp_hidecol is null"
 				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg.trim() + "')"
 				+ " and field_name in (" + cols + ")" + "  order by indexno ";
@@ -484,75 +525,108 @@ public class UserRoute {
 		String _balfld = "";
 		String _fld = "";
 		String ret = "";
+		String bgn = " c6_session.username:='" + instanceInfo.getmLoginUser() + "'; c6_session.session_id:='"
+				+ instanceInfo.sessionId + "';";
+
 		String sql = QueryExe.getSqlValue("select sql from c6_subreps where keyfld=" + params.get("_keyfld"), con, "")
 				+ "";
 		String b4_sql = QueryExe.getSqlValue(
 				"select BEFORE_SQL_EXE from c6_subreps where keyfld=" + params.get("_keyfld"), con, "") + "";
-
-		if (sql.isEmpty())
-			return "";
-		// getting all fields in list from first row
-		List<String> lstf = new ArrayList<String>();
-		lstf.add("rn");
-		String flds = "rn";
-		int fn = Integer.valueOf(params.get("_total_no"));
-		if (fn > 0)
-			for (String key : params.keySet()) {
-				if (key.startsWith("_flds_0_")) {
-					lstf.add(key.replace("_flds_0_", ""));
-					flds += (flds.isEmpty() ? "" : ",") + " '' " + key.replace("_flds_0_", "");
-				}
-			}
-
-		QueryExe qep = null;
-		if (!b4_sql.isEmpty()) {
-			qep = new QueryExe(con);
-			qep.setSqlStr(b4_sql);
-			qep.parse();
-		}
-
-		QueryExe qe = new QueryExe(con);
-		qe.setSqlStr(sql);
-		qe.parse();
-
-		for (int i = 0; i < fn; i++) {
-			for (String key : params.keySet()) {
-				qe.setParaValue(key.replace("_para_", ""), params.get(key));
-				if (qep != null)
-					qep.setParaValue(key.replace("_para_", ""), params.get(key));
-
-				if (params.get(key).startsWith("@"))
-					qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
-				if (qep != null && params.get(key).startsWith("@"))
-					qep.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
-			}
-			for (String l : lstf) {
-				String p = params.get("_flds_" + i + "_" + l);
-				if (p != null && !p.isEmpty()) {
-					qe.setParaValue(l.replaceAll(" ", "_"), p);
-					if (qep != null)
-						qep.setParaValue(l.replaceAll(" ", "_"), p);
-
-					if (p.startsWith("@"))
-						qe.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
-					if (qep != null && p.startsWith("@"))
-						qep.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
-
-				}
-			}
-
-			if (qep != null)
-				qep.execute(true);
-
-			ResultSet rs = qe.executeRS(true);
-			if (rs == null)
-				continue;
-			ResultSetMetaData rsm = rs.getMetaData();
-			lctb.fetchData(rs, (i != 0));
-			rs.close();
-
-		}
+		String b4_sql_once = QueryExe.getSqlValue(
+				"select BEFORE_SQL_EXE_ONCE from c6_subreps where keyfld=" + params.get("_keyfld"), con, "") + "";
 		try {
+			if (sql.isEmpty())
+				return "";
+
+			// getting all fields in list from first row
+			List<String> lstf = new ArrayList<String>();
+			lstf.add("rn");
+			String flds = "rn";
+			int fn = Integer.valueOf(params.get("_total_no"));
+			if (fn > 0)
+				for (String key : params.keySet()) {
+					if (key.startsWith("_flds_0_")) {
+						lstf.add(key.replace("_flds_0_", ""));
+						flds += (flds.isEmpty() ? "" : ",") + " '' " + key.replace("_flds_0_", "");
+					}
+				}
+
+			QueryExe qep = null;
+			QueryExe qepo = null;
+			if (!b4_sql.isEmpty()) {
+
+				qep = new QueryExe(con);
+				qep.setSqlStr(utils.insertStringAfter(b4_sql, bgn, "begin"));
+				qep.parse();
+			}
+			if (!b4_sql_once.isEmpty()) {
+				qepo = new QueryExe(con);
+				qepo.setSqlStr(utils.insertStringAfter(b4_sql_once, bgn, "begin"));
+				qepo.parse();
+			}
+
+			QueryExe qe = new QueryExe(con);
+			qe.setSqlStr(sql);
+			qe.parse();
+
+			for (int i = 0; i < fn; i++) {
+
+				for (String key : params.keySet()) {
+
+					qe.setParaValue(key.replace("_para_", ""), params.get(key));
+					if (qep != null)
+						qep.setParaValue(key.replace("_para_", ""), params.get(key));
+
+					if (params.get(key).startsWith("@"))
+						qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+					if (qep != null && params.get(key).startsWith("@"))
+						qep.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+
+					if (!b4_sql_once.isEmpty() && i == 0) {
+						qepo.setParaValue(key.replace("_para_", ""), params.get(key));
+						if (params.get(key).startsWith("@"))
+							qepo.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+					}
+				}
+				for (String l : lstf) {
+					String p = params.get("_flds_" + i + "_" + l);
+					if (p != null && !p.isEmpty()) {
+						qe.setParaValue(l.replaceAll(" ", "_"), p);
+						if (qep != null)
+							qep.setParaValue(l.replaceAll(" ", "_"), p);
+
+						if (p.startsWith("@"))
+							qe.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
+						if (qep != null && p.startsWith("@"))
+							qep.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
+
+						if (!b4_sql_once.isEmpty() && i == 0) {
+							qep.setParaValue(l.replaceAll(" ", "_"), p);
+							if (p.startsWith("@"))
+								qepo.setParaValue(l.replaceAll(" ", "_"), (sdf.parse(p.substring(1))));
+						}
+
+					}
+				}
+
+				if (qep != null)
+					qep.execute(true);
+
+				if (qepo != null && i == 0)
+					qepo.execute();
+				ResultSet rs = qe.executeRS(true);
+				if (rs == null)
+					continue;
+				ResultSetMetaData rsm = rs.getMetaData();
+				lctb.fetchData(rs, (i != 0));
+				rs.close();
+				qe.close();
+			}
+			if (qepo != null)
+				qepo.close();
+			if (qep != null)
+				qep.close();
+
 			con.commit();
 		} catch (SQLException ex) {
 			ex.printStackTrace();
@@ -608,6 +682,7 @@ public class UserRoute {
 				}
 
 			}
+			rs.getStatement().close();
 			rs.close();
 		}
 
@@ -680,6 +755,58 @@ public class UserRoute {
 
 		}
 
+	}
+
+	private String executeSQlMetaData(String sql, Map<String, String> params) throws Exception {
+		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
+		Connection con = instanceInfo.getmDbc().getDbConnection();
+		String bgn = " c6_session.username:='" + instanceInfo.getmLoginUser() + "'; c6_session.session_id:='"
+				+ instanceInfo.sessionId + "';";
+
+		String ssql = sql;
+		if (!sql.toUpperCase().startsWith("SELECT")) {
+			ssql = utils.insertStringAfter(sql, bgn, "BEGIN");
+		}
+
+		QueryExe qe = new QueryExe(ssql, con);
+		for (String key : params.keySet()) {
+			String p = params.get(key);
+			String k = key.replaceAll(" ", "_").replaceAll("_para_", "");
+			if (p != null && !p.isEmpty()) {
+				qe.setParaValue(k, p);
+				if (p.startsWith("@"))
+					qe.setParaValue(k, (sdf.parse(p.substring(1))));
+			}
+		}
+		ResultSet rs = null;
+		String ret = "";
+
+		if (ssql.toUpperCase().startsWith("SELECT")) {
+			rs = qe.executeRS();
+			ret = utils.getJSONsqlMetaData(rs, con, "", "");
+		} else {
+			qe.execute();
+		}
+
+		if (rs != null) {
+			rs.getStatement().close();
+			rs.close();
+		}
+
+		return ret;
+	}
+
+	private String getSubRepJson(String repname, String id) throws Exception {
+		String ret = "";
+		Connection con = instanceInfo.getmDbc().getDbConnection();
+		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where rep_id='" + id + "'order by rep_pos", con);
+		String subreps = "";
+		if (rs != null && rs.first()) {
+			subreps = utils.getJSONsql(repname, rs, con, "", "");
+			rs.close();
+		}
+		ret = subreps;
+		return ret;
 	}
 
 }

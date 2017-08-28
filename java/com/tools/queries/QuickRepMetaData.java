@@ -109,7 +109,7 @@ public class QuickRepMetaData {
 		this.id = id;
 		bulidListCols();
 		Connection con = instanceInfo.getmDbc().getDbConnection();
-		String cols = "", ret = "", tmp1 = "", groups = "", grps = "";
+		String cols = "", ret = "", tmp1 = "", groups = "", grps = "", grp1 = "", grp2 = "";
 
 		for (ColumnProperty col : listcols) {
 			tmp1 = utils.getJSONStr("field_name", col.colname, false);
@@ -120,14 +120,32 @@ public class QuickRepMetaData {
 		for (String grp : listGroups)
 			grps += (grps.length() == 0 ? "" : ",") + utils.getJSONStr("group_name", grp, true);
 
+		ResultSet rs = QueryExe.getSqlRS("select *from c6_qry1  where code='" + id + "'", con);
+		if (rs != null) {
+			rs.first();
+			grp1 = utils.getJSONStr("visible", (rs.getString("show_group_1").equals("Y") ? "TRUE" : "FALSE"), false);
+			grp1 += "," + utils.getJSONStr("default", rs.getString("default_group_1"), false);
+			grp1 += "," + utils.getJSONStr("exclude", rs.getString("exclude_group_1"), false);
+			grp2 = utils.getJSONStr("visible", (rs.getString("show_group_2").equals("Y") ? "TRUE" : "FALSE"), false);
+			grp2 += "," + utils.getJSONStr("default", rs.getString("default_group_2"), false);
+			grp2 += "," + utils.getJSONStr("exclude", rs.getString("exclude_group_2"), false);
+
+			rs.close();
+		}
+
 		String pms = getJSONparameters();
-		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where rep_id='" + id + "' order by rep_pos", con);
+		rs = QueryExe.getSqlRS("select *from c6_subreps where (rep_id like '%\"" + id + "\"%' or rep_id='" + id
+				+ "') order by rep_pos", con);
 
 		String subreps = "";
-		if (rs != null && rs.first())
+		if (rs != null && rs.first()){
 			subreps = utils.getJSONsql("subreps", rs, con, "", "");
+			rs.close();
+		}
 		ret += "\"cols\":" + "[" + cols + "]";
 		ret += ",\"groups\":[" + grps + "]";
+		ret += ",\"group1\":{" + grp1 + "}";
+		ret += ",\"group2\":{" + grp2 + "}";
 		ret += (pms.trim().isEmpty() ? "" : ",") + pms;
 		if (subreps.trim().length() > 0)
 			ret += "," + subreps;
@@ -219,8 +237,10 @@ public class QuickRepMetaData {
 				cp.other_info = utils.nvl(rs.getString("group_name"), "");
 				listcols.add(cp);
 			}
+			rs.close();
 			qe.close();
 		}
+
 	}
 
 	public String buildSql(String idno) throws Exception {
@@ -338,7 +358,13 @@ public class QuickRepMetaData {
 				} else {
 					cp.display_width = rs_2.getInt("COLWIDTH");
 				}
+
 				cp.display_type = "";
+				cp.display_style = rs_2.getString("CP_STYLENAMES");
+				cp.cf_operator = utils.nvl(rs_2.getString("cf_operator"), "");
+				cp.cf_value = utils.nvl(rs_2.getString("cf_value"), "");
+				cp.cf_true = utils.nvl(rs_2.getString("cf_true"), "");
+				cp.cf_false = utils.nvl(rs_2.getString("cf_false"), "");
 				cp.pos = rs_2.getInt("indexno");
 				cp.display_align = rs_2.getString("CP_ALIGN");
 				cp.display_format = rs_2.getString("cp_format");
@@ -599,6 +625,8 @@ public class QuickRepMetaData {
 	}
 
 	public String buildJson(String rid, Map<String, String> params) throws Exception {
+		String bgn = "  c6_session.username:='" + instanceInfo.getmLoginUser() + "'; c6_session.session_id:='"
+				+ instanceInfo.sessionId + "';";
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
 		this.id = rid;
@@ -608,7 +636,7 @@ public class QuickRepMetaData {
 
 		if (strExecbefore != null && !strExecbefore.isEmpty()) {
 			try {
-				QueryExe qqe = new QueryExe(strExecbefore, con);
+				QueryExe qqe = new QueryExe(utils.insertStringAfter(strExecbefore, bgn, "begin"), con);
 				for (String key : params.keySet()) {
 					if (key.startsWith("_para_")) {
 						System.out.println("para # " + key + " = " + params.get(key));
@@ -697,7 +725,7 @@ public class QuickRepMetaData {
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 
 		ResultSet rs = QueryExe.getSqlRS(
-				"select group_name from c6_qry2 where CODE='" + id + "' and group_name is not null order by INDEXNO",
+				"select  group_name from c6_qry2 where CODE='" + id + "' and group_name is not null order by INDEXNO",
 				con);
 		if (rs == null)
 			return;

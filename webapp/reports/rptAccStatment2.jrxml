@@ -33,8 +33,10 @@
 	</parameter>
 	<parameter name="COMPANY_SPECSA" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_SPECS" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="SESSION_ID" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT *FROM c6_gl1
+WHERE USERNM=$P{SESSION_ID}
 ORDER BY ACPATH]]>
 	</queryString>
 	<field name="IDNO" class="java.math.BigDecimal"/>
@@ -191,11 +193,14 @@ ORDER BY ACPATH]]>
 		<band height="29" splitType="Stretch">
 			<subreport>
 				<reportElement x="-1" y="0" width="568" height="27" uuid="992e3832-2cf6-44e9-be45-4dcba3057b31"/>
+				<subreportParameter name="BALANCE">
+					<subreportParameterExpression><![CDATA[$F{ACBAL}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="PACCNO">
 					<subreportParameterExpression><![CDATA[$F{ACCNO}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="BALANCE">
-					<subreportParameterExpression><![CDATA[$F{ACBAL}]]></subreportParameterExpression>
+				<subreportParameter name="SESSION_ID">
+					<subreportParameterExpression><![CDATA[$P{SESSION_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "rptAccStatmentDet2.jasper"]]></subreportExpression>
@@ -235,7 +240,7 @@ ORDER BY ACPATH]]>
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="422">
+		<band height="422" splitType="Stretch">
 			<staticText>
 				<reportElement x="34" y="316" width="100" height="20" uuid="c2812d75-e8be-4572-b30e-900d33f26ae5"/>
 				<textElement>
@@ -257,7 +262,7 @@ ORDER BY ACPATH]]>
 				<reportElement x="433" y="386" width="100" height="1" uuid="fa3153e7-d56a-43d3-a90c-a572361c7f0e"/>
 			</line>
 			<image scaleImage="RealSize">
-				<reportElement mode="Transparent" x="2" y="39" width="550" height="80" uuid="eebdfad5-d3b2-4961-8ede-09275ec4f9fc"/>
+				<reportElement mode="Transparent" x="3" y="76" width="550" height="80" uuid="eebdfad5-d3b2-4961-8ede-09275ec4f9fc"/>
 				<imageExpression><![CDATA["Ageing.jpg"]]></imageExpression>
 			</image>
 			<image scaleImage="RealSize">
@@ -265,7 +270,7 @@ ORDER BY ACPATH]]>
 				<imageExpression><![CDATA["daily.jpg"]]></imageExpression>
 			</image>
 			<staticText>
-				<reportElement x="3" y="7" width="156" height="20" forecolor="#999999" uuid="a6872b65-2fce-4e4d-a424-8fd52094e7e0"/>
+				<reportElement x="4" y="46" width="156" height="20" forecolor="#999999" uuid="a6872b65-2fce-4e4d-a424-8fd52094e7e0"/>
 				<textElement>
 					<font size="16" isUnderline="false"/>
 				</textElement>

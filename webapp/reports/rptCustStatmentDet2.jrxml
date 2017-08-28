@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAccStatmentDet2" language="groovy" pageWidth="595" pageHeight="842" columnWidth="588" leftMargin="0" rightMargin="7" topMargin="7" bottomMargin="7" uuid="28fcc65d-e58e-4bdb-beea-e193a4510963">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptCustStatmentDet2" language="groovy" pageWidth="595" pageHeight="842" columnWidth="588" leftMargin="0" rightMargin="7" topMargin="7" bottomMargin="7" uuid="28fcc65d-e58e-4bdb-beea-e193a4510963">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -14,36 +14,33 @@
 		</box>
 	</style>
 	<parameter name="BALANCE" class="java.math.BigDecimal" isForPrompting="false"/>
-	<parameter name="PACCNO" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="MOTHERCUST" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="SESSION_ID" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[select *from C6_GL2
-WHERE USERNM=$P{SESSION_ID}
-order by pos]]>
+		<![CDATA[select *from C6VCS2
+WHERE MOTHERCUST=$P{MOTHERCUST}
+AND USERNM=$P{SESSION_ID}
+order by POS
+]]>
 	</queryString>
-	<field name="ACCNO" class="java.lang.String"/>
-	<field name="NAME" class="java.lang.String"/>
+	<field name="VOU_CODE" class="java.lang.String"/>
 	<field name="VOU_DATE" class="java.sql.Timestamp"/>
-	<field name="DESCR" class="java.lang.String"/>
-	<field name="VOU_NO" class="java.math.BigDecimal"/>
-	<field name="TYPE_DESCR" class="java.lang.String"/>
-	<field name="DEBIT" class="java.math.BigDecimal"/>
+	<field name="MOTHERCUST" class="java.lang.String"/>
+	<field name="BRANCHNO" class="java.lang.String"/>
+	<field name="ACCNAME" class="java.lang.String"/>
+	<field name="VOU_TYPE" class="java.lang.String"/>
+	<field name="TYPE" class="java.math.BigDecimal"/>
 	<field name="CREDIT" class="java.math.BigDecimal"/>
-	<field name="BALANCE" class="java.math.BigDecimal"/>
-	<field name="ACPATH" class="java.lang.String"/>
-	<field name="DRTOT" class="java.math.BigDecimal"/>
-	<field name="CRTOT" class="java.math.BigDecimal"/>
-	<field name="VOU_CODE" class="java.math.BigDecimal"/>
-	<field name="VOU_TYPE" class="java.math.BigDecimal"/>
-	<field name="KEYFLD" class="java.math.BigDecimal"/>
-	<field name="POS" class="java.math.BigDecimal"/>
+	<field name="DEBIT" class="java.math.BigDecimal"/>
+	<field name="TOTQTY" class="java.math.BigDecimal"/>
+	<field name="IDNO" class="java.math.BigDecimal"/>
 	<field name="USERNM" class="java.lang.String"/>
-	<field name="COSTCENT" class="java.lang.String"/>
-	<field name="FCCODE" class="java.lang.String"/>
-	<field name="FC_AMT" class="java.math.BigDecimal"/>
-	<field name="FC_RATE" class="java.math.BigDecimal"/>
-	<field name="FC_MAIN" class="java.lang.String"/>
-	<field name="FC_MAIN_RATE" class="java.math.BigDecimal"/>
+	<field name="JVNO" class="java.math.BigDecimal"/>
+	<field name="DRBAL" class="java.math.BigDecimal"/>
+	<field name="CRBAL" class="java.math.BigDecimal"/>
+	<field name="DESCRNAME" class="java.lang.String"/>
+	<field name="POS" class="java.math.BigDecimal"/>
+	<field name="BALANCE" class="java.math.BigDecimal"/>
 	<variable name="SUMDR" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{DEBIT}]]></variableExpression>
 	</variable>
@@ -175,7 +172,7 @@ order by pos]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{VOU_NO}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{JVNO}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.000;-#,##0.000" isBlankWhenNull="true">
 				<reportElement style="Row_lvl" mode="Transparent" x="492" y="0" width="75" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="8a773e4a-904f-48aa-8dac-9ea1e9e974e9"/>
@@ -254,7 +251,7 @@ order by pos]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{TYPE_DESCR}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{VOU_TYPE}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="Row_lvl" mode="Transparent" x="191" y="0" width="151" height="13" uuid="cca69d51-dd79-432c-ba77-bcaae733948d"/>
@@ -269,7 +266,7 @@ order by pos]]>
 					<font fontName="DejaVu Sans" size="8" isBold="false"/>
 					<paragraph spacingBefore="1"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{DESCR}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ACCNAME}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

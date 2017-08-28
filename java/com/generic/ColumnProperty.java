@@ -31,6 +31,7 @@ public class ColumnProperty {
 	public int pos = 0;
 	public String display_align = "";
 	public String display_format = "";
+	public String display_style="";
 	public Class col_class = null;
 	public String other_styles = "";
 	public ColumnAction action = null;
@@ -51,7 +52,11 @@ public class ColumnProperty {
 	public boolean isGrouped = false;
 	public String qtree_type = "";
 	public boolean hide_col=false;
-
+	public String cf_operator="";
+	public String cf_value="";
+	public String cf_true="";
+	public String cf_false="";
+	
 	@Override
 	public String toString() {
 		return descr;

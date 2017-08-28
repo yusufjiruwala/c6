@@ -1,3 +1,21 @@
+.graphTable {
+    font-family: arial, sans-serif;
+    background-color: white;
+    font-size:12px;
+    border-collapse: collapse;
+    padding-top: 40px !important;
+    display: block;
+    padding-left: 50px;
+    padding-bottom: 50px;
+}
+
+.graphTable td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+
 .simplePage {
     vertical-align: middle;
 }
@@ -52,4 +70,12 @@
     content: '\2807';
     font-size: 30px;
     padding: 10px;
+}
+.paddingLeftRightTop{
+    padding-left: 30px !Important;
+    padding-right: 30px !Important;
+    padding-top: 30px !Important;
+}
+.menuPageO{
+    background-color: lavender;
 }

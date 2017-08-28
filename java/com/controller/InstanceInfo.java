@@ -34,6 +34,7 @@ public class InstanceInfo {
 	private String mOwnerDBUrl = "";
 	private String mCurrentProfile = "";
 	private int mLoginUserPN = 0;
+	public String sessionId = "";
 
 	private Map<String, Object> mMapVars = new HashMap<String, Object>();
 	private Map<String, String> mMapProfiles = new HashMap<String, String>();
@@ -224,16 +225,17 @@ public class InstanceInfo {
 
 		}
 		rst.close();
-
 		setmCurrentProfile(utils.nvl(getMmapVar().get("CURRENT_PROFILE_CODE"), ""));
 
 	}
 
-	public byte[] storeReport(final String filename, final Map map, boolean useTimestamp) throws Exception {
+	public byte[] storeReport(final String filename, final Map<String, Object> map, boolean useTimestamp)
+			throws Exception {
 		Connection con = this.mDbc.getDbConnection();
 		byte[] b = null;
 		String fl = servletContext.getRealPath("") + "reports/";
 		fl = fl.replace("\\", "/");
+		map.put("SESSION_ID", this.getmLoginUser() + "_" + this.sessionId);
 		b = JasperRunManager.runReportToPdf(fl + filename + ".jasper", map, con);
 		String pdffile = servletContext.getRealPath("") + "reports/" + filename + ".pdf";
 		if (useTimestamp) {

@@ -9,7 +9,8 @@ sap.ui.define(["./DataCell"], function (DataCell) {
             styleName: "",
             display_width: "300px",
             isVisible: true,
-            display_align: "begin"
+            display_align: "begin",
+            display_style:""
         };
         this.mColpos = 0;
         this.mColName = "";
@@ -20,7 +21,10 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mSummary = "";
         this.mQtreeType = "";
         this.mHideCol=false;
-
+        this.mCfOperator="";
+        this.mCfValue="";
+        this.mCfTrue="";
+        this.mCfFalse="";
     }
 
     Column.prototype = {

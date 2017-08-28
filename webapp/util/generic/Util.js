@@ -69,8 +69,8 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                 return xhr;
             },
             doAjaxPost: function (path,
-                                 content,
-                                 async) {
+                                  content,
+                                  async) {
                 var params = {
                     url: "/" + path,
                     context: this,
@@ -116,44 +116,61 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
             nvl: function (val1, val2) {
                 return ((val1 == null || val1 == undefined || val1.length == 0) ? val2 : val1);
             },
-            createBar: function (lblId) {
-                var oBar = new sap.m.Bar({
-                    contentLeft: [new sap.m.Button({
+            createBar: function (lblId, pBackMaster) {
+                var backMaster = this.nvl(pBackMaster, true);
+                var b = new sap.m.Button({
+                    icon: "sap-icon://full-screen",
+                    press: function () {
+                        var app = sap.ui.getCore().byId("oSplitApp");
+                        if (app.getMode() == sap.m.SplitAppMode.HideMode)
+                            app.setMode(sap.m.SplitAppMode.ShowHideMode);
+                        else
+                            app.setMode(sap.m.SplitAppMode.HideMode);
+
+                        if (window.$.browser.msie) {
+                            setTimeout(that.afterUpdate, 0);
+                        } else {
+
+                            setTimeout(function () {
+                                // resize must be registered on the element
+                                window.dispatchEvent(new Event('resize'));
+
+                            });
+
+                        }
+                    }
+                });
+                var flRight = new sap.m.FlexBox({direction: sap.m.FlexDirection.Row, items: [b]});
+                var flLeft = new sap.m.FlexBox({
+                    direction: sap.m.FlexDirection.Row, items: [new sap.m.Button({
                         icon: "sap-icon://arrow-left",
                         press: function () {
                             var app = sap.ui.getCore().byId("oSplitApp");
-                            app.backDetail();
-                        }
-                    })],
-                    contentMiddle: [new sap.m.Label({
-                        text: lblId,
-                        textAlign: "Center",
-                        design: "Bold"
-                    })],
-
-                    contentRight: [new sap.m.Button({
-                        icon: "sap-icon://full-screen",
-                        press: function () {
-                            var app = sap.ui.getCore().byId("oSplitApp");
-                            if (app.getMode() == sap.m.SplitAppMode.HideMode)
-                                app.setMode(sap.m.SplitAppMode.ShowHideMode);
-                            else
-                                app.setMode(sap.m.SplitAppMode.HideMode);
-
-                            if (window.$.browser.msie) {
-                                setTimeout(that.afterUpdate, 0);
+                            if (!sap.ui.Device.system.phone) {
+                                app.backDetail();
+                                if (backMaster)
+                                    app.backMaster();
                             } else {
-
-                                setTimeout(function () {
-
-                                    // resize must be registered on the element
-                                    window.dispatchEvent(new Event('resize'));
-
-                                });
-
+                                app.hideDetail();
+                                if (backMaster)
+                                    app.showMaster();
                             }
                         }
                     })]
+                });
+                var flMiddle = new sap.m.FlexBox({
+                    direction: sap.m.FlexDirection.Row, items: [new sap.m.Label({
+                        text: lblId,
+                        textAlign: "Center",
+                        design: "Bold"
+                    })]
+                });
+
+                var oBar = new sap.m.Bar({
+                    contentLeft: [flLeft],
+                    contentMiddle: [flMiddle],
+
+                    contentRight: [flRight]
 
                 });
                 return oBar;
@@ -274,9 +291,13 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     al = sap.ui.core.TextAlign.End;
                 return al;
             },
-            createParas: function (view, pg, st, idAdd, pShowAll) {
+            createParas: function (view, pg, st, idAdd, pShowAll, pWidth, forceshowGroups) {
+                //declaring variables will be used in function
                 var ia = Util.nvl(idAdd, "");
                 var showAll = (pShowAll == undefined ? false : pShowAll);
+                var query_para = {};
+                if (sap.ui.getCore().getModel("query_para") != undefined)
+                    query_para = sap.ui.getCore().getModel("query_para").getData();
                 var thatView = view;
                 var dtx = thatView.colData;
                 var sett = sap.ui.getCore().getModel("settings").getData();
@@ -286,14 +307,90 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                 var input = sap.m.Input;
                 var datepicker = sap.m.DatePicker;
                 var label = sap.m.Label;
-                //if (view.advance_para==und)
+                var checkbox = sap.m.CheckBox;
+                // adding groups header and detail,if groups found more than 2 otherwise forceshowGroups ==true
+                if (forceshowGroups || dtx.groups.length > 2) {
+                    (thatView.byId("txtGroupHeader") != undefined ? thatView.byId("txtGroupHeader").destroy() : null);
+                    var txtGroupHeader = new sap.m.ComboBox(thatView.createId("txtGroupHeader"),
+                        {
+                            items: {
+                                path: "/",
+                                template: new sap.ui.core.ListItem({
+                                    text: "{group_name}",
+                                    key: "{group_name}"
+                                }),
+                                templateShareable: true
+                            },
+                            value: dtx.group1.default
 
+                        }).addStyleClass(st);
+                    (thatView.byId("lblgroupheader") != undefined ? thatView.byId("lblgroupheader").destroy() : null);
+                    var lblG = new sap.m.Label(thatView.createId("lblgroupheader"), {
+                        text: "Group Header",
+                        labelFor: txtGroupHeader
+                    }).addStyleClass(st);
+
+                    (thatView.byId("txtGroupDetail") != undefined ? thatView.byId("txtGroupDetail").destroy() : null);
+                    var txtGroupDetail = new sap.m.ComboBox(thatView.createId("txtGroupDetail"),
+                        {
+                            items: {
+                                path: "/",
+                                template: new sap.ui.core.ListItem({
+                                    text: "{group_name}",
+                                    key: "{group_name}"
+                                }),
+                                templateShareable: true
+                            },
+                            value: dtx.group2.default
+                        }).addStyleClass(st);
+
+                    (thatView.byId("lblgroupdetail") != undefined ? thatView.byId("lblgroupdetail").destroy() : null);
+                    var lblD = new sap.m.Label(thatView.createId("lblgroupdetail"), {
+                        text: "Group Details",
+                        labelFor: txtGroupDetail
+                    }).addStyleClass(st);
+
+                    txtGroupDetail.setModel(new sap.ui.model.json.JSONModel(dtx.groups));
+                    txtGroupHeader.setModel(new sap.ui.model.json.JSONModel(dtx.groups));
+
+                    var e1 = dtx.group1.exclude.split(",");
+                    for (var e in e1)
+                        txtGroupHeader.removeItem(this.findComboItem(txtGroupHeader, e1[e]));
+                    var e2 = dtx.group2.exclude.split(",");
+                    for (var e in e2)
+                        txtGroupDetail.removeItem(this.findComboItem(txtGroupDetail, e2[e]));
+
+                    if (pg instanceof sap.m.FlexBox) {
+                        if (dtx.group1.visible == 'TRUE') {
+                            pg.addItem(lblG);
+                            pg.addItem(txtGroupHeader);
+                        }
+                        if (dtx.group2.visible == 'TRUE') {
+                            pg.addItem(lblD);
+                            pg.addItem(txtGroupDetail);
+                        }
+
+                    } else {
+                        if (dtx.group1.visible == 'TRUE') {
+                            pg.addContent(lblG);
+                            pg.addContent(txtGroupHeader);
+                        }
+                        if (dtx.group2.visible == 'TRUE') {
+                            pg.addContent(lblD);
+                            pg.addContent(txtGroupDetail);
+                        }
+                    }
+
+                }
+                // adding parameters ...
                 for (var i = 0; i < dtx.parameters.length; i++) {
                     var p, pl, vls;
+
                     vls = "";
                     if (dtx.parameters[i].PARA_DEFAULT != undefined)
                         vls = dtx.parameters[i].PARA_DEFAULT;
-
+                    if (query_para[dtx.parameters[i].PARAM_NAME] != undefined && query_para[dtx.parameters[i].PARAM_NAME] + "".length != 0)
+                        vls = query_para[dtx.parameters[i].PARAM_NAME];
                     (thatView.byId("para_" + ia + i) != undefined ? thatView.byId("para_" + ia + i).destroy() : null);
                     (thatView.byId("lblpara_" + ia + i) != undefined ? thatView.byId("lblpara_" + ia + i).destroy() : null);
                     if (dtx.parameters[i].LISTNAME != undefined && dtx.parameters[i].LISTNAME.toString().trim().length > 0) {
@@ -302,10 +399,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                         p = new searchfield(thatView.createId("para_" + ia + i),
                             {
                                 value: vls,
-                                width: "100%",
+                                width: this.nvl(pWidth, "100%"),
                                 customData: [{key: dtlist}],
                                 search: function (e) {
-
                                     if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed)
                                         return;
                                     var src = e.getSource();
@@ -350,66 +446,84 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                                         };
                                         var oFragment = sap.ui.jsfragment("chainel1.searchList", t);
                                         oFragment.open();
-
-
                                     });
                                 }
                             }).addStyleClass(st);
-                        //p.setModel(new sap.ui.model.json.JSONModel(dtlist));
+                        pl = new label(thatView.createId("lblpara_" + ia + i), {
+                            text: dtx.parameters[i].PARA_DESCRARB,
+                            labelFor: p
+                        }).addStyleClass(st);
 
 
                     } else {
-                        p = new input(thatView.createId("para_" + ia + i), {
-                            placeholder: dtx.parameters[i].PARA_DESCRARB,
-                            value: vls
-                        }).addStyleClass(st);
+                        if (dtx.parameters[i].PARA_DATATYPE !== "DATE" || dtx.parameters[i].PARA_DATATYPE !== "BOOLEAN") {
+                            (thatView.byId("para_" + ia + i) != undefined ? thatView.byId("para_" + ia + i).destroy() : null);
+                            (thatView.byId("lblpara_" + ia + i) != undefined ? thatView.byId("lblpara_" + ia + i).destroy() : null);
+                            p = new input(thatView.createId("para_" + ia + i), {
+                                placeholder: dtx.parameters[i].PARA_DESCRARB,
+                                value: vls,
+                                width: this.nvl(pWidth, "100%")
+                            }).addStyleClass(st);
+                            pl = new label(thatView.createId("lblpara_" + ia + i), {
+                                text: dtx.parameters[i].PARA_DESCRARB,
+                                labelFor: p
+                            }).addStyleClass(st);
+                        } // end if for PARA_DATATYPE !== "DATE" || PARA_DATATYPE !== "BOOLEAN"
                     }
-                    pl = new label(thatView.createId("lblpara_" + ia + i), {
-                        text: dtx.parameters[i].PARA_DESCRARB,
-                        labelFor: p
-                    }).addStyleClass(st);
-
                     if (dtx.parameters[i].PARA_DATATYPE === "DATE") {
                         var vl = null;
                         if (dtx.parameters[i].PARA_DEFAULT != undefined)
                             vl = dtx.parameters[i].PARA_DEFAULT;
+                        if (vls != undefined)
+                            vl = vls;
                         (thatView.byId("para_" + ia + i) != undefined ? thatView.byId("para_" + ia + i).destroy() : null);
                         (thatView.byId("lblpara_" + ia + i) != undefined ? thatView.byId("lblpara_" + ia + i).destroy() : null);
                         p = new datepicker(thatView.createId("para_" + ia + i), {
                             value: (vl != undefined ? vl : ""),
                             valueFormat: sett["ENGLISH_DATE_FORMAT"],
                             displayFormat: sett["ENGLISH_DATE_FORMAT"],
-                            placeholder: dtx.parameters[i].PARA_DESCRARB
+                            placeholder: dtx.parameters[i].PARA_DESCRARB,
+                            width: this.nvl(pWidth, "100%")
                         }).addStyleClass(st);
                         pl = new label(thatView.createId("lblpara_" + ia + i), {
                             text: dtx.parameters[i].PARA_DESCRARB,
                             labelFor: p
                         }).addStyleClass(st);
                     }
+                    if (dtx.parameters[i].PARA_DATATYPE === "BOOLEAN") {
+                        (thatView.byId("para_" + ia + i) != undefined ? thatView.byId("para_" + ia + i).destroy() : null);
+                        (thatView.byId("lblpara_" + ia + i) != undefined ? thatView.byId("lblpara_" + ia + i).destroy() : null);
+                        p = new checkbox(thatView.createId("para_" + ia + i), {
+                            selected: (vls == "TRUE" ? true : false),
+                            text: dtx.parameters[i].PARA_DESCRARB
+                        });
+                        pl = undefined;
+                    }
 
-
-                    if (showAll || dtx.parameters[i].PROMPT_TYPE != "A")
+                    if (showAll || dtx.parameters[i].PROMPT_TYPE != "A") {
                         if (pg instanceof sap.m.FlexBox) {
-                            pg.addItem(pl);
+                            if (pl != undefined) pg.addItem(pl);
                             pg.addItem(p);
                         } else {
-                            pg.addContent(pl);
+                            if (pl != undefined) pg.addContent(pl);
                             pg.addContent(p);
                         }
-                    else   // else dtx.parameter.prompt_type==="A"
-                        view.advance_para.push({"label": pl, "input": p});
+                    }
+                    //else   // else dtx.parameter.prompt_type==="A"
+                    //  view.advance_para.push({"label": pl, "input": p});
 
                 }
 
-            },
+            },  //ending here createParas function
             addMenuSubReps: function (view, oMenu, includeGraphOperation) {
 
-                var menu11 = new sap.m.MenuItem({
-                    text: "Sub Reports",
-                    icon: "sap-icon://column-chart-dual-axis",
-                });
-
+                var menu11 = oMenu;
                 if (includeGraphOperation) {
+                    menu11 = new sap.m.MenuItem({
+                        text: "Sub Reports",
+                        icon: "sap-icon://column-chart-dual-axis",
+                    });
+
                     var menu111 = new sap.m.MenuItem({
                         text: "Create new..",
                         icon: "images/add.png",
@@ -435,7 +549,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                                 }
                             if (cols.indexOf(view.colData.subreps[i].MEASURES) <= -1)
                                 fnd = false;
-                        } else if (view.colData.subreps[i].REP_TYPE == "SQL" || view.colData.subreps[i].REP_TYPE == "PDF" ) {
+                        } else if (view.colData.subreps[i].REP_TYPE == "SQL" || view.colData.subreps[i].REP_TYPE == "PDF") {
                             fnd = true;
                         } else if (view.colData.subreps[i].REP_TYPE.startsWith("FIX_")) {
                             fnd = false;
@@ -449,7 +563,8 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
 
                     }
                 }
-                oMenu.addItem(menu11);
+                if (oMenu != menu11)
+                    oMenu.addItem(menu11);
             },
             charCount: function (ch, cnt) {
                 var s = "";
@@ -481,6 +596,12 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                 grid.addContent(l);
                 grid.addContent(o);
                 return {label: l, obj: o};
+            },
+            findComboItem: function (combo, value) {
+                for (var i = 0; i < combo.getItems().length; i++) {
+                    if (combo.getItems()[i] != undefined && combo.getItems()[i].getKey() == value)
+                        return combo.getItems()[i];
+                }
             },
             fillCombo: function (combo, sq, async) {
                 var sq2 = {
@@ -546,6 +667,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     }
 
                 }
+            },
+            htmlEntities: function (str) {
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             }
 
         };

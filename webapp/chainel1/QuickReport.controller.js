@@ -97,6 +97,8 @@ sap.ui.controller("chainel1.QuickReport", {
             that.showPara();
         });
     },
+
+
     showPara: function () {
         var that = this;
         var ia = "result";
@@ -341,7 +343,8 @@ sap.ui.controller("chainel1.QuickReport", {
         })
     }
     ,
-    show_graph: function (rep) {
+    show_graph: function (prep) {
+        var rep=prep;
         if (rep.REP_TYPE == "SQL") {
             this.show_graph_sql(rep);
             return;
@@ -390,10 +393,12 @@ sap.ui.controller("chainel1.QuickReport", {
     },
 
     show_graph_sql: function (rep) {
+
         if (rep.REP_TYPE == "DATASET") {
             this.show_graph(rep);
             return;
         }
+
 
         var view = this.getView();
         var that = this;

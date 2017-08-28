@@ -228,7 +228,6 @@ sap.ui.jsview("chainel1.QuickTreeRep", {
             content: [flexMain],
             buttons: [new sap.m.Button({
                 text: "Execute",
-
                 press: function () {
                     for (var i = 0; i < that.colData.parameters.length; i++) {
                         var src = that.byId("para_" + i);
@@ -248,6 +247,4 @@ sap.ui.jsview("chainel1.QuickTreeRep", {
         });
         dlg.open();
     },
-
-
 });

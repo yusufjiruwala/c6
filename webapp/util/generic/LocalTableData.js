@@ -84,11 +84,16 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 c.getMUIHelper().display_format = this.dataJson.metadata[key].display_format;
                 c.getMUIHelper().display_width = Util.nvl(this.dataJson.metadata[key].display_width, 75) * 2;
                 c.getMUIHelper().display_align = Util.nvl(this.dataJson.metadata[key].display_align, "").replace("ALIGN_", "").toLowerCase();
+                c.getMUIHelper().display_style = Util.nvl(this.dataJson.metadata[key].display_style, "");
                 c.mTitle = Util.nvl(this.dataJson.metadata[key].descr, c.mColName);
                 c.mSummary = this.dataJson.metadata[key].summary;
                 c.mGrouped = (this.dataJson.metadata[key].grouped == "true" ? true : false);
                 c.mQtreeType = Util.nvl(this.dataJson.metadata[key].qtree_type, "");
                 c.mHideCol = Util.nvl(this.dataJson.metadata[key].hide_col, "false") == "true" ? true : false;
+                c.mCfOperator = Util.nvl(this.dataJson.metadata[key].cf_operator, "");
+                c.mCfValue = Util.nvl(this.dataJson.metadata[key].cf_value, "");
+                c.mCfTrue = Util.nvl(this.dataJson.metadata[key].cf_true, "");
+                c.mCfFalse = Util.nvl(this.dataJson.metadata[key].cf_false, "");
                 this.cols.push(c);
             }
             for (var rn in this.dataJson.data) {
@@ -125,7 +130,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                     rstr += (rstr.length == 0 ? "" : ",") + '"' +
                         this.cols[c].mColName + '":' +
                         (typeof this.rows[r].cells[c].getValue() == "number" ? this.rows[r].cells[c].getValue() :
-                        '"' + Util.nvl(this.rows[r].cells[c].getValue(),"").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
+                        '"' + Util.nvl(this.rows[r].cells[c].getValue(), "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
                 }
                 rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
                 tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";
@@ -187,6 +192,53 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 this.masterRows = this.rows.slice(0);
             }
         };
+        LocalTableData.prototype.evaluteCfValue = function (col, rowno) {
+            if (rowno > this.rows.length-1)
+                return false;
+            var op = col.mCfOperator;
+            var cmpval = this.parseValues(col.mCfOperator, rowno);
+            return eval(cmpval);
+            //var rowval = this.getFieldValue(rowno, col.mColName);
+
+
+            // var ret = false;
+
+            // if (col.getMUIHelper().data_type == "number") {
+            //     cmpval = Number(cmpval);
+            //     rowval = Number(rowval);
+            // }
+
+            // if (op == "=" && rowval == cmpval)
+            //     return true;
+            // if (op == ">" && rowval > cmpval)
+            //     return true;
+            // if (op == "<" && rowval < cmpval)
+            //     return true;
+            // if (op == ">=" && rowval >= cmpval)
+            //     return true;
+            // if (op == "<" && rowval < cmpval)
+            //     return true;
+            // if (op == "%" && rowval + "".indexOf(cmpval) > -1)
+            //     return true;
+
+            //return ret;
+        };
+
+        LocalTableData.prototype.parseValues = function (str, rowno) {
+            if (this.cols <= 0)
+                return "";
+            var st = str;
+            for (var i = 0; i < this.cols.length; i++) {
+                var searchMask = ":" + this.cols[i].mColName;
+                var regEx = new RegExp(searchMask, "ig");
+                var replaceMask = this.getFieldValue(rowno, this.cols[i].mColName);
+                if (this.cols[i].getMUIHelper().data_type.toUpperCase() != "NUMBER") {
+                    replaceMask = "'" + replaceMask + "'";
+                }
+                st = st.replace(regEx, replaceMask);
+            }
+            return st;
+        }
 
         return LocalTableData;
 
