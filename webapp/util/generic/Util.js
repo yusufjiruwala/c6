@@ -1,7 +1,9 @@
-sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree", "./Gauge"],
-    function (QueryView, DataTree, Gauge) {
+sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree", "./Gauge", "./Spinner"],
+    function (QueryView, DataTree, Gauge, Spinner) {
         "use strict";
         var Util = {
+            ajaxPre: "",
+
             matchArray: function (str, array) {
                 for (var a in array) {
                     var v = str.match(array[a]);
@@ -42,11 +44,22 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     return acc.concat(val.constructor === Array ? that.flatten(val) : val);
                 }, []);
             },
+
+            doAjaxGetSpin: function (path,
+                                     content,
+                                     async, fnDone, fnFail) {
+                this.doSpin("Executing Query...");
+                var that = this;
+                setTimeout(function () {
+                    that.doAjaxGet(path, content, async).done(fnDone);
+                }, 100);
+
+            },
             doAjaxGet: function (path,
                                  content,
                                  async) {
                 var params = {
-                    url: "/" + path,
+                    url: this.ajaxPre + path,
                     context: this,
                     cache: false
                 };
@@ -72,7 +85,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                                   content,
                                   async) {
                 var params = {
-                    url: "/" + path,
+                    url: this.ajaxPre + path,
                     context: this,
                     cache: false
                 };
@@ -89,7 +102,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                                   content,
                                   async) {
                 var params = {
-                    url: "/" + path,
+                    url: this.ajaxPre + path,
                     context: this,
                     cache: false,
                     dataType: 'json',
@@ -116,6 +129,9 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
             nvl: function (val1, val2) {
                 return ((val1 == null || val1 == undefined || val1.length == 0) ? val2 : val1);
             },
+            nvlObjToStr: function (val1, val2) {
+                return ((val1 == null || val1 == undefined || val1.length == 0) ? val2 + "" : val1 + "");
+            },
             createBar: function (lblId, pBackMaster) {
                 var backMaster = this.nvl(pBackMaster, true);
                 var b = new sap.m.Button({
@@ -130,7 +146,6 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                         if (window.$.browser.msie) {
                             setTimeout(that.afterUpdate, 0);
                         } else {
-
                             setTimeout(function () {
                                 // resize must be registered on the element
                                 window.dispatchEvent(new Event('resize'));
@@ -147,13 +162,14 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                         press: function () {
                             var app = sap.ui.getCore().byId("oSplitApp");
                             if (!sap.ui.Device.system.phone) {
+                                //app.toDetail(app.getDetailPages()[0]);
                                 app.backDetail();
                                 if (backMaster)
-                                    app.backMaster();
+                                    app.toMaster(app.getMasterPages()[0]);
                             } else {
-                                app.hideDetail();
-                                if (backMaster)
-                                    app.showMaster();
+                                app.backMaster();
+                                // if (backMaster)
+                                //     app.showMaster();
                             }
                         }
                     })]
@@ -353,10 +369,10 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                     txtGroupDetail.setModel(new sap.ui.model.json.JSONModel(dtx.groups));
                     txtGroupHeader.setModel(new sap.ui.model.json.JSONModel(dtx.groups));
 
-                    var e1 = dtx.group1.exclude.split(",");
+                    var e1 = Util.nvl(dtx.group1.exclude, "").split(",");
                     for (var e in e1)
                         txtGroupHeader.removeItem(this.findComboItem(txtGroupHeader, e1[e]));
-                    var e2 = dtx.group2.exclude.split(",");
+                    var e2 = Util.nvl(dtx.group2.exclude, "").split(",");
                     for (var e in e2)
                         txtGroupDetail.removeItem(this.findComboItem(txtGroupDetail, e2[e]));
 
@@ -383,7 +399,7 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
 
                 }
                 // adding parameters ...
-                for (var i = 0; i < dtx.parameters.length; i++) {
+                for (var i = 0; i < Util.nvl(dtx.parameters, []).length; i++) {
                     var p, pl, vls;
 
                     vls = "";
@@ -499,6 +515,34 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
                         });
                         pl = undefined;
                     }
+                    if (dtx.parameters[i].PARA_DATATYPE === "GROUP") {
+                        var ls1 = dtx.parameters[i].LISTNAME.split(",");
+                        var si = 0; // selected index...
+                        var bts = [];
+                        for (var l in ls1) {
+                            var l2 = ls1[l].split("=");
+                            var bt = new sap.m.RadioButton(
+                                {
+                                    text: l2[0], customData: [{key: l2[1]}]
+                                }
+                            );
+                            if (l2[1] == dtx.parameters[i].PARA_DEFAULT)
+                                si = l;
+                            bts.push(bt);
+                        }
+
+                        (thatView.byId("para_" + ia + i) != undefined ? thatView.byId("para_" + ia + i).destroy() : null);
+                        (thatView.byId("lblpara_" + ia + i) != undefined ? thatView.byId("lblpara_" + ia + i).destroy() : null);
+
+                        p = new sap.m.RadioButtonGroup(thatView.createId("para_" + ia + i), {
+                            selectedIndex: (si != 0 ? Number(si) : si),
+                            buttons: bts
+                        });
+                        pl = new label(thatView.createId("lblpara_" + ia + i), {
+                            text: dtx.parameters[i].PARA_DESCRARB,
+                            labelFor: p
+                        }).addStyleClass(st);
+                    }
 
                     if (showAll || dtx.parameters[i].PROMPT_TYPE != "A") {
                         if (pg instanceof sap.m.FlexBox) {
@@ -516,7 +560,6 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
 
             },  //ending here createParas function
             addMenuSubReps: function (view, oMenu, includeGraphOperation) {
-
                 var menu11 = oMenu;
                 if (includeGraphOperation) {
                     menu11 = new sap.m.MenuItem({
@@ -670,13 +713,44 @@ sap.ui.define("sap/ui/chainel1/util/generic/Util", ["./QueryView", "./DataTree",
             },
             htmlEntities: function (str) {
                 return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            },
+            doSpin: function (str) {
+                this.busyDialog = new sap.m.BusyDialog({
+                    text: str
+                });
+                this.busyDialog.open();
+
+            },
+            stopSpin: function () {
+                if (this.busyDialog != undefined) {
+                    this.busyDialog.close();
+                    this.busyDialog.destroy();
+                    this.busyDialog = undefined;
+                }
+            },
+            getParsedJsonValue: function (vl, rawValue) {
+                var rv = this.nvl(rawValue, false);
+
+                if (!rv)
+                    return (typeof vl == "number" ? vl :
+                    '"' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
+
+                return (typeof vl == "number" ? vl :
+                '' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '');
+
             }
+            ,
+            convertDimension:function (rep) {
+                var LocalTableData = new LocalTableData();
+                var lt = new LocalTableData();
+            }
+
+
 
         };
 
 
         return Util;
-    })
-;
+    });
 
 

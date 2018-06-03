@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptCustStat1" language="groovy" pageWidth="595" pageHeight="842" columnWidth="567" leftMargin="14" rightMargin="14" topMargin="20" bottomMargin="20" uuid="5e445352-963a-4db7-859a-662fb444736b">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PACCNO" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CP_USER" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="LEVEL_NO" class="java.lang.Double" isForPrompting="false">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PACCNO_DISPLAY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="COMPANY_IMAGE" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["COMPANY_LOGO.bmp"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SURPRESS_0" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA['Y']]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["chaine"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="FROMDATE" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="TODATE" class="java.sql.Timestamp" isForPrompting="false"/>
+	<parameter name="COST_CENTER" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="COST_CENTER_DISPLAY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PRFR" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PRFR_DISPLAY" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_SPECSA" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="COMPANY_SPECS" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="SESSION_ID" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[SELECT *FROM c6vcs1
+where no_of_recs>0
+and usernm=$P{SESSION_ID}
+ORDER BY mothercust]]>
+	</queryString>
+	<field name="COMP_NAME" class="java.lang.String"/>
+	<field name="SPECIFICATION" class="java.lang.String"/>
+	<field name="SPECIFICATIONA" class="java.lang.String"/>
+	<field name="FILENAME" class="java.lang.String"/>
+	<field name="COMP_NAMEA" class="java.lang.String"/>
+	<field name="IDNO" class="java.math.BigDecimal"/>
+	<field name="USERNM" class="java.lang.String"/>
+	<field name="ACCNO" class="java.lang.String"/>
+	<field name="MOTHERCUST" class="java.lang.String"/>
+	<field name="ACNAME" class="java.lang.String"/>
+	<field name="TOTDEB" class="java.math.BigDecimal"/>
+	<field name="TOTCRD" class="java.math.BigDecimal"/>
+	<field name="ACBAL" class="java.math.BigDecimal"/>
+	<field name="DATEE" class="java.sql.Timestamp"/>
+	<field name="BRANCHNOX" class="java.lang.String"/>
+	<field name="ADDRESS" class="java.lang.String"/>
+	<field name="PHONE" class="java.lang.String"/>
+	<field name="B30" class="java.math.BigDecimal"/>
+	<field name="B60" class="java.math.BigDecimal"/>
+	<field name="B90" class="java.math.BigDecimal"/>
+	<field name="B120" class="java.math.BigDecimal"/>
+	<field name="B150" class="java.math.BigDecimal"/>
+	<field name="FROMDATE" class="java.sql.Timestamp"/>
+	<field name="TODATE" class="java.sql.Timestamp"/>
+	<field name="NO_OF_RECS" class="java.math.BigDecimal"/>
+	<group name="grp1Cust" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{MOTHERCUST}]]></groupExpression>
+		<groupHeader>
+			<band height="181">
+				<staticText>
+					<reportElement style="labelPara" x="433" y="123" width="56" height="14" uuid="cf8d8928-66ff-426c-837d-1cff13b6e51f"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" isBold="false" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[From Date :]]></text>
+				</staticText>
+				<textField pattern="dd/MM/yyyy">
+					<reportElement style="strPara" x="489" y="123" width="76" height="14" uuid="6271cefb-d25e-4703-84f8-57910a12d306"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" isBold="false" isUnderline="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{FROMDATE}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="labelPara" x="433" y="137" width="56" height="14" uuid="799c9bfd-33bd-4b68-946f-2d2a4cd011a3"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" isBold="false" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[To Date :]]></text>
+				</staticText>
+				<textField pattern="dd/MM/yyyy">
+					<reportElement style="strPara" x="489" y="137" width="76" height="14" uuid="e2da5e2b-c274-460a-97fc-cdd3e219d908"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" isBold="false" isUnderline="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{TODATE}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement style="strPara" x="134" y="112" width="256" height="14" uuid="cafbe5c6-f075-4a97-b66d-2a912017b5fc"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement>
+						<font fontName="DejaVu Sans" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{ACNAME}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="labelPara" x="0" y="112" width="68" height="14" uuid="15e29c6d-ad05-4cb6-9b11-f02e6b448048"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<text><![CDATA[Customer:]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement style="strPara" x="68" y="112" width="66" height="14" uuid="5d47eefa-6681-43d3-a8ca-bd40f91b9f4e"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{MOTHERCUST}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="strTitle" x="2" y="87" width="563" height="25" uuid="c4c4c5b6-82e7-44b0-b11c-47cf00f78f40"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial"/>
+					</textElement>
+					<text><![CDATA[Account Statment [Recievable/Payables]]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="strCompanySpec" x="321" y="32" width="244" height="29" uuid="67894bdf-c171-4152-a3aa-2809f861e1ef"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="6"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{SPECIFICATIONA}]]></textFieldExpression>
+				</textField>
+				<image scaleImage="FillFrame">
+					<reportElement x="260" y="0" width="61" height="54" uuid="e623f6f5-7f24-4ef8-947d-1223f1605756"/>
+					<imageExpression><![CDATA["company_logo.bmp"]]></imageExpression>
+				</image>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="strCompanyName" x="14" y="1" width="246" height="30" uuid="3e9bbd29-b75f-4ee2-b828-f129a511b480"/>
+					<textElement>
+						<font fontName="DejaVu Sans" size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{COMP_NAME}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="strCompanyName" x="321" y="2" width="244" height="30" uuid="5e979797-8adf-45ea-a54b-01bff4d95eb6"/>
+					<textElement textAlignment="Right">
+						<font fontName="DejaVu Sans" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{COMP_NAMEA}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="strCompanySpec" x="14" y="31" width="246" height="31" uuid="82350b5a-0bcd-4887-b17a-1a7d87f824fc"/>
+					<textElement>
+						<font fontName="DejaVu Sans" size="6"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{SPECIFICATION}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="3" y="75" width="561" height="2" uuid="7e496ea8-45ee-4afa-b371-55f3c2e5a704"/>
+				</line>
+				<staticText>
+					<reportElement style="labelPara" x="1" y="126" width="68" height="14" uuid="24578142-0ae6-4007-bff7-2be8f2d78d7b"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<text><![CDATA[Branch:]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement style="strPara" x="68" y="126" width="66" height="14" uuid="e6e30c17-a944-45a6-bd29-6f2fff643d11"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Center">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{BRANCHNOX}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement style="strPara" x="134" y="127" width="256" height="14" uuid="c9d8e368-9ed7-4622-ab10-88e13ac2c29f"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement>
+						<font fontName="DejaVu Sans" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{ADDRESS}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="labelPara" x="0" y="140" width="68" height="14" uuid="c4e29497-5e4d-496f-aea6-3d01d80d1999"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<text><![CDATA[Phone:]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement style="strPara" x="68" y="140" width="322" height="14" uuid="ae012856-8b93-4f6e-b3a8-203072f6a079"/>
+					<box leftPadding="2" rightPadding="2"/>
+					<textElement textAlignment="Center">
+						<font fontName="DejaVu Sans" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PHONE}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="444" y="154" width="80" height="20" uuid="38091d7c-c4fc-49fb-9580-32b1ca28f6d2"/>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement x="524" y="154" width="40" height="20" uuid="bac034fd-7d59-42c5-9c0d-5a33ecc7514f"/>
+					<textElement>
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="76">
+				<line>
+					<reportElement positionType="Float" x="3" y="64" width="100" height="1" uuid="cc855c79-ea8f-44c9-844d-637c8e401c87"/>
+				</line>
+				<line>
+					<reportElement positionType="Float" x="410" y="65" width="100" height="1" uuid="fa3153e7-d56a-43d3-a90c-a572361c7f0e"/>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="410" y="0" width="100" height="20" uuid="89bfd4ad-7a63-4b27-bf75-0918f851d061"/>
+					<textElement textAlignment="Center">
+						<font isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Audited  By ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="0" width="100" height="20" uuid="c2812d75-e8be-4572-b30e-900d33f26ae5"/>
+					<textElement>
+						<font isBold="true" isUnderline="true"/>
+					</textElement>
+					<text><![CDATA[Approved By ]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band height="29" splitType="Stretch">
+			<subreport>
+				<reportElement x="-1" y="1" width="568" height="27" uuid="992e3832-2cf6-44e9-be45-4dcba3057b31"/>
+				<subreportParameter name="BALANCE">
+					<subreportParameterExpression><![CDATA[$F{ACBAL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="SESSION_ID">
+					<subreportParameterExpression><![CDATA[$P{SESSION_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="MOTHERCUST">
+					<subreportParameterExpression><![CDATA[$F{MOTHERCUST}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "rptCustStatmentDet2.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="25" splitType="Stretch">
+			<textField pattern="dd/MM/yyyy HH.mm.ss">
+				<reportElement x="-1" y="0" width="160" height="20" uuid="e6514d93-4a46-4fbb-96dc-fe07c39fc070"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Transparent" x="160" y="0" width="273" height="20" uuid="a1bee42d-ce22-4608-9621-4b3e8c4d8787"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Printed By :" + $P{CP_USER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

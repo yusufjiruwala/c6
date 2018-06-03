@@ -356,7 +356,6 @@ sap.ui.controller("chainel1.QuickReport", {
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
 
-
         var selectedIndices = mTable.getSelectedIndices();
         var selectedEntries = [];
         var tableData = mTable.getModel().getData();

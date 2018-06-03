@@ -204,12 +204,22 @@ sap.ui.jsview("chainel1.dashboard", {
             width: "320px",
             height: "125px",
             infoToolbar: new sap.m.Toolbar({
-                content: [new sap.m.Label({text:label})]
+                content: [new sap.m.Button({
+                    icon: "sap-icon://edit",
+                    press: function () {
+                        var og = this.getParent().getParent();
+                        var occx = og.getCustomData()[1].getKey();
+                        var ox = sap.ui.getCore().byId(occx);
+                        that.oController.showGaugeDetail(ox, og.getCustomData()[1].getValue());
+                    }
+                }),
+                    new sap.m.Label({text: label})
+                ]
             }),
             content: [
                 oc2
             ],
-            customData: [{key: gg}]
+            customData: [{key: oc2.getId(),value:gg}]
         });
 
         var g = new this.Gauge(that.createId(name), config);
@@ -246,17 +256,23 @@ sap.ui.jsview("chainel1.dashboard", {
                 height: height,
                 headerText: rep.REP_TITLE,
                 infoToolbar: new sap.m.Toolbar({
-                    content: [new sap.m.Button({
-                        icon: "sap-icon://sys-cancel",
-                    }),
+                    content: [/*new sap.m.Button({
+                     icon: "sap-icon://sys-cancel",
+                     }),*/
                         new sap.m.Button({
-                            icon: "sap-icon://edit"
+                            icon: "sap-icon://edit",
+                            press: function () {
+                                var og = this.getParent().getParent();
+                                var occx = og.getCustomData()[2].getKey();
+                                var ox = sap.ui.getCore().byId(occx);
+                                that.oController.showGraphDetail(ox, og.getHeaderText());
+                            }
                         })]
                 }),
                 content: [
                     oc2
                 ],
-                customData: [{key: rep}],
+                customData: [{key: rep}, {key: oc2.getId()}],
                 layoutData: new sap.ui.layout.GridData({
                     span: spanStr
                 })

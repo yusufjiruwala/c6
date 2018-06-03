@@ -1,3 +1,11 @@
+.multiLabel1{
+    font-style: italic;
+    font-weight: bold;
+    border-bottom: lightgray;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
+
 .graphTable {
     font-family: arial, sans-serif;
     background-color: white;
@@ -78,4 +86,13 @@
 }
 .menuPageO{
     background-color: lavender;
+}
+
+.ratio_bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #8ef;
+    z-index: -1;
 }

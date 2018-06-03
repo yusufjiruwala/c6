@@ -31,7 +31,7 @@ public class ColumnProperty {
 	public int pos = 0;
 	public String display_align = "";
 	public String display_format = "";
-	public String display_style="";
+	public String display_style = "";
 	public Class col_class = null;
 	public String other_styles = "";
 	public ColumnAction action = null;
@@ -51,12 +51,15 @@ public class ColumnProperty {
 	public String other_info = "";
 	public boolean isGrouped = false;
 	public String qtree_type = "";
-	public boolean hide_col=false;
-	public String cf_operator="";
-	public String cf_value="";
-	public String cf_true="";
-	public String cf_false="";
-	
+	public boolean hide_col = false;
+	public String cf_operator = "";
+	public String cf_value = "";
+	public String cf_true = "";
+	public String cf_false = "";
+	public String parent_title_1 = "";
+	public String parent_title_2 = "";
+	public int parent_title_span = 1;
+
 	@Override
 	public String toString() {
 		return descr;
@@ -84,6 +87,14 @@ public class ColumnProperty {
 		if (this.lov_sql != null) {
 			cp.lov_sql.addAll(lov_sql);
 		}
+		cp.parent_title_1=this.parent_title_1;
+		cp.parent_title_2=this.parent_title_2;
+		cp.parent_title_span=this.parent_title_span;
+		cp.cf_operator=this.cf_operator;
+		cp.cf_false=this.cf_false;
+		cp.cf_true=this.cf_true;
+		cp.cf_value=this.cf_value;
+		cp.display_style=this.display_style;
 		cp.data_type = this.data_type;
 		return cp;
 

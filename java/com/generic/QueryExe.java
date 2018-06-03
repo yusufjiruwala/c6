@@ -54,19 +54,15 @@ public class QueryExe {
 			mapParameters.get(pnm.toUpperCase()).setValue(vl);
 		}
 
-		if (vl instanceof Number || vl instanceof BigDecimal
-				|| vl instanceof Float) {
-			mapParameters.get(pnm.toUpperCase()).setValueType(
-					Parameter.DATA_TYPE_NUMBER);
+		if (vl instanceof Number || vl instanceof BigDecimal || vl instanceof Float) {
+			mapParameters.get(pnm.toUpperCase()).setValueType(Parameter.DATA_TYPE_NUMBER);
 		}
 		if (vl instanceof java.sql.Date || vl instanceof java.util.Date) {
-			mapParameters.get(pnm.toUpperCase()).setValueType(
-					Parameter.DATA_TYPE_DATE);
+			mapParameters.get(pnm.toUpperCase()).setValueType(Parameter.DATA_TYPE_DATE);
 		}
 
 		if (vl instanceof java.sql.Timestamp) {
-			mapParameters.get(pnm.toUpperCase()).setValueType(
-					Parameter.DATA_TYPE_DATETIME);
+			mapParameters.get(pnm.toUpperCase()).setValueType(Parameter.DATA_TYPE_DATETIME);
 		}
 
 	}
@@ -87,13 +83,11 @@ public class QueryExe {
 			cols = cols + (cols.isEmpty() ? "" : " , ") + lst.get(i);
 			pars = pars + (pars.isEmpty() ? "" : " , ") + ":" + lst.get(i);
 		}
-		sqlStr = "insert into " + table_name + " (" + cols + ") values ("
-				+ pars + ")";
+		sqlStr = "insert into " + table_name + " (" + cols + ") values (" + pars + ")";
 		return sqlStr;
 	}
 
-	public String AutoGenerateUpdateStatment(String table_name,
-			String exclude_col, String where_col) {
+	public String AutoGenerateUpdateStatment(String table_name, String exclude_col, String where_col) {
 		if (mapParameters.size() <= 0) {
 			sqlStr = "";
 			return "";
@@ -103,8 +97,7 @@ public class QueryExe {
 		List<String> lst = new ArrayList<String>(mapParameters.keySet());
 		for (int i = 0; i < lst.size(); i++) {
 			if (!exclude_col.contains("'" + lst.get(i) + "'")) {
-				cols = cols + (cols.isEmpty() ? "" : " , ")
-						+ (lst.get(i) + " = :" + lst.get(i));
+				cols = cols + (cols.isEmpty() ? "" : " , ") + (lst.get(i) + " = :" + lst.get(i));
 			}
 		}
 		sqlStr = "update " + table_name + " set " + cols + where_col + " ";
@@ -133,8 +126,8 @@ public class QueryExe {
 	}
 
 	public void parse() throws SQLException {
-		ps_exe = con.prepareStatement(utils.replaceParameters(sqlStr),
-				ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		ps_exe = con.prepareStatement(utils.replaceParameters(sqlStr), ResultSet.TYPE_SCROLL_SENSITIVE,
+				ResultSet.CONCUR_READ_ONLY);
 	}
 
 	public void execute(boolean parse) throws SQLException {
@@ -143,10 +136,8 @@ public class QueryExe {
 			return;
 		}
 		if (parse) {
-			ps_exe = con
-					.prepareStatement(utils.replaceParameters(sqlStr),
-							ResultSet.TYPE_SCROLL_SENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
+			ps_exe = con.prepareStatement(utils.replaceParameters(sqlStr.replaceAll("\n", " ").replaceAll("\r", " ")),
+					ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		}
 		utils.setParams(sqlStr, ps_exe, mapParameters);
 		rowsAffected = ps_exe.executeUpdate();
@@ -162,10 +153,8 @@ public class QueryExe {
 			return null;
 		}
 		if (parse) {
-			ps_exe = con
-					.prepareStatement(utils.replaceParameters(sqlStr),
-							ResultSet.TYPE_SCROLL_INSENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
+			ps_exe = con.prepareStatement(utils.replaceParameters(sqlStr), ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 		}
 		utils.setParams(sqlStr, ps_exe, mapParameters);
 		ResultSet rst = ps_exe.executeQuery();
@@ -178,8 +167,7 @@ public class QueryExe {
 		}
 	}
 
-	public static int execute(String sql, Connection con, Parameter... pm)
-			throws SQLException {
+	public static int execute(String sql, Connection con, Parameter... pm) throws SQLException {
 		QueryExe qe = new QueryExe(sql, con);
 		if (pm != null && pm.length > 0) {
 			for (Parameter pms : pm)
@@ -190,8 +178,7 @@ public class QueryExe {
 		return qe.rowsAffected;
 	}
 
-	public static Object getSqlValue(String sql, Connection con, Object nvlObj,
-			Parameter... pm) throws SQLException {
+	public static Object getSqlValue(String sql, Connection con, Object nvlObj, Parameter... pm) throws SQLException {
 		QueryExe qe = new QueryExe(sql, con);
 		if (pm != null && pm.length > 0) {
 			for (Parameter pms : pm)
@@ -205,8 +192,7 @@ public class QueryExe {
 		return utils.nvlObj(value, nvlObj);
 	}
 
-	public static ResultSet getSqlRS(String sql, Connection con,
-			Parameter... pm) throws SQLException {
+	public static ResultSet getSqlRS(String sql, Connection con, Parameter... pm) throws SQLException {
 		QueryExe qe = new QueryExe(sql, con);
 		if (pm != null && pm.length > 0) {
 			for (Parameter pms : pm)

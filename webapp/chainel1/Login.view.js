@@ -13,24 +13,28 @@ sap.ui.jsview('chainel1.Login', {
      * Since the Controller is given to this method, its event handlers can be attached right away.
      * @memberOf chainel1.Login **/
     createContent: function (oController) {
-
         //console.log("createContent");
+        Util.ajaxPre = "";
+        setTimeout(function(){
+            jQuery.sap.require("sap.viz.library");
+            jQuery.sap.require("sap.ui.table.library");
+            jQuery.sap.require("sap.ui.commons.library");
 
-         var cb = new sap.m.ComboBox(this.createId("txtFile"),{
+        },100);
+        var cb = new sap.m.ComboBox(this.createId("txtFile"), {
             items: {
-                path:"/",
-                template: new sap.ui.core.ListItem({text:"{file}",key:"{file}"}),
-                templateShareable:true
+                path: "/",
+                template: new sap.ui.core.ListItem({text: "{file}", key: "{file}"}),
+                templateShareable: true
             }
         }).addStyleClass("simpleInput sapUiSmallMarginDown");
         Util.doAjaxGet("exe?command=get-init-files", "", false).done(function (data) {
             var oModel = new sap.ui.model.json.JSONModel();
             oModel.setData(JSON.parse(data));
             cb.setModel(oModel);
-
         });
 
-        if (cb.getItems().length>0)
+        if (cb.getItems().length > 0)
             cb.setSelectedItem(cb.getItems()[0]);
 
         this.app = new sap.m.App("mainApp", {});
@@ -59,6 +63,7 @@ sap.ui.jsview('chainel1.Login', {
         }).addStyleClass("");
 
         this.app.addPage(oPage);
+
         return this.app;
     }
 

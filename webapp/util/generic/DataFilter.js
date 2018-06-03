@@ -62,7 +62,7 @@ sap.ui.define(["./LocalTableData", "./Parameter"],
                 fv2 = pm.default_value.toString();
                 var cp = datax.getColPos(pm.name);
 
-                var s = r.cells[cp].getValue();
+                var s = Util.getParsedJsonValue(r.cells[cp].getValue(),true);
                 if (typeof s == "number" && typeof fv1 == "string")
                     fv1 = parseFloat(fv1);
                 if (pm.operator == "=")

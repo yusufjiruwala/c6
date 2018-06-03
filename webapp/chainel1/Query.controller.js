@@ -33,29 +33,36 @@ sap.ui.controller("chainel1.Query", {
 
     }
     ,
+    // ----------------------------------------refresh report on pressing show or execute it.
     refresh: function (iadd) {
+        //variables
         var view = this.getView();
         var oSplitApp = sap.ui.getCore().byId("oSplitApp");
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+
+
         if (view.colData == undefined)
             return;
         var ps = "";
         var ia = Util.nvl(iadd, "");
-
-
-        for (var i = 0; i < view.colData.parameters.length; i++) {
+        // iterating parameters and passing on ajax call..
+        for (var i = 0; i < Util.nvl(view.colData.parameters, []).length; i++) {
             var vl = "";
             if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
                 vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+            else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
+                vl = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
             else
                 vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+
 
             view.query_para[view.colData.parameters[i].PARAM_NAME] = vl;
 
             if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
                 vl = "@" + df.format((view.byId("para_" + ia + i).getDateValue()));
-            if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
+            if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0
+                && view.colData.parameters[i].LISTNAME.toUpperCase().startsWith("SELECT"))
                 vl = view.byId("para_" + ia + i).getValue();
 
             ps += (ps.length > 0 ? "&" : "") + "_para_" + view.colData.parameters[i].PARAM_NAME + "=" + vl;
@@ -82,20 +89,48 @@ sap.ui.controller("chainel1.Query", {
         //
         // });
         var that = this;
-        Util.doAjaxGet("exe?command=get-quickrep-data&" + (ps), "", false).done(function (data) {
+        Util.doAjaxGetSpin("exe?command=get-quickrep-data&" + (ps), "", false, function (data) {
 
-            //console.log(data);
-            view.qv.setJsonStr(data);
+                //console.log(data);
+                Util.stopSpin();
+                view.qv.setJsonStr(data);
 
-            view.qv.loadData();
-            view.fetchFixReports();
-            view.executed = true;
-            if (sap.ui.getCore().getModel("query_para") != undefined)
-                sap.ui.getCore().getModel("query_para").setData(view.query_para);
-            else
-                sap.ui.getCore().setModel(new sap.ui.model.json.JSONModel(view.query_para), "query_para");
+                view.qv.loadData();
+                view.fetchFixReports();
+                var v = parseInt(view.colData.other_prop.fixedcolcount);
+                if (!sap.ui.Device.system.phone)
+                    view.qv.getControl().setFixedColumnCount(v);
+                view.executed = true;
+                if (view.qv.mLctb.rows.length == 0)
+                    sap.m.MessageToast.show("No records found !");
+                else
+                    sap.m.MessageToast.show("Found # " + view.qv.mLctb.rows.length + " Records !");
 
-        });
+                if (sap.ui.getCore().getModel("query_para") != undefined)
+                    sap.ui.getCore().getModel("query_para").setData(view.query_para);
+                else
+                    sap.ui.getCore().setModel(new sap.ui.model.json.JSONModel(view.query_para), "query_para");
+
+                if (view.qv.queryType == "table" && Util.nvl(view.qv.buildQuickFilter(), false) == true) {
+                    var sp = sap.ui.getCore().byId("SplitPage");
+                    sp.show_quickFilter_panel(view.qv.filterBox, "Filter list");
+                }
+
+            }
+        );
+
+
+        if (view.colData.sql_title.title_eng.length > 0) {
+            Util.doAjaxJson("sqlmetadata?" + ps, {sql: view.colData.sql_title.title_eng}, false).done(function (data) {
+                var no = JSON.parse("{" + data.data + "}").data[0]['NAME'];
+                //sap.m.MessageToast.show(no);
+                var tit = sap.ui.getCore().getModel("detailP").getData().pageTitle;
+                view.oBar2.getContentMiddle()[0].getItems()[0].setText(tit + " - " + no);
+            });
+
+        }
+
+
     },
     show_graph_option: function (rep) {
         var that = this;
@@ -156,7 +191,7 @@ sap.ui.controller("chainel1.Query", {
 
         var view = this.getView();
         var that = this;
-        var mTable = view.qv.mTable;
+        var mTable = view.qv.getControl();
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
 
@@ -213,7 +248,7 @@ sap.ui.controller("chainel1.Query", {
 
         var view = this.getView();
         var that = this;
-        var mTable = view.qv.mTable;
+        var mTable = view.qv.getControl();
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
@@ -249,8 +284,12 @@ sap.ui.controller("chainel1.Query", {
             var vl = "";
             if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
                 vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+            else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
+                vl = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
             else
                 vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+
+
             if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
                 vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));
             if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
@@ -283,8 +322,23 @@ sap.ui.controller("chainel1.Query", {
             if (rep.DIMENSIONS != undefined && rep.DIMENSIONS.split(",")[0] == "DAT") {
                 for (var g in gData)
                     gData[g]["DAT"] = new Date(gData[g]["DAT"]);
-
             }
+            // var bal_fld = "", firstDimField = "";
+            // if (rep.GRAPH_TYPE == "line" && Util.nvl(rep.SORT_FIELD, rep.DIMENSIONS) != undefined) {
+            //     var tmpData = JSON.parse(data);
+            //     for (var m in tmpData.metadata) {
+            //         if (tmpData.metadata[m]["colname"].endsWith("_bal"))
+            //             bal_fld = tmpData.metadata[m]["colname"];
+            //     }
+            //     firstDimField = Util.nvl(rep.SORT_FIELD, rep.DIMENSIONS).split(",")[0];
+            //     var LocalTableData = sap.ui.require("sap/ui/chainel1/util/generic/LocalTableData");
+            //     var lt = new LocalTableData();
+            //     lt.parse(data);
+            //     lt.sortCol(lt.getColByName(firstDimField).mColpos, true);
+            //     gData = lt.getData(true);
+            // } else
+            //     gData = JSON.parse(data).data;
+
         });
         this.executeGraph(rep, selectedEntries, gData);
     },
@@ -294,7 +348,7 @@ sap.ui.controller("chainel1.Query", {
 
         var view = this.getView();
         var that = this;
-        var mTable = view.qv.mTable;
+        var mTable = view.qv.getControl();
 
 
         var oModel = new sap.ui.model.json.JSONModel();
@@ -378,8 +432,11 @@ sap.ui.controller("chainel1.Query", {
                 var st = "";
                 if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
                     st = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+                else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
+                    st = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
                 else
                     st = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+
 
                 grpStr = grpStr.replace(":#" + view.colData.parameters[i].PARAM_NAME, st);
             }
@@ -396,8 +453,11 @@ sap.ui.controller("chainel1.Query", {
             plotArea: {
                 colorPalette: d3.scale.category20().range(),
                 dataPoint: {invalidity: 'ignore'},
+                lineType: "dot",
                 dataLabel: {
-                    visible: (rep.GRAPH_TYPE=='pie'?true:false)
+                    visible: (rep.GRAPH_TYPE == 'pie' ? true : false),
+                    type: "percentage",
+                    hideWhenOverlap: false
                 }
             },
 
@@ -422,6 +482,7 @@ sap.ui.controller("chainel1.Query", {
             'type': "Measure",
             'values': ms
         });
+
         for (var d = dms.length - 1; d > -1; d--) {//for (var d in dms) {
             var feedCategoryAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
                 'uid': (rep.GRAPH_TYPE != "pie" ? (d == 0 ? "categoryAxis" : "color") : "color"),
@@ -452,7 +513,7 @@ sap.ui.controller("chainel1.Query", {
             cnt++;
             if (cnt - 1 == 0 && grouped) continue;
             if (cnt - 1 === view.qv.col.length) continue;
-            tmpv1 = view.qv.col[c].getLabel().getText();
+            tmpv1 = (view.qv.col[c].getMultiLabels()[0] == null ? "" : view.qv.col[c].getMultiLabels()[0].getText());
             tmpv2 = "\"text-align:" + view.qv.col[c].getHAlign().toLowerCase() + "\"";
             h += "<th " + tmpv2 + ">" + Util.htmlEntities(tmpv1) + "</th>";
         }
@@ -491,7 +552,7 @@ sap.ui.controller("chainel1.Query", {
                 cellValue = selectedEntries[i][v];
 
 
-                if (cellValue != undefined && (cellValue + "").trim().length > 0 && selectedEntries[i][t].startsWith(String.fromCharCode(4095))) {
+                if (cellValue != undefined && (cellValue + "").trim().length > 0 && Util.nvl(selectedEntries[i][t], "").startsWith(String.fromCharCode(4095))) {
                     classadd += "yellow "
                 }
                 if (grouped && cellValue != undefined && selectedEntries[i][t].startsWith(String.fromCharCode(4094))) {
@@ -529,7 +590,7 @@ sap.ui.controller("chainel1.Query", {
     show_query: function (rep) {
         var view = this.getView();
         var that = this;
-        var mTable = view.qv.mTable;
+        var mTable = view.qv.getControl();
 
         view.GraphPage.removeAllContent();
         view.GraphPage.destroyContent();
@@ -577,8 +638,11 @@ sap.ui.controller("chainel1.Query", {
             var vl = "";
             if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
                 vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+            else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
+                vl = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
             else
                 vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+
             if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
                 vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));
             if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
@@ -685,7 +749,7 @@ sap.ui.controller("chainel1.Query", {
 
         var view = this.getView();
         var that = this;
-        var mTable = view.qv.mTable;
+        var mTable = view.qv.getControl();
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
@@ -725,8 +789,11 @@ sap.ui.controller("chainel1.Query", {
             var vl = "";
             if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
                 vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+            else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
+                vl = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
             else
                 vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+
 
             if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
                 vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));

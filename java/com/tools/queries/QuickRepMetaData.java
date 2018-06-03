@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +24,7 @@ import com.generic.Parameter;
 import com.generic.QueryExe;
 import com.generic.dataCell;
 import com.generic.localTableModel;
+import com.generic.qryColumn;
 import com.generic.utils;
 
 public class QuickRepMetaData {
@@ -39,8 +43,8 @@ public class QuickRepMetaData {
 	private String sqlView = "";
 	public String sqlCPDistinctRow = "";
 	public String sqlCPDistinctCol = "";
-	public String CtValueCol = "";
-	public String CtValueColTotTitle = "";
+	// public String CtValueCol = "";
+	// public String CtValueColTotTitle = "";
 	public String strExecbefore = "";
 	public boolean ctSort = false;
 	private boolean mode_query = false;
@@ -57,6 +61,8 @@ public class QuickRepMetaData {
 	public List<Parameter> listConditions = new ArrayList<Parameter>();;
 	public List<String> ctRowsCol = new ArrayList<String>();
 	public List<String> ctHeaderCol = new ArrayList<String>();
+	public List<String> ctValueCol = new ArrayList<String>();
+	public List<String> ctValueColTotTitle = new ArrayList<String>();
 	public localTableModel data_cols = new localTableModel();
 	private final List<ColumnProperty> lstItemCols = new ArrayList<ColumnProperty>();
 	private List<Parameter> listParams = new ArrayList<Parameter>();
@@ -70,6 +76,12 @@ public class QuickRepMetaData {
 	private String id = "";
 	private String report_name = "";
 	private String report_where = "";
+
+	private List<String> listHideCols = new ArrayList<String>();
+	private List<String> listGroupsBy = new ArrayList<String>();
+	private List<String> listGroupSum = new ArrayList<String>();
+	private List<String> listCtRowsCol = new ArrayList<String>();
+	private List<String> listCtHeaderCol = new ArrayList<String>();
 
 	// value = code ,, label=
 	private List<dataCell> listSubReports = new ArrayList<dataCell>();
@@ -109,7 +121,8 @@ public class QuickRepMetaData {
 		this.id = id;
 		bulidListCols();
 		Connection con = instanceInfo.getmDbc().getDbConnection();
-		String cols = "", ret = "", tmp1 = "", groups = "", grps = "", grp1 = "", grp2 = "";
+		String cols = "", ret = "", tmp1 = "", groups = "", grps = "", grp1 = "", grp2 = "", titleSql = "",
+				other_prop = "";
 
 		for (ColumnProperty col : listcols) {
 			tmp1 = utils.getJSONStr("field_name", col.colname, false);
@@ -130,6 +143,10 @@ public class QuickRepMetaData {
 			grp2 += "," + utils.getJSONStr("default", rs.getString("default_group_2"), false);
 			grp2 += "," + utils.getJSONStr("exclude", rs.getString("exclude_group_2"), false);
 
+			titleSql = utils.getJSONStr("title_eng", utils.nvl(rs.getString("sql_title_eng"), ""), false);
+			titleSql += "," + utils.getJSONStr("title_arb", utils.nvl(rs.getString("sql_title_arb"), ""), false);
+
+			other_prop = utils.getJSONStr("fixedcolcount", utils.nvl(rs.getInt("fixedcolcount"), "0"), false);
 			rs.close();
 		}
 
@@ -138,7 +155,7 @@ public class QuickRepMetaData {
 				+ "') order by rep_pos", con);
 
 		String subreps = "";
-		if (rs != null && rs.first()){
+		if (rs != null && rs.first()) {
 			subreps = utils.getJSONsql("subreps", rs, con, "", "");
 			rs.close();
 		}
@@ -146,6 +163,8 @@ public class QuickRepMetaData {
 		ret += ",\"groups\":[" + grps + "]";
 		ret += ",\"group1\":{" + grp1 + "}";
 		ret += ",\"group2\":{" + grp2 + "}";
+		ret += ",\"sql_title\":{" + titleSql + "}";
+		ret += ",\"other_prop\":{" + other_prop + "}";
 		ret += (pms.trim().isEmpty() ? "" : ",") + pms;
 		if (subreps.trim().length() > 0)
 			ret += "," + subreps;
@@ -160,8 +179,9 @@ public class QuickRepMetaData {
 		String var = "parameters";
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 
-		ResultSet rs = QueryExe.getSqlRS("select *from c6_qrypara where code='" + id + "' order by inddexno", con);
-
+		ResultSet rs = QueryExe.getSqlRS(
+				"select *from c6_qrypara where code like '%\"" + id + "\"%' or code='" + id + "' order by inddexno",
+				con);
 		if (rs == null || !rs.first())
 			return "";
 
@@ -248,6 +268,8 @@ public class QuickRepMetaData {
 		isCt = false;
 		ctHeaderCol.clear();
 		ctRowsCol.clear();
+		ctValueCol.clear();
+		ctValueColTotTitle.clear();
 
 		sqlstr = "";
 		String s1 = "";
@@ -352,6 +374,9 @@ public class QuickRepMetaData {
 				cp.col_class = String.class;
 				cp.colname = coldisp;
 				cp.descr = utils.nvl(rs_2.getString("CP_COL_TITLE_ENG"), coldisp);
+				cp.parent_title_1 = utils.nvl(rs_2.getString("PARENT_TITLE_1"), "");
+				cp.parent_title_2 = utils.nvl(rs_2.getString("PARENT_TITLE_2"), "");
+				cp.parent_title_span = Integer.valueOf(utils.nvl(rs_2.getString("parent_title_span"), "1"));
 				int fnd_col = data_cols.locate("INDEXNO", rs_2.getString("INDEXNO"), localTableModel.FIND_EXACT);
 				if (fnd_col >= 0) {
 					cp.display_width = ((BigDecimal) data_cols.getFieldValue(fnd_col, "DISPLAY_WIDTH")).intValue();
@@ -435,22 +460,31 @@ public class QuickRepMetaData {
 			 * s1 = s1 + "," + "\"" + coldisp + "\""; } else { s1 = "\"" +
 			 * coldisp + "\""; } }
 			 */
+
 			if (strgroup1.equals(rs_2.getString("group_name"))) {
 				parentCol = coldisp;
 			}
+
 			if (strgroup2.equals(rs_2.getString("group_name"))) {
 				codeCol = coldisp;
 			}
 
-			if (rs_2.getString("CT_COL") != null && rs_2.getString("CT_COL").trim().length() > 0) {
+			if (rs_2.getString("CT_COL") != null && rs_2.getString("CT_COL").trim().length() > 0
+					&& utils.nvl(rs_2.getString("Cp_HIDECOL"), "").isEmpty()) {
 				ctHeaderCol.add(coldisp);
 			}
+
 			if (rs_2.getString("CT_ROW") != null && rs_2.getString("CT_ROW").trim().length() > 0) {
 				ctRowsCol.add(coldisp);
 			}
-			if (rs_2.getString("CT_VAL") != null && rs_2.getString("CT_VAL").trim().length() > 0) {
-				CtValueCol = coldisp;
-				CtValueColTotTitle = rs_2.getString("CT_VAL_TOT_LABEL");
+
+			if (rs_2.getString("CT_VAL") != null && rs_2.getString("CT_VAL").trim().length() > 0
+					&& utils.nvl(rs_2.getString("Cp_HIDECOL"), "").isEmpty()) {
+				ctValueCol.add(coldisp);
+				if (rs_2.getString("CT_VAL_TOT_LABEL") != null)
+					ctValueColTotTitle.add(rs_2.getString("CT_VAL_TOT_LABEL"));
+				// CtValueCol = coldisp;
+				// CtValueColTotTitle = rs_2.getString("CT_VAL_TOT_LABEL");
 			}
 
 		} // while rs2
@@ -467,9 +501,9 @@ public class QuickRepMetaData {
 			sqlMap.get("SUBGROUP").add(coldisp);
 		}
 
-		if (ctHeaderCol.size() == 1) {
-			ctHeaderCol.add(ctHeaderCol.get(0).toString());
-		}
+		// if (ctHeaderCol.size() == 1) {
+		// ctHeaderCol.add(ctHeaderCol.get(0).toString());
+		// }
 		ps_2.close();
 
 		sqlstr = "";
@@ -565,6 +599,11 @@ public class QuickRepMetaData {
 
 		ps_1.close();
 
+		listCtHeaderCol.clear();
+		listCtHeaderCol.addAll(ctHeaderCol);
+		listCtRowsCol.clear();
+		listCtRowsCol.addAll(ctRowsCol);
+
 		sqlstr = "select " + sqlCols + " from " + sqlView + " " + sqlWhere + " " + sqlGroupby + " " + sqlOrdby;
 		return sqlstr;/**
 						 * later on to add this.. for qucik rows and columns if
@@ -645,8 +684,12 @@ public class QuickRepMetaData {
 							qqe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
 					}
 				}
+				System.out.println("executing::\n" + qqe.getSqlStr());
+				;
 				qqe.execute();
+
 				con.commit();
+				qqe.close();
 			} catch (SQLException ex) {
 				try {
 					con.rollback();
@@ -667,11 +710,18 @@ public class QuickRepMetaData {
 			}
 
 		}
-
+		for (ColumnProperty cp : listcols) {
+			if (cp.descr.indexOf(":") > -1) {
+				for (String key : params.keySet()) {
+					if (key.startsWith("_para_")) {
+						cp.descr = cp.descr.replace(":" + key.replace("_para_", ""), params.get(key));
+					}
+				}
+			}
+		}
 		ResultSet rs = qe.executeRS();
 		ret = "{" + getJSONsqlMetaData(rs, con, "", "") + "}";
 		qe.close();
-
 		return ret;
 
 	}
@@ -686,32 +736,41 @@ public class QuickRepMetaData {
 		String scp = "";
 		ColumnProperty cp = null;
 		ResultSetMetaData rsm = rs.getMetaData();
-		for (int i = 0; i < rsm.getColumnCount(); i++) {
+		if (isCt) {
+			ret = do_cross_tab_query(rs, listcols);
+		} else {
 
-			// tmp1 = utils.getJSONStr("colname", rsm.getColumnName(i + 1),
-			// false);
-			cp = utils.findColByCol(rsm.getColumnName(i + 1), listcols);
-			scp = utils.getJSONCP(cp);
-			// tmp1 += scp;
-
-			met += (met.length() > 0 ? "," : "") + "{" + scp + "}";
-
-		}
-
-		rs.beforeFirst();
-
-		while (rs.next()) {
-			tmp1 = "";
 			for (int i = 0; i < rsm.getColumnCount(); i++) {
-				cn = rsm.getColumnName(i + 1);
-				Object vl = (utils.isNumber(rsm.getColumnType(i + 1)) ? Double.valueOf(rs.getDouble(cn))
-						: rs.getString(cn));
-				tmp1 += (tmp1.length() == 0 ? "" : ",") + utils.getJSONStr(cn, vl, false);
-			}
-			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
-		}
 
-		ret = "\"metadata\":" + "[" + met + "] ," + "\"data\":" + "[" + ret + "]";
+				// tmp1 = utils.getJSONStr("colname", rsm.getColumnName(i + 1),
+				// false);
+				cp = utils.findColByCol(rsm.getColumnName(i + 1), listcols);
+				scp = utils.getJSONCP(cp);
+				// tmp1 += scp;
+
+				met += (met.length() > 0 ? "," : "") + "{" + scp + "}";
+
+			}
+
+			rs.beforeFirst();
+
+			while (rs.next()) {
+				tmp1 = "";
+				for (int i = 0; i < rsm.getColumnCount(); i++) {
+					cn = rsm.getColumnName(i + 1);
+					Object vl = utils.nvl(rs.getString(cn), "");
+					if (vl != "")
+						vl = (utils.isNumber(rsm.getColumnType(i + 1)) ? Double.valueOf(String.format("%.6f",rs.getDouble(cn)))
+								: rs.getString(cn));
+					else
+						vl = null;
+					tmp1 += (tmp1.length() == 0 ? "" : ",") + utils.getJSONStr(cn, vl, false);
+				}
+				ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
+			}
+
+			ret = "\"metadata\":" + "[" + met + "] ," + "\"data\":" + "[" + ret + "]";
+		} // end if for isCt cross tab
 
 		return ret;
 	}
@@ -743,4 +802,235 @@ public class QuickRepMetaData {
 		rs.close();
 
 	}
+
+	public String do_cross_tab_query(ResultSet rs_data, List<ColumnProperty> colProps) throws Exception {
+		localTableModel data = new localTableModel();
+
+		listGroupSum.clear(); // sum records to clear
+		Map<String, Integer> mapRows = new HashMap<String, Integer>(); // rows
+																		// to
+																		// map
+																		// record
+																		// in
+																		// string
+																		// of
+																		// cols,
+																		// row
+																		// no
+		Map<String, Integer> mapCols = new HashMap<String, Integer>(); // columns
+																		// and
+																		// position
+																		// no
+		List<dataCell> lstColsx = new ArrayList<dataCell>(); // list of all
+																// columns
+		List<String> listRows = new ArrayList<String>(); // list of rows in
+															// string
+		Map<String, Map<String, BigDecimal>> mapValRows = new HashMap<String, Map<String, BigDecimal>>();// record
+																											// string
+																											// ,
+																											// and
+																											// column
+																											// value
+		Map<String, Map<String, Object>> mapRowsCol = new HashMap<String, Map<String, Object>>(); //
+		List<Double> total = new ArrayList<Double>();
+
+		BigDecimal val = null;
+		// finding unique values
+		rs_data.beforeFirst();
+		while (rs_data.next()) {
+			String rowString = "";
+			String colString = "";
+			// put all CT_ROW columns values in rowString , and assign to mp
+			HashMap<String, Object> mp = new HashMap<String, Object>();
+			for (int i = 0; i < listCtRowsCol.size(); i++) {
+				rowString = rowString + rs_data.getString(listCtRowsCol.get(i));
+				mp.put(listCtRowsCol.get(i), rs_data.getObject(listCtRowsCol.get(i)));
+			}
+			// add it to listrows and mapRows collection for accessing CT_ROW
+			// row no.
+			if (!mapRows.containsKey(rowString)) {
+				listRows.add(rowString);
+				mapRows.put(rowString, listRows.size() - 1);
+				total.clear();
+				for (int i = 0; i < listCtHeaderCol.size(); i++)
+					total.add(0.0);
+			} else {
+				total.clear();
+				for (int i = 0; i < listCtHeaderCol.size(); i++)
+					total.add(mapValRows.get(rowString).get(ctValueColTotTitle.get(i)).doubleValue());
+			}
+			// use mapRowsCol to access column based values from rowString for
+			// CT_ROW columns
+			mapRowsCol.put(rowString, mp);
+
+			// add all CT_COL in listcols and mapCols.
+			for (int i = 0; i < listCtHeaderCol.size(); i++) {
+				colString = rs_data.getString(listCtHeaderCol.get(i));
+				if (!mapCols.containsKey(colString.toString())) {
+					lstColsx.add(new dataCell(colString, colString));
+					mapCols.put(colString.toString(), ((lstColsx.size()) + listCtHeaderCol.size()) - 1);
+				}
+			}
+
+			// add CTO_COL and CT_VAL columns in mapValRows
+
+			for (int v = 0; v < ctValueCol.size(); v++) {
+				colString = rs_data.getString(listCtHeaderCol.get(v));
+				val = rs_data.getBigDecimal(ctValueCol.get(v));
+
+				if (mapValRows.get(rowString) == null) {
+					mapValRows.put(rowString, new HashMap<String, BigDecimal>());
+					mapValRows.get(rowString).put(colString, BigDecimal.valueOf(0));
+				}
+
+				if (mapValRows.get(rowString).get(colString) == null) {
+					mapValRows.get(rowString).put(colString, BigDecimal.valueOf(0));
+				}
+
+				val = BigDecimal.valueOf(val.doubleValue() + mapValRows.get(rowString).get(colString).doubleValue());
+				total.set(v, total.get(v) + val.doubleValue());
+
+				mapValRows.get(rowString).put(colString, val);
+
+				if (v < ctValueColTotTitle.size())
+					mapValRows.get(rowString).put(ctValueColTotTitle.get(v), BigDecimal.valueOf(total.get(v)));
+
+			}
+
+		}
+
+		// formatting columns
+		// sorting CT_ROW columns according to rowString...
+		// Collections.sort(lstColsx, new Comparator<dataCell>() {
+		// public int compare(dataCell othis, dataCell o2) {
+		// return utils.comparDataCell(othis, o2);
+		// }
+		// });
+
+		// building rest of ColumnProperties ( CT_COL) from data ...
+		// colProps is parameter and excluding CT_COL with CT_VAL
+		List<ColumnProperty> tmpProps = new ArrayList<ColumnProperty>();
+		Map<String, String> mpcl = new HashMap<String, String>();
+
+		// ColumnProperty tot = null;
+		boolean ctDone = false;
+		int max = 0;
+		for (int i = 0; i < colProps.size(); i++) {
+
+			if (colProps.get(i).pos > max) {
+				max = colProps.get(i).pos;
+			}
+			// if any CT_VAL col found in valueCol then skip
+			if (ctValueCol.indexOf(colProps.get(i).colname) >= 0)
+				continue;
+			if (colProps.get(i).hide_col)
+				continue;
+			if (listCtHeaderCol.indexOf(colProps.get(i).colname) >= 0)
+				continue;
+
+			colProps.get(i).pos = max;
+			tmpProps.add(colProps.get(i));
+			max++;
+
+		}
+
+		for (Iterator iterator = lstColsx.iterator(); iterator.hasNext();) {
+			int cnt = 0;
+			for (int j = 0; j < listCtHeaderCol.size(); j++) {
+				String colnm = ((dataCell) iterator.next()).toString();
+				ColumnProperty cp = utils.findColByCol(listCtHeaderCol.get(j), colProps);
+				ColumnProperty cpn = (ColumnProperty) cp.getClone();
+				String cc = cpn.colname;
+				cpn.colname = colnm;
+				if (colnm.indexOf("--") >= 0) {
+					cpn.descr = colnm.substring(colnm.indexOf("--") + 2);
+					cpn.parent_title_span = (cnt == 0 ? listCtHeaderCol.size() : 0);
+					cpn.parent_title_1 = colnm.substring(0, colnm.indexOf("--"));
+				} else {
+					cpn.descr = colnm;
+					cpn.parent_title_span = (cnt == 0 ? lstColsx.size() / listCtHeaderCol.size() : 0);
+				}
+				cpn.pos = max + 1;
+				tmpProps.add(cpn);
+				max++;
+				cnt++;
+			}
+
+		}
+		int cc = 0;
+		for (Iterator iterator = ctValueColTotTitle.iterator(); iterator.hasNext();) {
+			ColumnProperty cp = utils.findColByCol(listCtHeaderCol.get(cc), colProps);
+			String cl = (String) iterator.next();
+			ColumnProperty tt = cp.getClone();
+			tt.colname = cl;
+			tt.descr = cl;
+			tmpProps.add(tt);
+			cc++;
+		}
+
+		colProps.clear();
+		colProps.addAll(tmpProps);
+
+		// / adding columns
+		data.getQrycols().clear();
+		for (int i = 0; i < colProps.size(); i++) {
+			ColumnProperty cp = colProps.get(i);
+			qryColumn q = new qryColumn();
+			q.setWidth(cp.display_width);
+			q.setColpos(i);
+			q.setColname(cp.colname);
+			q.setTitle(cp.descr);
+			q.setDatabaseCol(true);
+			q.setDisplaySize(cp.display_width);
+			q.setDatatype(Types.VARCHAR);
+			if (cp.data_type.equals("NUMBER") || cp.data_type.equals("FLOAT")) {
+				q.setDatatype(Types.NUMERIC);
+				// q.setAlignmnet(JLabel.RIGHT);
+			}
+			if (cp.data_type.equals("DATE")) {
+				q.setDatatype(Types.TIMESTAMP);
+			}
+			if (cp.summary.equals("SUM")) {
+				listGroupSum.add(cp.colname);
+			}
+			q.columnUIProperties = cp;
+			data.getQrycols().add(q);
+		}
+
+		data.getVisbleQrycols().clear();
+		data.getVisbleQrycols().addAll(data.getQrycols());
+		data.setCols(data.getQrycols().size());
+
+		// fill table
+		rs_data.beforeFirst();
+
+		for (int i = 0; i < listRows.size(); i++) {
+			int rowno = data.addRecord();
+			String rowString = listRows.get(i);
+			for (int j = 0; j < listCtRowsCol.size(); j++) {
+				Object colval = mapRowsCol.get(rowString).get(listCtRowsCol.get(j));
+				data.setFieldValue(rowno, listCtRowsCol.get(j), colval);
+			}
+
+			for (int j = 0; j < lstColsx.size(); j++) {
+				val = mapValRows.get(rowString).get(lstColsx.get(j).toString());
+				data.setFieldValue(rowno, lstColsx.get(j).toString(), val);
+				// if (val != null)
+				// total = total + val.doubleValue();
+			}
+			cc = 0;
+			for (Iterator iterator = ctValueColTotTitle.iterator(); iterator.hasNext();) {
+				String cl = (String) iterator.next();
+				data.setFieldValue(rowno, cl, mapValRows.get(rowString).get(cl));
+				cc++;
+			}
+		}
+		data.setMasterRowsAsRows();
+		String ret = "";
+		// String met = data.getJSONMetaData();
+		ret = data.getJSONData(false);
+
+		return ret;
+	}
+
 }

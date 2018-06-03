@@ -65,7 +65,7 @@ public class utils {
 	public static final int ALIGN_RIGHT = 2;
 	public static final int ALIGN_CENTER = 3;
 	public static final String FORMAT_MONEY = "#,##0.000;(#,##0.000)";
-	public static final String FORMAT_QTY = "#,##0.###;(#,##0.###)";
+	public static final String FORMAT_QTY = "#,##0.##;(#,##0.##)";
 	public static final String FORMAT_SHORT_DATE = "dd/MM/yyyy";
 
 	public static final String O1_1 = "expand=0.4";
@@ -576,7 +576,10 @@ public class utils {
 			pnm = getParamName(sq, parano);
 			pnm = pnm.toUpperCase().trim();
 			if (pnm.length() > 0) {
-
+				if (mapParameters.get(pnm)==null)
+					System.out.println(pnm+" parameter is not exist !");
+				
+					
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_STRING)) {
 					if (mapParameters.get(pnm).getValue() != null) {
 						ps.setString(parano, (String) mapParameters.get(pnm).getValue());
@@ -584,7 +587,7 @@ public class utils {
 						ps.setString(parano, "");
 					}
 				}
-
+				
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_DATE)) {
 					if (mapParameters.get(pnm).getValue() != null) {
 						java.sql.Date jdt = null;
@@ -596,7 +599,7 @@ public class utils {
 						ps.setDate(parano, null);
 					}
 				}
-
+				
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_DATETIME)) {
 					if (mapParameters.get(pnm).getValue() != null) {
 						java.sql.Timestamp jdt = null;
@@ -1022,8 +1025,11 @@ public class utils {
 		// tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + "" : "\"" +
 		// decodeEscape((nvl(val, "")) + "\""));
 		// else
-		tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + ""
-				: "\"" + decodeEscape(StringEscapeUtils.escapeJson((nvl(val, ""))) + "\""));
+		if (val == null)
+			tmp1 += "null";
+		else
+			tmp1 += ((val instanceof Number) ? nvl(val, "null") + ""
+					: "\"" + decodeEscape(StringEscapeUtils.escapeJson((nvl(val, ""))) + "\""));
 
 		tmp1 += (includeBracket ? "}" : "");
 		return tmp1;
@@ -1126,10 +1132,15 @@ public class utils {
 		ret += "," + getJSONStr("cf_value", cp.cf_value, false);
 		ret += "," + getJSONStr("cf_true", cp.cf_true, false);
 		ret += "," + getJSONStr("cf_false", cp.cf_false, false);
+		ret += "," + getJSONStr("parent_title_1", cp.parent_title_1, false);
+		ret += "," + getJSONStr("parent_title_2", cp.parent_title_2, false);
+		ret += "," + getJSONStr("parent_title_span", cp.parent_title_span, false);
 		return ret;
+
 	}
 
-	public static String getParaValue(String vl, InstanceInfo inf) {
+	public static String getParaValue(String vl, InstanceInfo inf) throws SQLException {
+		Connection con = inf.getmDbc().getDbConnection();
 		Calendar cln = Calendar.getInstance();
 		cln.setTimeInMillis(System.currentTimeMillis());
 		cln.set(Calendar.HOUR, 0);
@@ -1145,6 +1156,109 @@ public class utils {
 			cln.set(Calendar.DAY_OF_MONTH, 1);
 			ret = new java.util.Date(cln.getTimeInMillis());
 		}
+		if (vl.equals("$FIRSTDATEOFYEAR")) {
+
+			cln.set(Calendar.MONTH, 0);
+			cln.set(Calendar.DAY_OF_MONTH, 1);
+			ret = new java.util.Date(cln.getTimeInMillis());
+		}
+		if (vl.equals("$FIRSTDATEOFTRANS")) {
+
+			cln.set(Calendar.MONTH, 0);
+			cln.set(Calendar.DAY_OF_MONTH, 1);
+			ResultSet rs = QueryExe.getSqlRS("select min(vou_date) from acvoucher2", con);
+			if (rs != null) {
+				rs.first();
+
+				if (rs.getDate(1) != null)
+					ret = new java.util.Date(rs.getDate(1).getTime());
+				rs.close();
+			}
+			// ret = new java.util.Date(cln.getTimeInMillis());
+		}
+
+		if (vl.equals("$ENDDATEOFTRANS")) {
+
+			cln.set(Calendar.MONTH, 0);
+			cln.set(Calendar.DAY_OF_MONTH, 1);
+			ResultSet rs = QueryExe.getSqlRS("select max(vou_date) from acvoucher2", con);
+			if (rs != null) {
+				rs.first();
+				if (rs.getDate(1) != null)
+					ret = new java.util.Date(rs.getDate(1).getTime());
+				rs.close();
+			}
+			// ret = new java.util.Date(cln.getTimeInMillis());
+		}
+
+		if (vl.equals("$FIRSTDATEOFPERIOD")) {			
+			String cp = inf.getMmapVar().get("CURRENT_PERIOD") + "";
+			ResultSet rs = QueryExe.getSqlRS("SELECT FROMDATE FROM FISCALPERIOD WHERE CODE='" + cp + "'", con);
+			if (rs != null) {
+				rs.first();
+
+				if (rs.getDate(1) != null)
+					ret = new java.util.Date(rs.getDate(1).getTime());
+				rs.close();
+			}
+			// ret = new java.util.Date(cln.getTimeInMillis());
+		}		
+
+		if (vl.equals("$ENDDATEOFPERIOD")) {
+			String cp = inf.getMmapVar().get("CURRENT_PERIOD") + "";
+			ResultSet rs = QueryExe.getSqlRS("SELECT TODATE FROM FISCALPERIOD WHERE CODE='" + cp + "'", con);
+			if (rs != null) {
+				rs.first();
+				if (rs.getDate(1) != null)
+					ret = new java.util.Date(rs.getDate(1).getTime());
+				rs.close();
+			}
+		}
+		
+		if (vl.equals("$FROMCUST")) {			
+			ResultSet rs = QueryExe.getSqlRS("SELECT min(code) FROM c_ycust WHERE iscust='Y'", con);
+			if (rs != null) {
+				rs.first();
+
+				if (rs.getString(1) != null)
+					ret = rs.getString(1);
+				rs.close();
+			}		
+		}	
+		
+		if (vl.equals("$TOCUST")) {			
+			ResultSet rs = QueryExe.getSqlRS("SELECT max(code) FROM c_ycust WHERE iscust='Y'", con);
+			if (rs != null) {
+				rs.first();
+				
+				if (rs.getString(1) != null)
+					ret = rs.getString(1);
+				rs.close();
+			}		
+		}	
+		
+		if (vl.equals("$FROMSUPP")) {			
+			ResultSet rs = QueryExe.getSqlRS("SELECT min(code) FROM c_ycust WHERE issupp='Y'", con);
+			if (rs != null) {
+				rs.first();
+
+				if (rs.getString(1) != null)
+					ret = rs.getString(1);
+				rs.close();
+			}		
+		}	
+		
+		if (vl.equals("$TOSUPP")) {			
+			ResultSet rs = QueryExe.getSqlRS("SELECT max(code) FROM c_ycust WHERE issupp='Y'", con);
+			if (rs != null) {
+				rs.first();
+				
+				if (rs.getString(1) != null)
+					ret = rs.getString(1);
+				rs.close();
+			}		
+		}	
+		
 		if (vl.equals("$TODAY"))
 			ret = new java.util.Date(cln.getTimeInMillis());
 

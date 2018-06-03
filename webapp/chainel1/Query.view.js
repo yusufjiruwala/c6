@@ -17,6 +17,8 @@ sap.ui.jsview("chainel1.Query", {
     createContent: function (oController) {
         var qmdl = sap.ui.getCore().getModel("query_para");
 
+        // initializing all controls ,vars arrays
+
         this.query_para = {};
         if (qmdl != undefined)
             this.query_para = qmdl.getData();
@@ -28,10 +30,11 @@ sap.ui.jsview("chainel1.Query", {
         this.itmsrep = [];
         this.tbs = [];
         this.bts = [];
-        this.iadd = "para";
+        this.iadd = "para";  // obsolete now due to use of parameter only..
         this.uploading = false;
-        this.executed = false;
+        this.executed = false;  // see if report is executed to clear query result
         this.optionReps = [];
+        this.controlContainer = undefined;
 
         this.createViewResult();
         return this.QueryPage;
@@ -44,20 +47,25 @@ sap.ui.jsview("chainel1.Query", {
         this.oBar2 = Util.createBar("{detailP>/pageTitle}");
         this.oBar3 = Util.createBar("{detailP>/pageTitle}", false);
         this.graphToolBar = new sap.m.Toolbar();
+
+        //queryview  , default will be table...
         var QueryView = sap.ui.require("sap/ui/chainel1/util/generic/QueryView");
         this.qv = new QueryView(this.createId("tbl"));
+
         this.qryToolBar = new sap.m.FlexBox({
             items: [],
             direction: sap.m.FlexDirection.Row,
             alignItems: sap.m.FlexAlignItems.Center
         });
 
+        //show parameters..
         this.qryParaBar = new sap.m.FlexBox({
             items: [],
             direction: sap.m.FlexDirection.Column,
             alignItems: sap.m.FlexAlignItems.Start
         }).addStyleClass("paddingLeftRightTop");
 
+        // to show fixed reports....
         this.tabs = new sap.m.TabContainer(
             {
                 items: [new sap.m.TabContainerItem({
@@ -68,8 +76,9 @@ sap.ui.jsview("chainel1.Query", {
                 layoutData: new sap.ui.layout.SplitterLayoutData({size: "0px"})
 
             });
+        // splitter in case query have fixed report, second content will pop up
         this.splitter = new sap.ui.layout.Splitter({
-            contentAreas: [this.qv.mTable, this.tabs],
+            contentAreas: [this.qv.getControl(), this.tabs],
             orientation: sap.ui.core.Orientation.Vertical,
             height: "100%",
             width: "100%"
@@ -93,6 +102,11 @@ sap.ui.jsview("chainel1.Query", {
         var oSplitApp = sap.ui.getCore().byId("oSplitApp");
         oSplitApp.addDetailPage(this.QueryPage);
         oSplitApp.addDetailPage(this.GraphPage);
+        this.qv.setParent(this.splitter);
+        if (sap.ui.Device.system.phone) {
+            oSplitApp.setMode(sap.m.SplitAppMode.HideMode);
+            oSplitApp.hideMaster();
+        }
     },
     showReportPara: function (idno) {
         this.report_id = idno;
@@ -104,10 +118,11 @@ sap.ui.jsview("chainel1.Query", {
         this.qryToolBar.removeAllItems();
         this.qryParaBar.destroyItems();
         this.qryParaBar.removeAllItems();
-        this.qv.mTable.removeAllRows();
-        this.qv.mTable.removeAllColumns();
-        this.qv.mTable.destroyRows();
-        this.qv.mTable.destroyColumns();
+        this.qv.reset();
+        // this.qv.getControl().removeAllRows();
+        // this.qv.getControl().removeAllColumns();
+        // this.qv.getControl().destroyRows();
+        // this.qv.getControl().destroyColumns();
 
 
         (this.byId("txtSubGroup") != undefined ? this.byId("txtSubGroup").destroy() : null);
@@ -144,14 +159,15 @@ sap.ui.jsview("chainel1.Query", {
     },
 
     onChangeReport: function () {
+
         var that = this;
         this.executed = false;
-
         var rp = that.byId("txtSubGroup").getSelectedItem().getKey();
+        this.qv.reset();
         // ajax request: getting column , groups and parameter information .....
         Util.doAjaxGet("exe?command=get-quickrep-cols&report-id=" + rp, "", false).done(function (data) {
             var dtx = JSON.parse(data);
-            that.colData = dtx;
+            that.colData = dtx;   // report  columns and information.
 
             var sp = sap.ui.getCore().byId("SplitPage");
             sp.show_menu_panel(that.qryParaBar);
@@ -159,6 +175,7 @@ sap.ui.jsview("chainel1.Query", {
             // destroying all components para from qryParaBar...
             var ids = [];  //ids to destroy
             var lblids = []; // label to destroy
+
             for (var z = 0; z < that.qryParaBar.getItems().length; z++)
                 if (that.byId("txtSubGroup").getId() != that.qryParaBar.getItems()[z].getId() &&
                     that.byId("menu").getId() != that.qryParaBar.getItems()[z].getId())
@@ -173,25 +190,20 @@ sap.ui.jsview("chainel1.Query", {
             // creating parameters..
 
             Util.createParas(that, that.qryParaBar, "result", "para", true, "200px", false);
-            (that.byId("refreshResult") != undefined ? that.byId("refreshResult").destroy() : null);
-            var bt = new sap.m.Button(that.createId("refreshResult"), {
-                text: "Show >>",
-                press: function () {
-                    that.oController.refresh();
-                    if (that.qv.mLctb.rows.length == 0) {
-                        sap.m.MessageToast.show("No records found !");
-                    } else {
-                        sap.m.MessageToast.show("Found # " + that.qv.mLctb.rows.length + " Records !");
-                        if (sap.ui.Device.system.phone) {
-                            var sp = sap.ui.getCore().byId("SplitPage");
-                            that.app.toDetail(sp.oPgQuery);
-                            that.app.hideMaster();
-                        }
-                    }
-
-
-                }
-            });
+            // (that.byId("refreshResult") != undefined ? that.byId("refreshResult").destroy() : null);
+            // var bt = new sap.m.Button(that.createId("refreshResult"), {
+            //     text: "Show >>",
+            //     press: function () {
+            //         that.oController.refresh();
+            //         if (sap.ui.Device.system.phone) {
+            //             var sp = sap.ui.getCore().byId("SplitPage");
+            //             that.app.hideMaster();
+            //             that.app.toDetail(sp.oPgQuery);
+            //             that.app.showDetail();
+            //         }
+            //     }
+            //
+            // });
             (that.byId("refreshResultPara") != undefined ? that.byId("refreshResultPara").destroy() : null);
             var bt2 = new sap.m.Button(that.createId("refreshResultPara"), {
                 text: "Show >>",
@@ -199,22 +211,22 @@ sap.ui.jsview("chainel1.Query", {
                     that.iadd = "para";
                     that.oController.refresh("para");
 
-                    if (that.qv.mLctb.rows.length == 0) {
-                        sap.m.MessageToast.show("No records found !");
-                    } else {
+//                    if (that.qv.mLctb.rows.length == 0) {
+  //                      sap.m.MessageToast.show("No records found !");
+    //                } else {
                         sap.m.MessageToast.show("Found # " + that.qv.mLctb.rows.length + " Records !");
                         if (sap.ui.Device.system.phone) {
                             var sp = sap.ui.getCore().byId("SplitPage");
-                            that.app.toDetail(sp.oPgQuery);
+                            that.app.setMode(sap.m.SplitAppMode.ShowHideMode);
                             that.app.hideMaster();
+                            that.app.toDetail( that.byId("pgResult").getId());
                         }
 
-                    }
+                    //}
                 }
             });
             //that.qryToolBar.addItem(bt);
             that.qryParaBar.addItem(bt2);
-
         });
 
         that.tabs.getLayoutData().setSize("0px");
@@ -233,7 +245,8 @@ sap.ui.jsview("chainel1.Query", {
         );
 
         return new sap.m.Toolbar({content: c});
-    },
+    }
+    ,
     createQRToolbar: function () {
         var c = [];
         var that = this;
@@ -253,13 +266,13 @@ sap.ui.jsview("chainel1.Query", {
         );
 
         return new sap.m.Toolbar({content: c});
-    },
+    }
+    ,
     addMenu: function (bar) {
         var that = this;
         //var menu = new sap.ui.core.HTML();
         //menu.setContent("<div class='menuicon'></div>");
         var clk = function () {
-
             var oMenu = new sap.m.Menu({
                 title: "random",
                 itemSelected: function (oEvent) {
@@ -280,13 +293,20 @@ sap.ui.jsview("chainel1.Query", {
                             && (rep.REP_TYPE == "TABLE" || rep.REP_TYPE == "SQL" ||
                             rep.REP_TYPE == "DATASET" || rep.REP_TYPE == "OPTIONS" ))
                             oSplitApp.toDetail(that.GraphPage);
-
-                        if (!that.executed)
+                        if (!that.executed) {
                             that.oController.refresh(that.iadd);
-                        if (rep.REP_TYPE != "OPTIONS")
-                            that.oController.show_graph(rep);
-                        else
-                            that.oController.show_graph_option(rep);
+                            sap.m.MessageToast.show("Refreshing data first !");
+                            return;
+                        }
+
+                        Util.doSpin("Processing");
+                        setTimeout(function () {
+                            if (rep.REP_TYPE != "OPTIONS")
+                                that.oController.show_graph(rep);
+                            else
+                                that.oController.show_graph_option(rep);
+                            Util.stopSpin();
+                        }, 100);
                     }
                 }
             });
@@ -313,7 +333,8 @@ sap.ui.jsview("chainel1.Query", {
         //     menu.$().on("tap", clk);
         // }, 1000);
 
-    },
+    }
+    ,
     fetchFixReports: function (showOnDialog, callBack) {
         var that = this;
         var i = 0;
@@ -368,23 +389,22 @@ sap.ui.jsview("chainel1.Query", {
             dlg.open();
 
         }
-    },
+    }
+    ,
     show_fix_graph: function (rep, flx) {
         var view = this;
+        var that = this;
         var ps = "";
         var ia = Util.nvl(view.iadd, "");
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
-
-
         for (var i = 0; i < view.colData.parameters.length; i++) {
             var vl = "";
-            if (that.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
-                vl = (that.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+            if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
+                vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
             else
                 vl = Util.nvl(that.byId("para_" + ia + i).getValue(), "");
-
             if (view.colData.parameters[i].PARA_DATATYPE === "DATE")
                 vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));
             if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
@@ -419,8 +439,11 @@ sap.ui.jsview("chainel1.Query", {
             alignItems: sap.m.FlexAlignItems.Start,
             items: []
         });
+
+
         Util.createParas(this, flexMain, "para", ia, true, "200px");
         // coping value from para
+
         for (var i = 0; i < that.colData.parameters.length; i++) {
             var src = that.byId("para_" + ia + i);
             var vl = "";
@@ -485,7 +508,6 @@ sap.ui.jsview("chainel1.Query", {
         if (flx instanceof sap.m.FlexBox) {
             flx.removeAllItems();
             flx.destroyItems();
-
         } else {
             flx.removeAllContent();
             flx.destroyContent();
@@ -500,6 +522,7 @@ sap.ui.jsview("chainel1.Query", {
                     'showErrorMessage': true
                 }
             };
+
         var oVizFrame = new sap.viz.ui5.controls.VizFrame(view.createId("gp" + rep.REP_POS), {ui});
 
         oModel.setData(gData);
@@ -541,9 +564,7 @@ sap.ui.jsview("chainel1.Query", {
                     path: "/"
                 }
             })
-        )
-        ;
-
+        );
 
         oVizFrame.setVizProperties({
             plotArea: {
@@ -567,6 +588,7 @@ sap.ui.jsview("chainel1.Query", {
             }
 
         });
+
         var feedValueAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
             'uid': "valueAxis",
             'type': "Measure",
@@ -580,6 +602,7 @@ sap.ui.jsview("chainel1.Query", {
             });
             oVizFrame.addFeed(feedCategoryAxis);
         }
+
         oVizFrame.addFeed(feedValueAxis);
 
         if (flx instanceof sap.m.FlexBox)
@@ -607,18 +630,16 @@ sap.ui.jsview("chainel1.Query", {
 //        view.upload_pic(rep, oVizFrame);
     }
     ,
-
     show_fix_form: function (rep, flx) {
         var view = this;
+        var that = this;
         var ps = "";
         var ia = Util.nvl(view.iadd, "");
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
 
-
         for (var i = 0; i < view.colData.parameters.length; i++) {
-
             var vl = "";
             if (that.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
                 vl = (that.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
@@ -629,17 +650,19 @@ sap.ui.jsview("chainel1.Query", {
                 vl = "@" + sdf.format((view.byId("para_" + ia + i).getDateValue()));
             if (view.colData.parameters[i].LISTNAME != undefined && view.colData.parameters[i].LISTNAME.toString().trim().length > 0)
                 vl = view.byId("para_" + ia + i).getValue();
-            //vl = view.byId("para_" + ia + i).getSelectedItem().getKey();
 
             ps += (ps.length > 0 ? "&" : "") + "_para_" + view.colData.parameters[i].PARAM_NAME + "=" + vl;
+
         }
         ps += (ps.length > 0 ? "&" : "") + "_total_no=1";
 
         ps += (ps.length > 0 ? "&" : "") + "_keyfld=" + rep.KEYFLD;
+
         Util.doAjaxGet("exe?command=get-graph-query&" + (ps), "", true).done(function (data) {
             gData = JSON.parse(data).data;
             view.executeForm(rep, flx, gData);
         });
+
 
     }
     ,
@@ -838,7 +861,6 @@ sap.ui.jsview("chainel1.Query", {
 
             byteArrays.push(byteArray);
         }
-
         return new Blob(byteArrays, {type: mime});
     }
 })

@@ -68,6 +68,9 @@ sap.ui.controller('chainel1.Login', {
             }
 
         });
+
+        //jQuery.sap.require("sap.viz.library");
+
         this.app = sap.ui.getCore().byId("mainApp");
         var page = sap.ui.jsview("SplitPage", "chainel1.SplitPage");
         this.app.addPage(page);

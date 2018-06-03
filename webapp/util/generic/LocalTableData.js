@@ -94,6 +94,8 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 c.mCfValue = Util.nvl(this.dataJson.metadata[key].cf_value, "");
                 c.mCfTrue = Util.nvl(this.dataJson.metadata[key].cf_true, "");
                 c.mCfFalse = Util.nvl(this.dataJson.metadata[key].cf_false, "");
+                c.mTitleParent = Util.nvl(this.dataJson.metadata[key].parent_title_1, "");
+                c.mTitleParentSpan = Util.nvl(this.dataJson.metadata[key].parent_title_span, 1);
                 this.cols.push(c);
             }
             for (var rn in this.dataJson.data) {
@@ -116,7 +118,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             var tmpstr = "";
             for (var c in this.cols) {
                 tmpstr += (c == 0 ? "" : ",") +
-                    '{"colname":"' + this.cols[c].mColName + '"}';
+                    '{"colname":"' + this.cols[c].mColName.replace(/\//g,"___") + '"}';
             }
             metastr += tmpstr + "]";
             if (this.rows.length == 0)
@@ -128,9 +130,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 rstr = "";
                 for (var c in this.cols) {
                     rstr += (rstr.length == 0 ? "" : ",") + '"' +
-                        this.cols[c].mColName + '":' +
-                        (typeof this.rows[r].cells[c].getValue() == "number" ? this.rows[r].cells[c].getValue() :
-                        '"' + Util.nvl(this.rows[r].cells[c].getValue(), "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
+                        this.cols[c].mColName.replace(/\//g,"___")+ '":' + Util.getParsedJsonValue(this.rows[r].cells[c].getValue());
                 }
                 rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
                 tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";
@@ -140,6 +140,8 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             //console.log(metastr + "," + datastr);
             return metastr + "," + datastr;
         };
+
+
         LocalTableData.prototype.resetData = function () {
             this.cols = [];
             for (var i = 0; i < this.rows.length; i++)
@@ -193,7 +195,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
             }
         };
         LocalTableData.prototype.evaluteCfValue = function (col, rowno) {
-            if (rowno > this.rows.length-1)
+            if (rowno > this.rows.length - 1)
                 return false;
             var op = col.mCfOperator;
             var cmpval = this.parseValues(col.mCfOperator, rowno);
@@ -235,6 +237,7 @@ sap.ui.define(["./DataCell", "./Column", "./Row"],
                 if (this.cols[i].getMUIHelper().data_type.toUpperCase() != "NUMBER") {
                     replaceMask = "'" + replaceMask + "'";
                 }
+                if (replaceMask == undefined || replaceMask == "") replaceMask = "''";
                 st = st.replace(regEx, replaceMask);
             }
             return st;

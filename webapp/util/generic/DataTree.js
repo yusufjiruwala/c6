@@ -1,7 +1,6 @@
 sap.ui.define("sap/ui/chainel1/util/generic/DataTree", ["./LocalTableData"],
     function (LocalTableData) {
         'use strict';
-
         function DataTree(id, pmode) {
 
             this.mLctb = null;

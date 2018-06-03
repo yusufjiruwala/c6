@@ -227,8 +227,9 @@ public class UserRoute {
 		sql.setRet("ok");
 		String retdata = "";
 		try {
-			Connection con = instanceInfo.getmDbc().getDbConnection();
-			ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);
+			Connection con = instanceInfo.getmDbc().getDbConnection();			
+			QueryExe qe=new QueryExe(sql.getSql(),con);
+			ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);			
 			retdata = utils.getJSONsql("data", rs, con, "", "");
 			sql.setData(retdata);
 			sql.setRet("SUCCESS");
@@ -456,12 +457,13 @@ public class UserRoute {
 		if (!qrm.txtGroup2.isEmpty()) {
 			strg = qrm.txtGroup2;
 		}
-
+		
 		String sq = "select indexno,initcap(nvl(DISPLAY_NAME,FIELD_NAME)) FIELD_NAME,'Y' SELECTION ,COLWIDTH DISPLAY_WIDTH ,'' FILTER_TEXT,datatypex "
 				+ "FROM c6_qry2 WHERE CODE='" + rid
 				+ "' and  group_name is null and iswhere is null and cp_hidecol is null"
 				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg.trim() + "')"
 				+ " and field_name in (" + cols + ")" + "  order by indexno ";
+				
 		qrm.data_cols.createDBClassFromConnection(con);
 		qrm.data_cols.executeQuery(sq, true);
 
@@ -480,13 +482,13 @@ public class UserRoute {
 			if (key.startsWith("col-"))
 				cols.add(params.get(key));
 			if (key.startsWith("ordby1-"))
-				ordby.add(params.get(key) + " ASC");
+				ordby.add(params.get(key) + " ASC");			
 			if (key.startsWith("ordby2-"))
 				ordby.add(params.get(key) + " DESC");
 			if (key.startsWith("and-equal-"))
 				wc.add(key.replace("and-equal-", "") + "='" + params.get(key) + "'");
 		}
-
+		
 		String tn = params.get("tablename");
 
 		String c = "", w = "", o = "", sql = "";
@@ -772,7 +774,7 @@ public class UserRoute {
 		for (String key : params.keySet()) {
 			String p = params.get(key);
 			String k = key.replaceAll(" ", "_").replaceAll("_para_", "");
-			if (p != null && !p.isEmpty()) {
+			if (k != null && !k.isEmpty()) {
 				qe.setParaValue(k, p);
 				if (p.startsWith("@"))
 					qe.setParaValue(k, (sdf.parse(p.substring(1))));
@@ -787,15 +789,16 @@ public class UserRoute {
 		} else {
 			qe.execute();
 		}
-
+		qe.close();
 		if (rs != null) {
-			rs.getStatement().close();
+			if (rs.getStatement() != null)
+				rs.getStatement().close();
 			rs.close();
 		}
 
 		return ret;
 	}
-
+	
 	private String getSubRepJson(String repname, String id) throws Exception {
 		String ret = "";
 		Connection con = instanceInfo.getmDbc().getDbConnection();
@@ -808,5 +811,5 @@ public class UserRoute {
 		ret = subreps;
 		return ret;
 	}
-
+	
 }

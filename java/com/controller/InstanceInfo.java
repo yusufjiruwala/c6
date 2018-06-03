@@ -39,7 +39,7 @@ public class InstanceInfo {
 	private Map<String, Object> mMapVars = new HashMap<String, Object>();
 	private Map<String, String> mMapProfiles = new HashMap<String, String>();
 	private List<String> mListProfiles = new ArrayList<String>();
-
+	
 	@Autowired
 	private ServletContext servletContext;
 
@@ -169,7 +169,7 @@ public class InstanceInfo {
 
 		setmLoginUserPN(vl);
 		setmLoginUser(user);
-		setmLoginPassword(password);
+		setmLoginPassword(password);		
 		buildProfiles();
 		setMlogonSuccessed(true);
 		ret = " \"login_state\":\"success\"";
@@ -190,8 +190,9 @@ public class InstanceInfo {
 		}
 		// ---------------------------------------setup-variable
 		QueryExe qn = new QueryExe(
-				"select variable,value from " + mOwner + ".cp_user_profiles "
-						+ "  where (profileno=:PN OR PROFILENO=0) ORDER BY profileno,variable ",
+				"SELECT VARIABLE,VALUE,0 profileno FROM  " + mOwner + ".setup where setgrpno='GNR' union all "
+						+ "select variable,value,profileno from " + mOwner
+						+ ".cp_user_profiles " + "  where (profileno=:PN OR PROFILENO=0) ORDER BY 3,1 ",
 				getmDbc().getDbConnection());
 		qn.setParaValue("PN", mLoginUserPN);
 		ResultSet rs = qn.executeRS();
@@ -222,11 +223,9 @@ public class InstanceInfo {
 		while (rst.next()) {
 			getmListProfiles().add(rst.getString("CODE"));
 			getmMapProfiles().put(rst.getString("CODE"), rst.getString("title"));
-
 		}
 		rst.close();
 		setmCurrentProfile(utils.nvl(getMmapVar().get("CURRENT_PROFILE_CODE"), ""));
-
 	}
 
 	public byte[] storeReport(final String filename, final Map<String, Object> map, boolean useTimestamp)

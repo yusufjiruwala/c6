@@ -986,13 +986,15 @@ public class localTableModel implements TableModel, Serializable {
 		}
 
 	}
-	public void applyDefaultCP(qryColumn qc){
-		applyDefaultCP(qc,false);
+
+	public void applyDefaultCP(qryColumn qc) {
+		applyDefaultCP(qc, false);
 	}
-	
-	public void applyDefaultCP(qryColumn qc,boolean recreate) {
-		ColumnProperty cp =qc.columnUIProperties;
-		if (cp==null || recreate) cp=new ColumnProperty();
+
+	public void applyDefaultCP(qryColumn qc, boolean recreate) {
+		ColumnProperty cp = qc.columnUIProperties;
+		if (cp == null || recreate)
+			cp = new ColumnProperty();
 		cp.colname = qc.getColname();
 		cp.data_type = (qc.isDateTime() ? "DATE" : qc.isNumber() ? "NUMBER" : "VARCHAR2");
 		cp.descr = cp.colname;
@@ -1008,15 +1010,19 @@ public class localTableModel implements TableModel, Serializable {
 			ColumnProperty cp = qc.columnUIProperties;
 			if (qc.columnUIProperties == null) {
 				applyDefaultCP(qc);
-				cp=qc.columnUIProperties;
+				cp = qc.columnUIProperties;
 			}
-			md2 = "{"+utils.getJSONCP(cp)+"}";
+			md2 = "{" + utils.getJSONCP(cp) + "}";
 			md1 += (md1.length() > 0 ? "," : "") + md2;
 		}
 		return "\"metadata\":[ " + md1 + " ]";
 	}
 
 	public String getJSONData() {
+		return getJSONData(true);
+	}
+
+	public String getJSONData(boolean bracket) {
 		String md = getJSONMetaData();
 		String d1 = "";
 		String dr = "";
@@ -1026,6 +1032,8 @@ public class localTableModel implements TableModel, Serializable {
 		for (int i = 0; i < getRowCount(); i++) {
 			dr = "";
 			for (qryColumn qc : visbleQrycols) {
+				if (qc.getColname()==null)
+					continue;
 				vl = getFieldValue(i, qc.getColname());
 				if (qc.isDateTime())
 					vl = sdf.format(vl);
@@ -1034,7 +1042,7 @@ public class localTableModel implements TableModel, Serializable {
 			d1 += (d1.length() > 0 ? "," : "") + "{" + dr + "}";
 		}
 
-		return "{" + md + ",\"data\":[ " + d1 + "] }";
+		return (bracket ? "{" : "") + md + ",\"data\":[ " + d1 + "]" + (bracket ? "}" : "");
 
 	}
 

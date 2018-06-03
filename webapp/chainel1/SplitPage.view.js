@@ -22,6 +22,7 @@ sap.ui.jsview("chainel1.SplitPage", {
         var controller = this.oController;
         var oData = null;
         var sData = "";
+
         // if (!!sap.ui.Device.browser.webkit
         //
         //     && !document.width) {
@@ -117,12 +118,18 @@ sap.ui.jsview("chainel1.SplitPage", {
             textAlign: "Center",
             design: "Bold"
         });
+        this.pgFilterTitle = new sap.m.Label({
+            text: "",
+            textAlign: "Center",
+            design: "Bold"
+        });
         this.pgParaBar = new sap.m.Bar({
             contentLeft: [new sap.m.Button({
                 icon: "sap-icon://nav-back",
                 press: function () {
-                    that.oSplitApp.backMaster();
-                    that.oSplitApp.backDetail();
+                    //that.oSplitApp.backMaster();
+                    that.oSplitApp.toMaster("pgMenus");
+                    that.oSplitApp.toDetail("pgDashboardView");
                 }
             })
             ],
@@ -130,9 +137,27 @@ sap.ui.jsview("chainel1.SplitPage", {
             contentRight: []
         });
 
+        this.pgFilterBar = new sap.m.Bar({
+            contentLeft: [new sap.m.Button({
+                icon: "sap-icon://nav-back",
+                press: function () {
+                    that.oSplitApp.toMaster("pgPara");
+                    //that.oSplitApp.backDetail();
+                }
+            })
+            ],
+            contentMiddle: [this.pgFilterTitle],
+            contentRight: []
+        });
         this.oPgPara = new sap.m.Page("pgPara",
             {
                 customHeader: this.pgParaBar,
+                content: []
+            }).addStyleClass("menuPage");
+
+        this.oPgFilter = new sap.m.Page("pgFilter",
+            {
+                customHeader: this.pgFilterBar,
                 content: []
             }).addStyleClass("menuPage");
 
@@ -140,6 +165,7 @@ sap.ui.jsview("chainel1.SplitPage", {
 
         this.oSplitApp.addMasterPage(this.oPage1);
         this.oSplitApp.addMasterPage(this.oPgPara);
+        this.oSplitApp.addMasterPage(this.oPgFilter);
         this.oSplitApp.addDetailPage(this.oPage2);
 
         // this.oSplitApp.addDetailPage(this.oPgQuickRep);
@@ -236,7 +262,6 @@ sap.ui.jsview("chainel1.SplitPage", {
         //this.oSplitApp.toDetail(this.oPage2);
         this.oSplitApp.hideMaster();
 
-
         if (toe == "QUICKREP") {
             if (!this.oSplitApp.getDetailPages().indexOf(this.oPgQuickRep) > -1)
                 this.oSplitApp.addDetailPage(this.oPgQuickRep);
@@ -244,13 +269,25 @@ sap.ui.jsview("chainel1.SplitPage", {
             this.oSplitApp.hideMaster();
             this.oPgQuickRep.showReportPara(el);
         }
+
         if (toe == "QUERY") {
+
             if (!this.oSplitApp.getDetailPages().indexOf(this.oPgQuery) > -1)
-                this.oSplitApp.addDetailPage(this.oPgQuery);
-            this.oSplitApp.toDetail(this.oPgQuery);
-            this.oSplitApp.hideMaster();
-            this.oPgQuery.showReportPara(el);
+                if (sap.ui.Device.system.phone)
+                    this.oSplitApp.addDetailPage(this.oPgQuery.QueryPage);
+                else
+                    this.oSplitApp.addDetailPage(this.oPgQuery);
+
+            if (sap.ui.Device.system.phone) {
+                this.oPgQuery.showReportPara(el);
+            }
+            else {
+                this.oSplitApp.toDetail(this.oPgQuery);
+                //this.oSplitApp.hideMaster();
+                this.oPgQuery.showReportPara(el);
+            }
         }
+
         if (toe == "QTREE") {
             if (!this.oSplitApp.getDetailPages().indexOf(this.oPgTree) > -1)
                 this.oSplitApp.addDetailPage(this.oPgTree);
@@ -258,6 +295,7 @@ sap.ui.jsview("chainel1.SplitPage", {
             this.oSplitApp.hideMaster();
             this.oPgTree.showReportPara(el);
         }
+
         if (toe == "FORM") {
             if (!this.oSplitApp.getDetailPages().indexOf(this.oPgTree) > -1)
                 this.oSplitApp.addDetailPage(this.oPgTree);
@@ -270,17 +308,17 @@ sap.ui.jsview("chainel1.SplitPage", {
 
     createQuickReportPage: function () {
 
-        if (this.oPgQuickRep == undefined)
-            this.oPgQuickRep = sap.ui.jsview("pgQuickRep", "chainel1.QuickReport");
+        // if (this.oPgQuickRep == undefined)
+        //     this.oPgQuickRep = sap.ui.jsview("pgQuickRep", "chainel1.QuickReport");
 
         if (this.oPgQuery == undefined)
             this.oPgQuery = sap.ui.jsview("pgQuery", "chainel1.Query");
 
-        if (this.oPgTree == undefined)
-            this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
+        // if (this.oPgTree == undefined)
+        //     this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
 
-        if (this.oPgTree == undefined)
-            this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
+        // if (this.oPgTree == undefined)
+        //     this.oPgTree = sap.ui.jsview("pgTree", "chainel1.QuickTreeRep");
 
     },
     show_menu_panel: function (pnl, tit) {
@@ -289,9 +327,18 @@ sap.ui.jsview("chainel1.SplitPage", {
         this.oPgPara.destroyContent();
         this.pgParaTitle.setText(Util.nvl(tit, "Enter Parameters.."));
         this.oSplitApp.toMaster("pgPara");
+        this.oSplitApp.showMaster();
         this.oPgPara.addContent(pnl);
 
+    },
+    show_quickFilter_panel: function (pnl, tit) {
+        var that = this;
+        this.oPgFilter.removeAllContent();
+        this.oPgFilter.destroyContent();
+        this.pgFilterTitle.setText(Util.nvl(tit, "Enter Quick Filter.."));
+        this.oSplitApp.toMaster("pgFilter");
+        this.oSplitApp.showMaster();
+        this.oPgFilter.addContent(pnl);
     }
-
 
 });
