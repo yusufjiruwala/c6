@@ -221,10 +221,18 @@ public class QuickRepMetaData {
 		listSubReports.clear();
 
 		Connection con = instanceInfo.getmDbc().getDbConnection();
-		report_name = QueryExe.getSqlValue("select max(titlearb) from c6_qry1 where code='" + id + "'", con, "") + "";
+		
+		report_name = "";
+		if (instanceInfo.getmLoginLanguage().equals("AR"))
+			report_name=QueryExe.getSqlValue("select max(nvl(titleeng,titlearb)) from c6_qry1 where code='" + id + "'", con, "") + "";
+		else
+			report_name=QueryExe.getSqlValue("select max(titlearb) from c6_qry1 where code='" + id + "'", con, "") + "";
+		
 		// --------sub report addings
 		QueryExe qe = new QueryExe(con);
 		qe.setSqlStr("select code,titlearb from c6_qry1 where parentrep=:id order by code");
+		if (instanceInfo.getmLoginLanguage().equals("AR"))
+			qe.setSqlStr("select code,nvl(titleeng,titlearb) titlearb from c6_qry1 where parentrep=:id order by code");
 		qe.setParaValue("id", id);
 		ResultSet rs = qe.executeRS();
 		if (rs != null) {

@@ -1,58 +1,76 @@
-<!DOCTYPE HTML>
+<!doctype html>
 <html>
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-
     <meta charset="UTF-8">
-    <title>SplitApp Tree</title>
-    <link rel="stylesheet" type="text/css" href="css/chainel1.css">
-    <link rel="stylesheet" type="text/css" href="css/sapui6/SAPUI6.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" href="css/prettify.css">
+
+    <title>CHAINEL</title>
     <script
             id="sap-ui-bootstrap"
             src='resources/sap-ui-core.js'
-            data-sap-ui-theme="sap_bluecrystal"
+            data-sap-ui-theme="sap_belize"
             data-sap-ui-libs="sap.m"
             data-sap-ui-xx-bindingSyntax="complex"
             data-sap-ui-preload="async"
             data-sap-ui-language="en"
             data-sap-ui-compatVersion="edge"
             data-sap-ui-resourceroots='{
-				"sap.ui.chainel1": "./",
-				"chainel1":"./chainel1"
-			}'
-    >
-    </script>
+    "sap.ui.ce": "./",
+    "bin":"./bin"
+    }'
+    />
+    <script src="generic/UtilGen.js"></script>
+    <script src="generic/Util.js"></script>
 
-    <script src="util/generic/Util.js"></script>
-    <script src="util/generic/DecimalFormat.js"></script>
-    <script src="util/generic/SimpleDateFormat.js"></script>
-    <script src="util/html2canvas.js"></script>
-    <script src="util/canvas2image.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 
-    <!--<script src="util/generic/AppTestData.js"></script>-->
-    <!--<script src="util/generic/jquery.getStyleObject.js"></script>-->
     <script>
-        sap.ui.localResources("chainel1");
-        sap.ui.localResources("i18n");
-//
-        var Util = sap.ui.require("sap/ui/chainel1/util/generic/Util");
-        var LocalTableData = sap.ui.require("chainel1/util/generic/DataCell");
-//
-//        console.log(Util.objToStr(LocalTableData));
-//
-//        sap.ui.getCore().attachInit(function(){
-//
-//            new sap.ui.core.ComponentContainer({
-//                name : "sap.ui.chainel1"
-//            }).placeAt("content");
 
-//        });
 
+        //            var oCompContainer = new sap.ui.core.ComponentContainer({
+        //                height: "100%"
+        //            });
+        //
+        //            new sap.m.Shell({
+        //                content: oCompContainer,
+        //                showLogout:false
+        //            }).placeAt("content");
+        //
+        //            var oComponent = sap.ui.component({
+        //                name: "sap.ui.ce",
+        //                manifestFirst: true,
+        //                async: true
+        //            }).then(function (oComponent) {
+        //                oCompContainer.setComponent(oComponent);
+        //            });
+
+
+        //            var app = sap.m.App("app", {
+        //                //viewName : "chainel1.Login",
+        //                type: "JS",
+        //            }).placeAt("content");
+        //            app.addPage(sap.ui.jsview("logonPage", "bin.Logon"));
+
+        var Util;
+        var UtilGen;
         sap.ui.getCore().attachInit(function () {
+            sap.ui.localResources("bin");
+            sap.ui.localResources("i18n");
+            UtilGen = sap.ui.require("sap/ui/ce/generic/UtilGen");
+            Util = sap.ui.require("sap/ui/ce/generic/Util");
+
 
             var oCompContainer = new sap.ui.core.ComponentContainer({
-                height : "100%"
-            })
+                    height: "100%",
+//                    name: "sap.ui.ce",
+                    settings: {
+                        id: "sap.ui.ce"
+                    }
+                }
+            );
 
             new sap.m.Shell({
                 app: oCompContainer,
@@ -60,21 +78,22 @@
             }).placeAt("content");
 
             var oComponent = sap.ui.component({
-                name: "sap.ui.chainel1",
+                name: "sap.ui.ce",
                 manifestFirst: true,
                 async: true
-            }).then(function(oComponent){
+            }).then(function (oComponent) {
                 oCompContainer.setComponent(oComponent);
             });
 
-        });
+        })
+        ;
+
     </script>
-    <link rel="stylesheet" href="css/chainel1.css">
+
 </head>
-<body class="sapUiBody" role="application">
+<body>
 <div id="content">
 </div>
+
 </body>
 </html>
-
-

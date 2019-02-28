@@ -1020,7 +1020,7 @@ public class utils {
 	public static String getJSONStr(String var, Object val, boolean includeBracket) {
 		String tmp1 = (includeBracket ? "{" : "");
 		char slash = 92;
-		tmp1 += "\"" + decodeEscape(var) + "\":";
+		tmp1 += "\"" + decodeEscape(var.replace("\"", "")) + "\":";
 		// if (!val.toString().contains("\""))
 		// tmp1 += ((val instanceof Number) ? nvl(val, "\"\"") + "" : "\"" +
 		// decodeEscape((nvl(val, "")) + "\""));
@@ -1029,7 +1029,7 @@ public class utils {
 			tmp1 += "null";
 		else
 			tmp1 += ((val instanceof Number) ? nvl(val, "null") + ""
-					: "\"" + decodeEscape(StringEscapeUtils.escapeJson((nvl(val, ""))) + "\""));
+					: "\"" + decodeEscape(StringEscapeUtils.escapeJson((nvl(val, "").replaceAll("\"", ""))) + "\""));
 
 		tmp1 += (includeBracket ? "}" : "");
 		return tmp1;
@@ -1042,7 +1042,15 @@ public class utils {
 		}
 		return ret;
 	}
-
+	
+	public static String getJSONMapString(Map<String, String> mp,boolean includeBrackets) {
+		String ret = "";
+		for (String key : mp.keySet()) {
+			ret += (ret.length() == 0 ? "" : ",") + getJSONStr(key, mp.get(key), includeBrackets);
+		}
+		return ret;
+	}
+	
 	public static String getJSONsql(String var, ResultSet rs, Connection con, String excludeColumn,
 			String includeColumn) throws SQLException {
 
@@ -1056,7 +1064,7 @@ public class utils {
 			tmp1 = "";
 			for (int i = 0; i < rsm.getColumnCount(); i++) {
 				cn = rsm.getColumnName(i + 1);
-				tmp1 += (tmp1.length() == 0 ? "" : ",") + getJSONStr(cn, nvl(rs.getString(cn), ""), false);
+				tmp1 += (tmp1.length() == 0 ? "" : ",") + getJSONStr(cn, rs.getObject(cn), false);
 			}
 			ret += (ret.length() == 0 ? "" : ",") + "{" + tmp1 + "}";
 		}
@@ -1291,5 +1299,6 @@ public class utils {
 
 		return b4_str + str_insert + str.substring(b4_str.length() + 1, str.length());
 	}
+
 
 }

@@ -155,9 +155,10 @@ public class QueryExe {
 		if (parse) {
 			ps_exe = con.prepareStatement(utils.replaceParameters(sqlStr), ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
-		}
-		utils.setParams(sqlStr, ps_exe, mapParameters);
+		}		
+		utils.setParams(sqlStr, ps_exe, mapParameters);		
 		ResultSet rst = ps_exe.executeQuery();
+		
 		return rst;
 	}
 
@@ -201,7 +202,7 @@ public class QueryExe {
 		ResultSet rs = qe.executeRS();
 		if (rs != null && rs.first())
 			return rs;
-		qe.close();
+		qe.close();		
 		return null;
 	}
 }

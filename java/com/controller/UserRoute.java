@@ -48,6 +48,8 @@ import com.generic.QueryExe;
 import com.generic.localTableModel;
 import com.generic.qryColumn;
 import com.generic.utils;
+import com.models.Batches;
+import com.models.Batches.UserReports;
 import com.tools.queries.QuickRepMetaData;
 import com.tools.utilities.SQLJson;
 
@@ -64,6 +66,9 @@ public class UserRoute {
 
 	@Autowired
 	private InstanceInfo instanceInfo;
+
+	@Autowired
+	private Batches batches;
 
 	@RequestMapping("/connect")
 	public String connectDB() {
@@ -141,6 +146,13 @@ public class UserRoute {
 				ret = "{ \"list\":[" + ret + "]}";
 			}
 
+			// ------------get-get-screens
+			if (params.get("command").equals("get-screens")) {
+				Connection con = instanceInfo.getmDbc().getDbConnection();
+				ResultSet rs = QueryExe.getSqlRS("select CODE, DESCR, PROFILES, FLAG, GROUPNAME, ON_DISPLAY, nvl(DESCR_A,descr) DESCR_A  from c6_screens order by code", con);
+				ret = "{" + utils.getJSONsqlMetaData(rs, con, "", "") + "}";
+			}
+
 			// ------------get-quickrep-metadata-header
 			if (params.get("command").equals("get-quickrep-metadata")) {
 				QuickRepMetaData qrm = new QuickRepMetaData(instanceInfo);
@@ -156,6 +168,26 @@ public class UserRoute {
 			// ------------get-quickrep-data
 			if (params.get("command").equals("get-quickrep-data")) {
 				ret = quickRepData(params);
+			}
+
+			// ------------get-quickrep-data
+			if (params.get("command").equals("get-batch-status")) {
+				ret = getBatchStatus(params);
+			}
+			// ------------get-batch-params
+			if (params.get("command").equals("get-batch-params")) {
+				ret = getBatchParams(params);
+			}
+
+			if (params.get("command").equals("get-batch-data")) {
+				ret = getBatchData(params);
+			}
+
+			// ------------get any record if any batch started for same report
+			if (params.get("command").equals("get-quickrep-hasbatch")) {
+				String rid = params.get("report-id");
+				String r = batches.fetchBatchParas(rid, instanceInfo);
+				ret = r;
 			}
 
 			if (params.get("command").equals("get-graph-query")) {
@@ -177,7 +209,7 @@ public class UserRoute {
 				String id = params.get("report-id");
 				ret = "";
 				Connection con = instanceInfo.getmDbc().getDbConnection();
-				ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where rep_id='" + id + "'order by rep_pos",
+				ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where keyfld='" + id + "'order by rep_pos",
 						con);
 				String subreps = "";
 				if (rs != null && rs.first()) {
@@ -222,14 +254,30 @@ public class UserRoute {
 		return ret;
 	}
 
+	@RequestMapping(value = "/settings", method = RequestMethod.GET)
+	public String settings(@RequestParam Map<String, String> params) {
+		String ret = "";
+		try {
+			ret = instanceInfo.getSettings();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "{\"errorMsg\":\"" + e.getMessage() + "\"," + "\"sql\": \" sql -> " + "" + "\" } ";
+		}
+
+		return ret;
+	}
+
 	@RequestMapping(value = "/sqldata", method = RequestMethod.POST)
 	public ResponseEntity<SQLJson> test(@RequestBody SQLJson sql) {
 		sql.setRet("ok");
 		String retdata = "";
 		try {
-			Connection con = instanceInfo.getmDbc().getDbConnection();			
-			QueryExe qe=new QueryExe(sql.getSql(),con);
-			ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);			
+			if (!instanceInfo.isMlogonSuccessed())
+				throw new SQLException("Access denied !");
+
+			Connection con = instanceInfo.getmDbc().getDbConnection();
+			QueryExe qe = new QueryExe(sql.getSql(), con);
+			ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);
 			retdata = utils.getJSONsql("data", rs, con, "", "");
 			sql.setData(retdata);
 			sql.setRet("SUCCESS");
@@ -250,6 +298,8 @@ public class UserRoute {
 		String retdata = "";
 		Connection con = instanceInfo.getmDbc().getDbConnection();
 		try {
+			if (!instanceInfo.isMlogonSuccessed())
+				throw new SQLException("Access denied !");
 
 			// ResultSet rs = QueryExe.getSqlRS(sql.getSql(), con);
 			retdata = executeSQlMetaData(sql.getSql(), params);
@@ -262,7 +312,6 @@ public class UserRoute {
 			sql.setRet("server_error : " + e.getMessage());
 			sql.setData("");
 			e.printStackTrace();
-
 			try {
 				con.rollback();
 			} catch (SQLException e1) {
@@ -277,6 +326,8 @@ public class UserRoute {
 		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
 		String retdata = "";
 		try {
+			if (!instanceInfo.isMlogonSuccessed())
+				throw new SQLException("Access denied !");
 
 			String sq = "select *from C6_DB_GAUGES where profiles like '%\""
 					+ instanceInfo.getMmapVar().get("PROFILENO") + "\"%' ORDER BY KEYFLD";
@@ -323,7 +374,66 @@ public class UserRoute {
 
 		} catch (SQLException | ParseException e) {
 			e.printStackTrace();
+			retdata = "{\"errorMsg\":\"" + e.getMessage() + "\"} ";
+		}
 
+		return retdata;
+	}
+
+	@RequestMapping(value = "/gaugedata2", method = RequestMethod.GET)
+	public String gaugedata2(@RequestParam Map<String, String> params) {
+		SimpleDateFormat sdf = new SimpleDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
+		String retdata = "";
+		try {
+			if (!instanceInfo.isMlogonSuccessed())
+				throw new SQLException("Access denied !");
+			String kf = params.get("_keyfld");
+			String sq = "select *from C6_DB_GAUGES where keyfld=" + kf;
+			Connection con = instanceInfo.getmDbc().getDbConnection();
+			localTableModel lctb = new localTableModel();
+			lctb.createDBClassFromConnection(con);
+			lctb.executeQuery(sq, true);
+			double val = 0;
+			for (int i = 0; i < lctb.getRowCount(); i++) {
+				String sqv = utils.nvl(lctb.getFieldValue(i, "SQL_VAL"), "");
+				QueryExe qe = new QueryExe(sqv, con);
+				for (String key : params.keySet()) {
+					qe.setParaValue(key.replace("_para_", ""), params.get(key));
+					if (params.get(key).startsWith("@"))
+						qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+				}
+
+				ResultSet rs = qe.executeRS();
+				if (rs != null) {
+					rs.first();
+					lctb.setFieldValue(i, "SQL_VAL", rs.getDouble(1));
+					rs.close();
+					qe.close();
+				}
+
+				if (!utils.nvl(lctb.getFieldValue(i, "PRIOR_FUNC_VAL"), "").isEmpty()) {
+					sqv = utils.nvl(lctb.getFieldValue(i, "PRIOR_FUNC_VAL"), "");
+					qe = new QueryExe(sqv, con);
+					for (String key : params.keySet()) {
+						qe.setParaValue(key.replace("_para_", ""), params.get(key));
+						if (params.get(key).startsWith("@"))
+							qe.setParaValue(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+					}
+					rs = qe.executeRS();
+					if (rs != null) {
+						rs.first();
+						lctb.setFieldValue(i, "PRIOR_FUNC_VAL", rs.getDouble(1));
+						rs.close();
+						qe.close();
+					}
+				}
+			}
+
+			retdata = lctb.getJSONData();
+
+		} catch (SQLException | ParseException e) {
+			e.printStackTrace();
+			retdata = "{\"errorMsg\":\"" + e.getMessage() + "\"} ";
 		}
 
 		return retdata;
@@ -440,34 +550,65 @@ public class UserRoute {
 
 	// ---------------all--helper-functions---
 
+	private String getBatchStatus(Map<String, String> params) throws Exception {
+		String ret = "";
+		String rid = params.get("report-id");
+		ret = "{}";
+		String upath = instanceInfo.getmOwner() + "." + instanceInfo.getmLoginUser() + "_" + rid;
+		if (batches.getMapUserReports().get(upath) != null)
+			ret = utils.getJSONStr("status", batches.getMapUserReports().get(upath).status, true);
+		else
+			ret = utils.getJSONStr("status", "NONE", true);
+
+		return ret;
+
+	}
+
+	private String getBatchParams(Map<String, String> params) throws Exception {
+		String ret = "";
+		String rid = params.get("report-id");
+		ret = "{}";
+		String upath = instanceInfo.getmOwner() + "." + instanceInfo.getmLoginUser() + "_" + rid;
+		if (batches.getMapUserReports().get(upath) != null)
+			ret = "{ \"parameters\" :{" + utils.getJSONMapString(batches.getMapUserReports().get(upath).params, false)
+					+ "}}";
+		else
+			ret = utils.getJSONStr("errorMsg", "Not executed this report..", true);
+
+		return ret;
+
+	}
+
+	private String getBatchData(Map<String, String> params) throws Exception {
+		String ret = "";
+		String rid = params.get("report-id");
+		ret = "{}";
+		String upath = instanceInfo.getmOwner() + "." + instanceInfo.getmLoginUser() + "_" + rid;
+		if (batches.getMapUserReports().get(upath) != null)
+			ret = batches.getMapUserReports().get(upath).getReturnString();
+		else
+			ret = "{}";
+
+		return ret;
+
+	}
+
 	private String quickRepData(Map<String, String> params) throws Exception {
 		String ret = "";
-		Connection con = instanceInfo.getmDbc().getDbConnection();
-		QuickRepMetaData qrm = new QuickRepMetaData(instanceInfo);
 		String rid = params.get("report-id");
-		qrm.txtGroup1 = utils.nvl(params.get("group1"), "");
-		qrm.txtGroup2 = utils.nvl(params.get("group2"), "");
-		String cols = "";
-		for (String colkey : params.keySet()) {
-			if (colkey.startsWith("col_")) {
-				cols += (cols.length() > 0 ? "," : "") + "'" + params.get(colkey) + "'";
+		ret = "{}";
+		int n = batches.addBatch(rid, instanceInfo, params, true);
+		String rb = utils.nvl(params.get("runbackground"), "false");
+		if (!rb.equals("true")) {
+			while (batches.getListUserReports().get(n).status.equals(UserReports.STATUS_START)) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					System.out.println(e);
+				}
 			}
+			ret = batches.getListUserReports().get(n).getReturnString();
 		}
-		String strg = qrm.txtGroup1;
-		if (!qrm.txtGroup2.isEmpty()) {
-			strg = qrm.txtGroup2;
-		}
-		
-		String sq = "select indexno,initcap(nvl(DISPLAY_NAME,FIELD_NAME)) FIELD_NAME,'Y' SELECTION ,COLWIDTH DISPLAY_WIDTH ,'' FILTER_TEXT,datatypex "
-				+ "FROM c6_qry2 WHERE CODE='" + rid
-				+ "' and  group_name is null and iswhere is null and cp_hidecol is null"
-				+ " and  (nvl(group_name2,'ALL')='ALL'  or  group_name2 ='" + strg.trim() + "')"
-				+ " and field_name in (" + cols + ")" + "  order by indexno ";
-				
-		qrm.data_cols.createDBClassFromConnection(con);
-		qrm.data_cols.executeQuery(sq, true);
-
-		ret = qrm.buildJson(rid, params);
 
 		return ret;
 
@@ -482,13 +623,13 @@ public class UserRoute {
 			if (key.startsWith("col-"))
 				cols.add(params.get(key));
 			if (key.startsWith("ordby1-"))
-				ordby.add(params.get(key) + " ASC");			
+				ordby.add(params.get(key) + " ASC");
 			if (key.startsWith("ordby2-"))
 				ordby.add(params.get(key) + " DESC");
 			if (key.startsWith("and-equal-"))
 				wc.add(key.replace("and-equal-", "") + "='" + params.get(key) + "'");
 		}
-		
+
 		String tn = params.get("tablename");
 
 		String c = "", w = "", o = "", sql = "";
@@ -530,14 +671,37 @@ public class UserRoute {
 		String bgn = " c6_session.username:='" + instanceInfo.getmLoginUser() + "'; c6_session.session_id:='"
 				+ instanceInfo.sessionId + "';";
 
-		String sql = QueryExe.getSqlValue("select sql from c6_subreps where keyfld=" + params.get("_keyfld"), con, "")
-				+ "";
+		String sql = (QueryExe.getSqlValue("select sql from c6_subreps where keyfld=" + params.get("_keyfld"), con, "")
+				+ "").trim();
 		String b4_sql = QueryExe.getSqlValue(
 				"select BEFORE_SQL_EXE from c6_subreps where keyfld=" + params.get("_keyfld"), con, "") + "";
 		String b4_sql_once = QueryExe.getSqlValue(
 				"select BEFORE_SQL_EXE_ONCE from c6_subreps where keyfld=" + params.get("_keyfld"), con, "") + "";
 		try {
-			if (sql.isEmpty())
+
+			ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where keyfld=" + params.get("_keyfld"), con);
+			if (rs != null)
+				rs.first();
+			if (rs.getString("REP_TYPE").equals("QUERY")) {
+				params.put("report-id", rs.getString("SQL"));
+				ResultSet rs2 = QueryExe.getSqlRS(
+						"select field_name from c6_qry2 where code='" + rs.getString("SQL") + "' order by INDEXNO",
+						con);
+				int ii=0;
+				if (rs2 != null) {
+					rs2.beforeFirst();
+					while (rs2.next()) {
+						params.put("col_" + ii++, rs2.getString("FIELD_NAME"));
+					}
+					rs2.close();
+				}
+				ret = quickRepData(params);
+				rs.getStatement().close();
+				rs.close();
+				return ret;
+			}
+
+			if (sql.isEmpty() || !sql.toUpperCase().startsWith("SELECT"))
 				return "";
 
 			// getting all fields in list from first row
@@ -616,7 +780,7 @@ public class UserRoute {
 
 				if (qepo != null && i == 0)
 					qepo.execute();
-				ResultSet rs = qe.executeRS(true);
+				rs = qe.executeRS(true);
 				if (rs == null)
 					continue;
 				ResultSetMetaData rsm = rs.getMetaData();
@@ -678,14 +842,18 @@ public class UserRoute {
 					for (String s : sp) {
 						String[] ss = s.split("=");
 						qryColumn qc = lctb.getColByName(ss[0]);
-						lctb.applyDefaultCP(qc);
+						if (qc != null)
+							lctb.applyDefaultCP(qc);
 						qc.columnUIProperties.display_format = ss[1];
 					}
 				}
 
 			}
-			rs.getStatement().close();
+
+			rs.getStatement().close();			
 			rs.close();
+
+			
 		}
 
 		for (int i = 0; i < lctb.getVisbleQrycols().size(); i++) {
@@ -717,6 +885,7 @@ public class UserRoute {
 
 		lctb.setShortDateFormat(instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT") + "");
 		ret = lctb.getJSONData();
+		System.gc();
 		return ret;
 	}
 
@@ -798,11 +967,12 @@ public class UserRoute {
 
 		return ret;
 	}
-	
+
 	private String getSubRepJson(String repname, String id) throws Exception {
 		String ret = "";
 		Connection con = instanceInfo.getmDbc().getDbConnection();
-		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where rep_id='" + id + "'order by rep_pos", con);
+		ResultSet rs = QueryExe.getSqlRS("select *from c6_subreps where (rep_id like '%\"" + id + "\"%' or rep_id='"
+				+ id + "' ) order by rep_pos", con);
 		String subreps = "";
 		if (rs != null && rs.first()) {
 			subreps = utils.getJSONsql(repname, rs, con, "", "");
@@ -811,5 +981,5 @@ public class UserRoute {
 		ret = subreps;
 		return ret;
 	}
-	
+
 }

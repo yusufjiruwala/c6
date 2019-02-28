@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" href="css/prettify.css">
+    <link rel="stylesheet" href="css/print.css">
+
+    <title>CHAINEL</title>
+    <script
+            id="sap-ui-bootstrap"
+            src='resources/sap-ui-core.js'
+            data-sap-ui-theme="sap_belize"
+            data-sap-ui-libs="sap.m,sap.viz"
+            data-sap-ui-xx-bindingSyntax="complex"
+            data-sap-ui-preload="async"
+            data-sap-ui-language="en"
+            data-sap-ui-compatVersion="edge"
+            data-sap-ui-resourceroots='{
+				"sap.ui.ce": "./",
+				"bin":"./bin"
+			}'
+    >
+    </script>
+
+    <script src="generic/UtilGen.js"></script>
+    <script src="generic/Util.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/mxClient.min.js"></script>
+
+    <script>
+        sap.ui.localResources("bin");
+        sap.ui.localResources("i18n");
+        var UtilGen = sap.ui.require("sap/ui/ce/generic/UtilGen");
+        var Util = sap.ui.require("sap/ui/ce/generic/Util");
+
+        sap.ui.getCore().attachInit(function () {
+
+            var oCompContainer = new sap.ui.core.ComponentContainer({
+                height: "100%"
+            });
+
+//            new sap.m.Page({
+//                showHeader: false,
+//                content: oCompContainer
+//            }).placeAt("content");
+            ;
+            var app = sap.m.App("app", {
+                //viewName : "chainel1.Login",
+                type: "JS",
+            }).placeAt("content");
+            app.addPage(sap.ui.jsview("mainPage", "bin.Main"));
+
+//            var oComponent = sap.ui.component({
+//                name: "sap.ui.ce",
+//                manifestFirst: true,
+//                async: true
+//            }).then(function (oComponent) {
+//                oCompContainer.setComponent(oComponent);
+//            });
+        });
+    </script>
+
+</head>
+<body>
+<div id="content">
+</div>
+
+</body>
+</html>

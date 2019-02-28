@@ -28,6 +28,7 @@ public class InstanceInfo {
 	private boolean mLogonSuccessed = false;
 	private String mLoginUser = "";
 	private String mLoginPassword = "";
+	private String mLoginLanguage = "EN";
 	private String mLoginFile = "";
 	private String mOwner = "";
 	private String mOwnerPassword = "";
@@ -39,7 +40,7 @@ public class InstanceInfo {
 	private Map<String, Object> mMapVars = new HashMap<String, Object>();
 	private Map<String, String> mMapProfiles = new HashMap<String, String>();
 	private List<String> mListProfiles = new ArrayList<String>();
-	
+
 	@Autowired
 	private ServletContext servletContext;
 
@@ -129,6 +130,14 @@ public class InstanceInfo {
 		return mListProfiles;
 	}
 
+	public String getmLoginLanguage() {
+		return mLoginLanguage;
+	}
+
+	public void setmLoginLanguage(String mLoginLang) {
+		this.mLoginLanguage = mLoginLang;
+	}
+
 	// -----------------------------------main-functions---------------------
 	public DBClass getConnection() {
 		try {
@@ -159,6 +168,7 @@ public class InstanceInfo {
 		String ret = "";
 		String user = params.get("user").toUpperCase();
 		String password = params.get("password");
+		String language = params.get("language");
 		String file = params.get("file");
 		String owner = setOwnerFile(servletContext.getRealPath("") + file);
 		Integer vl = Integer.valueOf(QueryExe.getSqlValue("select nvl(max(profileno),-1) from \"" + owner + "\"."
@@ -169,11 +179,18 @@ public class InstanceInfo {
 
 		setmLoginUserPN(vl);
 		setmLoginUser(user);
-		setmLoginPassword(password);		
+		setmLoginPassword(password);
+		setmLoginLanguage(language);
 		buildProfiles();
 		setMlogonSuccessed(true);
 		ret = " \"login_state\":\"success\"";
 		ret = "{" + ret + "," + utils.getJSONMap(getMmapVar()) + "}";
+		return ret;
+	}
+
+	public String getSettings() {
+		String ret = "";
+		ret = "{" + utils.getJSONMap(getMmapVar()) + "}";
 		return ret;
 	}
 
@@ -189,10 +206,9 @@ public class InstanceInfo {
 			throw new Exception("Database not opened..!");
 		}
 		// ---------------------------------------setup-variable
-		QueryExe qn = new QueryExe(
-				"SELECT VARIABLE,VALUE,0 profileno FROM  " + mOwner + ".setup where setgrpno='GNR' union all "
-						+ "select variable,value,profileno from " + mOwner
-						+ ".cp_user_profiles " + "  where (profileno=:PN OR PROFILENO=0) ORDER BY 3,1 ",
+		QueryExe qn = new QueryExe("SELECT VARIABLE,VALUE,0 profileno FROM  " + mOwner
+				+ ".setup where setgrpno='GNR' union all " + "select variable,value,profileno from " + mOwner
+				+ ".cp_user_profiles " + "  where (profileno=:PN OR PROFILENO=0) ORDER BY 3,1 ",
 				getmDbc().getDbConnection());
 		qn.setParaValue("PN", mLoginUserPN);
 		ResultSet rs = qn.executeRS();
@@ -223,6 +239,10 @@ public class InstanceInfo {
 		while (rst.next()) {
 			getmListProfiles().add(rst.getString("CODE"));
 			getmMapProfiles().put(rst.getString("CODE"), rst.getString("title"));
+			if (getmLoginLanguage().equals("AR"))
+				getmMapProfiles().put(rst.getString("CODE"),
+						utils.nvl(rst.getString("titlea"), rst.getString("title")));
+
 		}
 		rst.close();
 		setmCurrentProfile(utils.nvl(getMmapVar().get("CURRENT_PROFILE_CODE"), ""));

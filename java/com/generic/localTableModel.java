@@ -991,6 +991,7 @@ public class localTableModel implements TableModel, Serializable {
 		applyDefaultCP(qc, false);
 	}
 
+	
 	public void applyDefaultCP(qryColumn qc, boolean recreate) {
 		ColumnProperty cp = qc.columnUIProperties;
 		if (cp == null || recreate)
