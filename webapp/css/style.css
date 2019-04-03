@@ -308,6 +308,20 @@
     width: 15%;
     left: 53%;
 }
+.loadingDiv {
+    position: fixed;
+    top:30%;
+    left:30%;
+    right:30%;
+    bottom:50%;
+    border: medium solid grey;
+    background-color: yellow;
+    font-family: "72", Arial, Helvetica, sans-serif;
+    font-size: large;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: 5%;
+}
 
 @media (max-width: 400px) {
     .container {

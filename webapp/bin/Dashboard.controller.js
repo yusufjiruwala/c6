@@ -5,7 +5,7 @@ sap.ui.controller('bin.Dashboard', {
      * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
      * @memberOf bin.Dashboard **/
     onInit: function () {
-
+        $('<div class=loadingDiv>Loading libraries</div>').prependTo(document.body);
     },
 
     /**
@@ -14,7 +14,7 @@ sap.ui.controller('bin.Dashboard', {
      * @memberOf bin.Dashboard
      **/
     onBeforeRendering: function () {
-
+        $('<div class=loadingDiv>Loading libraries</div>').prependTo(document.body);
     },
 
     /**
@@ -22,7 +22,7 @@ sap.ui.controller('bin.Dashboard', {
      * This hook is the same one that SAPUI5 controls get after being rendered.
      * @memberOf bin.Dashboard **/
     onAfterRendering: function () {
-
+        $('<div class=loadingDiv>Loading libraries</div>').prependTo(document.body);
     },
 
     /**

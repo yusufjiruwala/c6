@@ -13,6 +13,12 @@ sap.ui.jsview('bin.Dashboard', {
      * Since the Controller is given to this method, its event handlers can be attached right away.
      * @memberOf bin.Dashboard **/
     createContent: function (oController) {
+        jQuery.sap.require("sap.viz.library");
+        jQuery.sap.require("sap.ui.table.library");
+        jQuery.sap.require("sap.ui.layout.library");
+
+
+
         Util.setLanguageModel(this);
         var that = this;
         that.screen = -1;
@@ -77,7 +83,10 @@ sap.ui.jsview('bin.Dashboard', {
 
         }
 //this.pg.addContent();
-        return this.pg;
+
+        var app = new sap.m.App({pages: [this.pg]});
+        return app;
+
     },
     createDashBoard: function () {
         var that = this;
@@ -535,7 +544,9 @@ sap.ui.jsview('bin.Dashboard', {
                 icon: "sap-icon://home",
                 text: "",
                 press: function () {
-                    document.location.href = "/";
+
+                    document.location.href = "/?clearCookies=true";
+                    //Util.cookiesClear();
                 }
             }),
                 new sap.m.Button({

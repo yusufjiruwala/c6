@@ -1,15 +1,15 @@
 <!doctype html>
 <html>
 <head>
-    <script>
-        jQuery.fn.drag = 'true';
-    </script>
+
+    <!--data-sap-ui-libs="sap.m,sap.viz,sap.ui.layout,sap.ui.table,sap.ui.commons"-->
+
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <meta http-equiv="Pragma" content="no-cache"/>
     <meta http-equiv="Expires" content="0"/>
     <link rel="stylesheet" href="css/prettify.css">
-    <link rel="stylesheet" href="generic/lib/handsontable.full.min.css">
+    <!--<link rel="stylesheet" href="generic/lib/handsontable.full.min.css">-->
 
 
     <title>CHAINEL</title>
@@ -17,7 +17,7 @@
             id="sap-ui-bootstrap"
             src='resources/sap-ui-core.js'
             data-sap-ui-theme="sap_belize"
-            data-sap-ui-libs="sap.m,sap.viz,sap.ui.layout,sap.ui.table,sap.ui.commons"
+            data-sap-ui-libs=""
             data-sap-ui-xx-bindingSyntax="complex"
             data-sap-ui-preload="asynch"
             data-sap-ui-language="en"
@@ -39,58 +39,70 @@
     <script src="generic/DecimalFormat.js"></script>
     <script src="generic/SimpleDateFormat.js"></script>
     <script src="generic/QueryView.js"></script>
-    <script src="generic/lib/handsontable.full.js"></script>
+    <!--<script src="generic/lib/handsontable.full.js"></script>-->
     <script src="generic/GridView.js"></script>
 
 
     <link rel="stylesheet" type="text/css" href="css/style.css">
 
+
     <script>
 
         sap.ui.localResources("bin");
         sap.ui.localResources("i18n");
-        var UtilGen = sap.ui.require("sap/ui/ce/generic/UtilGen");
-        var Util = sap.ui.require("sap/ui/ce/generic/Util");
-        var LocalTableData = sap.ui.require("sap/ui/ce/generic/LocalTableData");
-        var Gauge = sap.ui.require("sap/ui/ce/generic/Gauge");
-        var QueryView = sap.ui.require("sap/ui/ce/generic/QueryView");
-        var GridView = sap.ui.require("sap/ui/ce/generic/GridView");
-
+        var UtilGen;
+        var Util ;
+        var LocalTableData ;
+        var Gauge;
+        var QueryView;
+        var GridView;
 
         sap.ui.getCore().attachInit(function () {
+            Util = sap.ui.require("sap/ui/ce/generic/Util");
+            jQuery.sap.require("sap.m.library");
 
-//            var oCompContainer = new sap.ui.core.ComponentContainer({
-//                height: "100%"
-//            });
+            UtilGen = sap.ui.require("sap/ui/ce/generic/UtilGen");
 
-//            new sap.m.Page({
-//                showHeader: false,
-//                content: oCompContainer
-//            }).placeAt("content");
-            ;
-            var app = sap.m.App("app", {
-                //viewName : "chainel1.Login",
-                type: "JS",
-                height:"100%"
+            LocalTableData = sap.ui.require("sap/ui/ce/generic/LocalTableData");
+            Gauge = sap.ui.require("sap/ui/ce/generic/Gauge");
+            QueryView = sap.ui.require("sap/ui/ce/generic/QueryView");
+            GridView = sap.ui.require("sap/ui/ce/generic/GridView");
+
+
+            var oCompContainer = new sap.ui.core.ComponentContainer({
+                    height: "100%",
+                    settings: {
+                        id: "sap.ui.ce"
+                    }
+                }
+            );
+
+            new sap.m.Shell({
+                app: oCompContainer,
+                showLogout:false
             }).placeAt("content");
-            var dsh = sap.ui.jsview("mainPage", "bin.Dashboard");
-            app.addPage(dsh);
 
-//            var oComponent = sap.ui.component({
-//                name: "sap.ui.ce",
-//                manifestFirst: true,
-//                async: true
-//            }).then(function (oComponent) {
-//                oCompContainer.setComponent(oComponent);
-//            });
+            var oComponent = sap.ui.component({
+                name: "sap.ui.ce.bin",
+                manifestFirst: true,
+                async: true
+            }).then(function (oComponent) {
+                oCompContainer.setComponent(oComponent);
+            });
+            $('<div class=loadingDiv>Loading libraries</div>').prependTo(document.body);
+            $("#load").text("");
+//            Util.stopSpin();
+
         });
 
     </script>
 
 </head>
 <body>
+<div id="load">Loading libraries First Time..</div>
 <div id="content">
 </div>
 
 </body>
+
 </html>

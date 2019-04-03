@@ -1,6 +1,5 @@
 package com.models;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 
 import java.sql.Connection;
 import java.sql.SQLException;

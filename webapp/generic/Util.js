@@ -12,7 +12,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return null;
             },
             objToStr: function (obj) {
-                var str = '';x``
+                var str = '';
+                x``
                 for (var p in obj) {
                     if (obj.hasOwnProperty(p)) {
                         str += p + '::' + obj[p] + '\n';
@@ -743,21 +744,55 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 '' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '');
 
             },
-            setLanguageModel:function (view) {
+            setLanguageModel: function (view) {
                 var ResourceModel = sap.ui.model.resource.ResourceModel;
                 var sLangu =
                     sap.ui.getCore().getConfiguration().getLanguage();
                 var oLangu = new ResourceModel(
+                    {
+                        bundleUrl: (sLangu == "AR" ? "i18n/i18n_ar.properties" : "i18n/i18n.properties"),
 
-                    {bundleUrl : (sLangu=="AR"?"i18n/i18n_ar.properties":"i18n/i18n.properties"),
-
-                        "bundleLocale":sLangu});
+                        "bundleLocale": sLangu
+                    });
 
                 view.setModel(oLangu, "i18n");
-                view.sLangu=sLangu;
+                view.sLangu = sLangu;
 
+            },
+            cookieGet: function (cname) {
+                var name = cname + "=";
+                var decodedCookie = decodeURIComponent(document.cookie);
+                var ca = decodedCookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            },
+            cookieSet: function setCookie(cname, cvalue, exdays) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+                var expires = "expires=" + d.toUTCString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            },
+            cookieDelete: function (cname) {
+                document.cookie = cname + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            },
+            cookiesClear: function () {
+                var cookies = document.cookie.split(";");
+
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i];
+                    var eqPos = cookie.indexOf("=");
+                    var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                }
             }
-
         };
 
 

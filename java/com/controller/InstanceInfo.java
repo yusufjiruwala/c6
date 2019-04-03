@@ -151,10 +151,15 @@ public class InstanceInfo {
 			}
 			if (mLoginFile.isEmpty())
 				return null;
-			utils.readVars(mMapVars, mLoginFile);
-			mOwner = mMapVars.get("ini_owner") + "";
-			mOwnerPassword = mMapVars.get("ini_password") + "";
-			mOwnerDBUrl = mMapVars.get("ini_dburl") + "";
+			if (!mLoginFile.startsWith("AUTO")) {
+				utils.readVars(mMapVars, mLoginFile);
+				mOwner = mMapVars.get("ini_owner") + "";
+				mOwnerPassword = mMapVars.get("ini_password") + "";
+				mOwnerDBUrl = mMapVars.get("ini_dburl") + "";
+			} else{
+				
+			}
+			
 			mDbc = new DBClass(mOwnerDBUrl, mOwner, mOwnerPassword);
 		} catch (Exception e) {
 			e.printStackTrace();

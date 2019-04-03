@@ -1,6 +1,7 @@
 sap.ui.jsfragment("bin.Queries", {
 
     createContent: function (oController) {
+        jQuery.sap.require("sap.ui.commons.library");
         var oModel = sap.ui.getCore().getModel("screens");
         var that = this;
         var view = oController.getView();
