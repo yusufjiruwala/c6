@@ -18,7 +18,6 @@ sap.ui.jsview('bin.Dashboard', {
         jQuery.sap.require("sap.ui.layout.library");
 
 
-
         Util.setLanguageModel(this);
         var that = this;
         that.screen = -1;
@@ -43,8 +42,8 @@ sap.ui.jsview('bin.Dashboard', {
                 sap.ui.getCore().setModel(oModel, "screens");
                 that.screen = dt[0].CODE;
                 that.screen_name = dt[0].DESCR;
-                if (that.sLangu=="AR")
-                    that.screen_name = UtilGen.nvl(dt[0].DESCR_A,dt[0].DESCR);
+                if (that.sLangu == "AR")
+                    that.screen_name = UtilGen.nvl(dt[0].DESCR_A, dt[0].DESCR);
 
                 var j = -1;
                 for (var i in  dt)
@@ -55,8 +54,8 @@ sap.ui.jsview('bin.Dashboard', {
                 if (j >= 0) {
                     that.screen = dt[j].CODE;
                     that.screen_name = dt[j].DESCR;
-                    if (that.sLangu=="AR")
-                        that.screen_name= UtilGen.nvl(dt[0].DESCR_A,dt[0].DESCR);
+                    if (that.sLangu == "AR")
+                        that.screen_name = UtilGen.nvl(dt[j].DESCR_A, dt[j].DESCR);
                     that.screen_type = dt[j].GROUPNAME;
                 }
             }
@@ -99,9 +98,9 @@ sap.ui.jsview('bin.Dashboard', {
             for (var c in that.rows[i]) {
                 var rep = that.rows[i][c];
                 var graph = that.getGraphCell(rep);
-                var tit=rep.REP_TITLE;
-                if (that.sLangu=="AR")
-                    tit=UtilGen.nvl(rep.REP_TITLE_ARB,tit);
+                var tit = rep.REP_TITLE;
+                if (that.sLangu == "AR")
+                    tit = UtilGen.nvl(rep.REP_TITLE_ARB, tit);
 
                 br.addContent(new sap.ui.layout.BlockLayoutCell({
                     title: tit,
@@ -202,8 +201,7 @@ sap.ui.jsview('bin.Dashboard', {
 
     }
     ,
-    _distinctive_rownos()
-    {
+    _distinctive_rownos() {
         // build unique rows array from all sub reports fetched...
         var rn = [];
         for (var i in this.reps) {
@@ -355,8 +353,8 @@ sap.ui.jsview('bin.Dashboard', {
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
         var ps = /*"_para_fromdate=@" + df.format((that.byId("fromdate").getDateValue())) +*/
-                "_para_todate=@" + df.format((that.byId("todate").getDateValue()))
-            ;
+            "_para_todate=@" + df.format((that.byId("todate").getDateValue()))
+        ;
         Util.doAjaxGet("gaugedata2?" + ps, "&_keyfld='" + rep.SQL + "'", false).done(function (data) {
             rep.gjData = JSON.parse(data).data[0];
             var gg;

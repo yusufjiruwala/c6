@@ -1,6 +1,7 @@
 sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"],
     function (LocalTableData, DataFilter) {
         'use strict'
+
         function QueryView(tableId) {
             var that = this;
             this.mJsonString = "";
@@ -13,7 +14,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.onselect = undefined;
             this.parent = undefined;
             this.queryType = 'table';
-
+            this.selectedRowStyle = "blueSelect";
             //specific for tree..
             this.mode = sap.ui.table.SelectionMode.MultiToggle;
             this.mColParent = "";
@@ -32,7 +33,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             (sap.ui.getCore().byId(this.tableId + "table") != undefined ? sap.ui.getCore().byId(this.tableId + "table").destroy() : null);
             this.mTable = new sap.ui.table.Table(this.tableId + "table", {
                 visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
-                firstVisibleRow: 3,
+                firstVisibleRow: 10,
                 width: "100%",
                 height: "100%",
                 selectionMode: sap.ui.table.SelectionMode.MultiToggle,
@@ -727,7 +728,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
 
         QueryView.prototype.colorRows = function () {
-            if (this.mLctb.cols.length <= 0)                return;
+            if (this.mLctb.cols.length <= 0) return;
             var oModel = this.getControl().getModel();
             var rowCount = this.getControl().getVisibleRowCount(); //number of visible rows
             var rowStart = this.getControl().getFirstVisibleRow(); //starting Row index
@@ -763,6 +764,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 var cf = "";
                 var cf_tooltip = "";
                 // ----conditional formatting
+
                 for (var j = 0 + cellAdd; j < cellsCount; j++) {
                     if (this.b4_cf_val1[j - cellAdd] == undefined) {
                         this.b4_cf_val1[j - cellAdd] = this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().attr("style");
@@ -787,6 +789,10 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                         this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("qrGroup");
                         this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("qtSecondLevel");
                         this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass("qtFirstLevel");
+                        if (Util.nvl(this.selectedRowStyle, "").length > 0)
+                            this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().removeClass(this.selectedRowStyle);
+
+
                         this.getControl().getRows()[i].getCells()[j - cellAdd].$().attr("style", this.b4_cf_val);
                         this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().attr("style", Util.nvl(this.b4_cf_val1[j - cellAdd], ""));
                         // column formatting...
@@ -847,10 +853,20 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     if (cellValue2 == this.minLevel + 1)
                         this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("qtSecondLevel");
                 }
-            }
 
-        }
-        ;
+            }
+            // row selection
+            if (Util.nvl(this.selectedRowStyle, "").length > 0) {
+                var sl = this.getControl().getSelectedIndices();
+                if (sl.length > 0)
+                    for (var ii in sl) {
+                        var i = sl[ii];
+                        for (var k = 0 + cellAdd; k < cellsCount; k++)
+                            this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass(this.selectedRowStyle);
+                    }
+            }
+        };
+
         QueryView.prototype.reset = function () {
             this.getControl().removeAllRows();
             this.getControl().removeAllColumns();
@@ -1303,7 +1319,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     o[cnt]["DISPLAY"] = grp;
                     o[cnt]["FILTER_STRING"] = this.filterCodeCol + "=" + oData[v][this.filterCodeCol] +
                         (this.filterNameCol != this.filterCodeCol ? " && "
-                        + this.filterNameCol + "=" + oData[v][this.filterNameCol] : "");
+                            + this.filterNameCol + "=" + oData[v][this.filterNameCol] : "");
                     lastGroup = grp;
                     cnt++;
                 }

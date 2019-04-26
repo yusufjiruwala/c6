@@ -4,7 +4,7 @@ sap.ui.jsfragment("bin.searchList", {
         oModel = sap.ui.getCore().getModel("searchList");
         this.setModel(oModel, "data");
         var oTempl = new sap.m.StandardListItem({
-            title: "{TITLE}-{CODE}",
+            title: "{TITLE}",
             active: true,
             customData: {key: "{CODE}"}
         });

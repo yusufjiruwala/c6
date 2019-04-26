@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+
+    <!--data-sap-ui-libs="sap.m,sap.viz,sap.ui.layout,sap.ui.table,sap.ui.commons"-->
+
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" href="css/prettify.css">
+    <!--<link rel="stylesheet" href="generic/lib/handsontable.full.min.css">-->
+
+
+    <title>CHAINEL</title>
+    <script
+            id="sap-ui-bootstrap"
+            src='resources/sap-ui-core.js'
+            data-sap-ui-theme="sap_belize"
+            data-sap-ui-libs=""
+            data-sap-ui-xx-bindingSyntax="complex"
+            data-sap-ui-preload="asynch"
+            data-sap-ui-language="en"
+            data-sap-ui-compatVersion="edge"
+            data-sap-ui-resourceroots='{
+				"sap.ui.ce": "./",
+				"bin":"./bin",
+			    "lg":"./bin/forms/lg"
+
+			}'
+    >
+    </script>
+
+
+    <script src="generic/UtilGen.js"></script>
+    <script src="generic/Util.js"></script>
+    <script src="generic/LocalTableData.js"></script>
+    <script src="generic/Gauge.js"></script>
+    <script src="generic/DecimalFormat.js"></script>
+    <script src="generic/SimpleDateFormat.js"></script>
+    <script src="generic/QueryView.js"></script>
+    <!--<script src="generic/lib/handsontable.full.js"></script>-->
+    <script src="generic/GridView.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+
+
+    <script>
+
+        sap.ui.localResources("bin");
+        sap.ui.localResources("i18n");
+        var UtilGen;
+        var Util ;
+        var LocalTableData ;
+        var Gauge;
+        var QueryView;
+        var GridView;
+
+        sap.ui.getCore().attachInit(function () {
+            Util = sap.ui.require("sap/ui/ce/generic/Util");
+            jQuery.sap.require("sap.m.library");
+
+            UtilGen = sap.ui.require("sap/ui/ce/generic/UtilGen");
+
+            LocalTableData = sap.ui.require("sap/ui/ce/generic/LocalTableData");
+            Gauge = sap.ui.require("sap/ui/ce/generic/Gauge");
+            QueryView = sap.ui.require("sap/ui/ce/generic/QueryView");
+            GridView = sap.ui.require("sap/ui/ce/generic/GridView");
+
+
+            var oCompContainer = new sap.ui.core.ComponentContainer({
+                    height: "100%",
+                    settings: {
+                        id: "sap.ui.ce"
+                    }
+                }
+            );
+
+            new sap.m.Shell({
+                app: oCompContainer,
+                showLogout:false
+            }).placeAt("content");
+
+            var oComponent = sap.ui.component({
+                name: "sap.ui.ce.bin",
+                manifestFirst: true,
+                async: true
+            }).then(function (oComponent) {
+                oCompContainer.setComponent(oComponent);
+            });
+            $('<div class=loadingDiv>Loading libraries</div>').prependTo(document.body);
+            $("#load").text("");
+//            Util.stopSpin();
+
+        });
+
+    </script>
+
+</head>
+<body>
+<div id="load">Loading libraries First Time..</div>
+<div id="content">
+</div>
+
+</body>
+
+</html>

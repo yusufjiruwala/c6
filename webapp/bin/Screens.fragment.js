@@ -4,10 +4,7 @@ sap.ui.jsfragment("bin.Screens", {
         var oModel = sap.ui.getCore().getModel("screens");
         this.setModel(oModel, "data");
         var view=oController.getView();
-        var tit="{DESCR} - {GROUPNAME} -{CODE}";
-
-        if (view.sLangu=="AR")
-            tit="{DESCR_A} - {CODE}";
+        var tit="{DESCR} ... {CODE}";
 
         var oTempl = new sap.m.StandardListItem({
             title: tit,

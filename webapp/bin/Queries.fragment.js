@@ -1222,7 +1222,7 @@ sap.ui.jsfragment("bin.Queries", {
 
         ps += (ps.length > 0 ? "&" : "") + "_keyfld=" + rep.KEYFLD;
         Util.doAjaxGetSpin("exe?command=get-graph-query&" + (ps), "", false, function (data) {
-            that.subqry.setJsonStr(data);
+            this.qv.getControl().addStyleClass("sapContrast");
             that.subqry.loadData();
             Util.stopSpin();
         }, undefined, true);

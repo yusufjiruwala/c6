@@ -31,6 +31,11 @@
     border-style: double;
 }
 
+.whiteText {
+    color: white !important;
+
+}
+
 .blackwhiteText {
     color: white !important;
     background-color: black !important;
@@ -308,12 +313,13 @@
     width: 15%;
     left: 53%;
 }
+
 .loadingDiv {
     position: fixed;
-    top:30%;
-    left:30%;
-    right:30%;
-    bottom:50%;
+    top: 30%;
+    left: 30%;
+    right: 30%;
+    bottom: 50%;
     border: medium solid grey;
     background-color: yellow;
     font-family: "72", Arial, Helvetica, sans-serif;
@@ -413,4 +419,52 @@
     border: 1px solid #dddddd;
     text-align: left;
     padding: 8px;
+}
+
+.mytile {
+    padding: 20px;
+}
+
+.mytile .sapMPanelHdr {
+    border-bottom-color: #ffffff !important;
+    color: #ffffff !important;
+    background-color: lightgray !important;
+    min-height: 27px !important;
+    border: none !important;
+    border-bottom: 2px solid #ffffff;
+}
+
+.mytile .sapMPanelContent {
+    background-color: #3f5161 !important;
+    color: white !important;
+    box-shadow: 1px 1px 2px #808888 !important;
+
+}
+
+.mytile .sapMPanelContent:hover {
+    box-shadow: 0px 0px 0px #888888 !important;
+    background: black !important;
+    cursor: pointer;
+}
+
+.sapMInputBaseInner:focus {
+    background-color: cyan;
+}
+
+.noColumnBorder .sapUiTableTr > td {
+    border: 0 !important;
+
+}
+
+
+.noColumnBorder .sapUiTableRowHdr {
+    border: 0 !important;
+}
+
+.blueSelect {
+    background-color:rgba(187,222,255,0.5) !important;
+}
+
+.sapUiFormResGrid.sapUiFormToolbar>div:first-child {
+    background-color: lightblue!important;
 }
