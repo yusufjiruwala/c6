@@ -8,15 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.controller.InstanceInfo;
 import com.generic.utils;
 import com.tools.queries.QuickRepMetaData;
 
-@Component
-public class Batches {
+
+public class Batches{
+	@Component
 	public class UserReports extends Thread {
 		public static final String STATUS_NONE = "NONE";
 		public static final String STATUS_START = "START";
@@ -47,7 +50,7 @@ public class Batches {
 
 		@Override
 		public void run() {
-
+			System.err.println("Running thread ..."+this.query_code);
 			String ret = "";
 
 			Connection con = instanceInfo.getmDbc().getDbConnection();
@@ -78,7 +81,8 @@ public class Batches {
 				qrm.data_cols.executeQuery(sq, true);
 
 				this.ret = qrm.buildJson(rid, params);
-				this.status = STATUS_END;				
+				this.status = STATUS_END;
+				System.err.println("ENDING thread ..."+this.query_code);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				this.status = this.STATUS_ERROR;
@@ -101,6 +105,7 @@ public class Batches {
 		return mapUserReports;
 	}
 
+	
 	public int addBatch(String qc, InstanceInfo ii, Map<String, String> mps, boolean startTheThread) {
 		UserReports ur = null;
 		String upath = ii.getmOwner() + "." + ii.getmLoginUser() + "_" + qc;

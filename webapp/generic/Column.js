@@ -1,5 +1,6 @@
 sap.ui.define(["./DataCell"], function (DataCell) {
     'use strict';
+
     function Column() {
         this.mUIHelper = {
             canEdit: false,
@@ -17,6 +18,7 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mList = "";
         this.mColClass = "";
         this.mTitle = "";
+        this.mTitleAr = "";
         this.mGrouped = false;
         this.mSummary = "";
         this.mQtreeType = "";
@@ -26,7 +28,7 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mCfTrue = "";
         this.mCfFalse = "";
         this.mTitleParent = "";
-        this.mTitleParentSpan=1;
+        this.mTitleParentSpan = 1;
     }
 
     Column.prototype = {

@@ -1,6 +1,7 @@
 sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"],
     function (LocalTableData, DataFilter) {
         'use strict'
+
         function QueryView(tableId) {
             var that = this;
             this.mJsonString = "";
@@ -335,7 +336,10 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                         key: this.mColCode
                     }
                 };
-                l["multiLabels"] = [new sap.ui.commons.TextView({text: cc.mTitle, wrapping: true})];
+                l["multiLabels"] = [new sap.ui.commons.TextView({
+                    text: Util.getLangDescrAR(cc.mTitle, cc.mTitleAr),
+                    wrapping: true
+                })];
                 // if multilabel then add objects for multiLabel
                 if (Util.nvl(cc.mTitleParent, "").length > 0) {
                     l["multiLabels"] = [
@@ -345,7 +349,11 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                             width: "100%",
                             wrapping: true
                         }).addStyleClass("multiLabel1"),
-                        new sap.ui.commons.TextView({text: cc.mTitle, textAlign: "Center", wrapping: true})
+                        new sap.ui.commons.TextView({
+                            text: Util.getLangDescrAR(cc.mTitle, cc.mTitleAr),
+                            textAlign: "Center",
+                            wrapping: true
+                        })
                     ];
                     l["headerSpan"] = [cc.mTitleParentSpan, 1];
                 }
@@ -727,7 +735,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
 
         QueryView.prototype.colorRows = function () {
-            if (this.mLctb.cols.length <= 0)                return;
+            if (this.mLctb.cols.length <= 0) return;
             var oModel = this.getControl().getModel();
             var rowCount = this.getControl().getVisibleRowCount(); //number of visible rows
             var rowStart = this.getControl().getFirstVisibleRow(); //starting Row index
@@ -1303,7 +1311,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     o[cnt]["DISPLAY"] = grp;
                     o[cnt]["FILTER_STRING"] = this.filterCodeCol + "=" + oData[v][this.filterCodeCol] +
                         (this.filterNameCol != this.filterCodeCol ? " && "
-                        + this.filterNameCol + "=" + oData[v][this.filterNameCol] : "");
+                            + this.filterNameCol + "=" + oData[v][this.filterNameCol] : "");
                     lastGroup = grp;
                     cnt++;
                 }
@@ -1360,7 +1368,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 (view.byId("txtflt" + i) != undefined ? view.byId("txtflt" + i).destroy() : null);
                 var t = new sap.m.Input(view.createId("txtflt" + i), {
                     width: "100%",
-                    placeholder: "Filter for field # " + qv.mLctb.cols[i].mTitle,
+                    placeholder: "Filter for field # " + Util.getLangDescrAR(qv.mLctb.cols[i].mTitle, qv.mLctb.cols[i].mTitleAr),
                     value: Util.nvl(view.filterData[qv.mLctb.cols[i].mColName], "")
                 });
                 txts.push(t);

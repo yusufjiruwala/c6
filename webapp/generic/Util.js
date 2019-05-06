@@ -322,8 +322,9 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var searchfield = sap.m.SearchField;
                 var input = sap.m.Input;
                 var datepicker = sap.m.DatePicker;
-                var label = sap.m.Label;
+                var label = sap.ui.commons.Label;
                 var checkbox = sap.m.CheckBox;
+                var that = this;
                 // adding groups header and detail,if groups found more than 2 otherwise forceshowGroups ==true
                 if (forceshowGroups || dtx.groups.length > 2) {
                     (thatView.byId("txtGroupHeader") != undefined ? thatView.byId("txtGroupHeader").destroy() : null);
@@ -399,9 +400,12 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
 
                 }
                 // adding parameters ...
+                var lval = ""
+                    , cval = "", tit = "";
                 for (var i = 0; i < Util.nvl(dtx.parameters, []).length; i++) {
-                    var p, pl, vls;
-
+                    var p, pl = undefined, vls;
+                    cval = that.getLangDescrAR(dtx.parameters[i].PARA_DESCRARB, dtx.parameters[i].PARA_DESCRENG);
+                    tit = that.getLangDescrAR(dtx.parameters[i].TITLE_GROUP, dtx.parameters[i].TITLE_GROUP_AR);
                     vls = "";
                     if (dtx.parameters[i].PARA_DEFAULT != undefined)
                         vls = dtx.parameters[i].PARA_DEFAULT;
@@ -465,10 +469,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                                     });
                                 }
                             }).addStyleClass(st);
-                        pl = new label(thatView.createId("lblpara_" + ia + i), {
-                            text: dtx.parameters[i].PARA_DESCRARB,
-                            labelFor: p
-                        }).addStyleClass(st);
+                        if (lval != cval)
+                            pl = new label(thatView.createId("lblpara_" + ia + i), {
+                                text: cval,
+                                // labelFor: p
+                            }).addStyleClass(st);
 
 
                     } else {
@@ -480,10 +485,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                                 value: vls,
                                 width: this.nvl(pWidth, dtx.parameters[i].WIDTH),
                             }).addStyleClass(st);
-                            pl = new label(thatView.createId("lblpara_" + ia + i), {
-                                text: dtx.parameters[i].PARA_DESCRARB,
-                                labelFor: p
-                            }).addStyleClass(st);
+                            if (lval != cval)
+                                pl = new label(thatView.createId("lblpara_" + ia + i), {
+                                    text: cval,
+                                    // labelFor: p
+                                }).addStyleClass(st);
                         } // end if for PARA_DATATYPE !== "DATE" || PARA_DATATYPE !== "BOOLEAN"
                     }
                     if (dtx.parameters[i].PARA_DATATYPE === "DATE") {
@@ -498,13 +504,14 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             value: (vl != undefined ? vl : ""),
                             valueFormat: sett["ENGLISH_DATE_FORMAT"],
                             displayFormat: sett["ENGLISH_DATE_FORMAT"],
-                            placeholder: dtx.parameters[i].PARA_DESCRARB,
+                            placeholder: cval,
                             width: this.nvl(pWidth, dtx.parameters[i].WIDTH),
                         }).addStyleClass(st);
-                        pl = new label(thatView.createId("lblpara_" + ia + i), {
-                            text: dtx.parameters[i].PARA_DESCRARB,
-                            labelFor: p
-                        }).addStyleClass(st);
+                        if (lval != cval)
+                            pl = new label(thatView.createId("lblpara_" + ia + i), {
+                                text: cval,
+                                // labelFor: p
+                            }).addStyleClass(st);
                     }
                     if (dtx.parameters[i].PARA_DATATYPE === "BOOLEAN") {
                         (thatView.byId("para_" + ia + i) != undefined ? thatView.byId("para_" + ia + i).destroy() : null);
@@ -514,10 +521,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             //text: dtx.parameters[i].PARA_DESCRARB,
                             width: this.nvl(pWidth, dtx.parameters[i].WIDTH),
                         });
-                        pl = new label(thatView.createId("lblpara_" + ia + i), {
-                            text: dtx.parameters[i].PARA_DESCRARB,
-                            labelFor: p
-                        }).addStyleClass(st);
+                        if (lval != cval)
+                            pl = new label(thatView.createId("lblpara_" + ia + i), {
+                                text: cval,
+//                                labelFor: p
+                            }).addStyleClass(st);
 
                     }
                     if (dtx.parameters[i].PARA_DATATYPE === "GROUP") {
@@ -543,10 +551,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             selectedIndex: (si != 0 ? Number(si) : si),
                             buttons: bts
                         });
-                        pl = new label(thatView.createId("lblpara_" + ia + i), {
-                            text: dtx.parameters[i].PARA_DESCRARB,
-                            labelFor: p
-                        }).addStyleClass(st);
+                        if (lval != cval)
+                            pl = new label(thatView.createId("lblpara_" + ia + i), {
+                                text: cval,
+                                // labelFor: p
+                            }).addStyleClass(st);
                     }
 
                     if (showAll || dtx.parameters[i].PROMPT_TYPE != "A") {
@@ -554,10 +563,21 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             if (pl != undefined) pg.addItem(pl);
                             pg.addItem(p);
                         } else {
+                            if (Util.nvl(tit, "").length > 0)
+                                pg.addContent(new sap.ui.commons.Title({text: tit}));
                             if (pl != undefined) pg.addContent(pl);
-                            pg.addContent(p);
+                            if (p != undefined) {
+                                var lc = pg.getContent()[pg.getContent().length - 1];
+                                pg.addContent(p);
+                                if (pl == undefined) {
+                                    p.setLayoutData(new sap.ui.layout.GridData({span: "XL1 L2 M3 S4"}));
+                                    lc.setLayoutData(new sap.ui.layout.GridData({span: "XL1 L2 M3 S4"}));
+                                }
+                            }
+                            //pg.addContent(pl);
                         }
                     }
+                    lval = cval;
                     //else   // else dtx.parameter.prompt_type==="A"
                     //  view.advance_para.push({"label": pl, "input": p});
 
@@ -605,7 +625,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         }
                         if (fnd)
                             menu11.addItem(new sap.m.MenuItem({
-                                text: view.colData.subreps[i].REP_TITLE,
+                                text: this.getLangDescrAR(view.colData.subreps[i].REP_TITLE, view.colData.subreps[i].REP_TITLE_ARB),
                                 customData: [{key: "graph"}, {value: view.colData.subreps[i]}]
                             }));
 
@@ -738,10 +758,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
 
                 if (!rv)
                     return (typeof vl == "number" ? vl :
-                    '"' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
+                        '"' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '"');
 
                 return (typeof vl == "number" ? vl :
-                '' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '');
+                    '' + Util.nvl(vl, "").replace(/\"/g, "'").replace(/\n/, "\\r").replace(/\r/, "\\r").replace(/\\/g, "\\\\").trim() + '');
 
             },
             setLanguageModel: function (view) {
@@ -792,6 +812,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
                     document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
                 }
+            },
+            getLangDescrAR: function (enStr, otStr, sLang) {
+                var s = Util.nvl(sLang, sap.ui.getCore().getConfiguration().getLanguage());
+                return (s == "AR" ? this.nvl(otStr, enStr) : enStr);
+
             }
         };
 

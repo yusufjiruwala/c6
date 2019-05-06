@@ -221,13 +221,15 @@ public class QuickRepMetaData {
 		listSubReports.clear();
 
 		Connection con = instanceInfo.getmDbc().getDbConnection();
-		
+
 		report_name = "";
 		if (instanceInfo.getmLoginLanguage().equals("AR"))
-			report_name=QueryExe.getSqlValue("select max(nvl(titleeng,titlearb)) from c6_qry1 where code='" + id + "'", con, "") + "";
+			report_name = QueryExe.getSqlValue(
+					"select max(nvl(titleeng,titlearb)) from c6_qry1 where code='" + id + "'", con, "") + "";
 		else
-			report_name=QueryExe.getSqlValue("select max(titlearb) from c6_qry1 where code='" + id + "'", con, "") + "";
-		
+			report_name = QueryExe.getSqlValue("select max(titlearb) from c6_qry1 where code='" + id + "'", con, "")
+					+ "";
+
 		// --------sub report addings
 		QueryExe qe = new QueryExe(con);
 		qe.setSqlStr("select code,titlearb from c6_qry1 where parentrep=:id order by code");
@@ -382,8 +384,13 @@ public class QuickRepMetaData {
 				cp.col_class = String.class;
 				cp.colname = coldisp;
 				cp.descr = utils.nvl(rs_2.getString("CP_COL_TITLE_ENG"), coldisp);
+				cp.descrar = utils.nvl(rs_2.getString("CP_COL_TITLE_ARB"), "");
 				cp.parent_title_1 = utils.nvl(rs_2.getString("PARENT_TITLE_1"), "");
 				cp.parent_title_2 = utils.nvl(rs_2.getString("PARENT_TITLE_2"), "");
+				if (instanceInfo.getmLoginLanguage().equals("AR")) {
+					cp.parent_title_1 = utils.nvl(rs_2.getString("PARENT_TITLE_1_AR"), cp.parent_title_1);
+					cp.parent_title_2 = utils.nvl(rs_2.getString("PARENT_TITLE_2_AR"), cp.parent_title_2);
+				}
 				cp.parent_title_span = Integer.valueOf(utils.nvl(rs_2.getString("parent_title_span"), "1"));
 				int fnd_col = data_cols.locate("INDEXNO", rs_2.getString("INDEXNO"), localTableModel.FIND_EXACT);
 				if (fnd_col >= 0) {
@@ -464,9 +471,8 @@ public class QuickRepMetaData {
 			/*
 			 * if ((strgroup1.length() > 0 || strgroup2.length() > 0) &&
 			 * (strgroup1.equals(rs_2.getString("group_name")) || strgroup2
-			 * .equals(rs_2.getString("group_name")))) { if (s1.length() > 0) {
-			 * s1 = s1 + "," + "\"" + coldisp + "\""; } else { s1 = "\"" +
-			 * coldisp + "\""; } }
+			 * .equals(rs_2.getString("group_name")))) { if (s1.length() > 0) { s1 = s1 +
+			 * "," + "\"" + coldisp + "\""; } else { s1 = "\"" + coldisp + "\""; } }
 			 */
 
 			if (strgroup1.equals(rs_2.getString("group_name"))) {
@@ -614,9 +620,8 @@ public class QuickRepMetaData {
 
 		sqlstr = "select " + sqlCols + " from " + sqlView + " " + sqlWhere + " " + sqlGroupby + " " + sqlOrdby;
 		return sqlstr;/**
-						 * later on to add this.. for qucik rows and columns if
-						 * (isCt) { for (int i = 0; i < ctHeaderCol.size(); i++)
-						 * {
+						 * later on to add this.. for qucik rows and columns if (isCt) { for (int i = 0;
+						 * i < ctHeaderCol.size(); i++) {
 						 * 
 						 * } }
 						 */
@@ -768,7 +773,8 @@ public class QuickRepMetaData {
 					cn = rsm.getColumnName(i + 1);
 					Object vl = utils.nvl(rs.getString(cn), "");
 					if (vl != "")
-						vl = (utils.isNumber(rsm.getColumnType(i + 1)) ? Double.valueOf(String.format("%.6f",rs.getDouble(cn)))
+						vl = (utils.isNumber(rsm.getColumnType(i + 1))
+								? Double.valueOf(String.format("%.6f", rs.getDouble(cn)))
 								: rs.getString(cn));
 					else
 						vl = null;

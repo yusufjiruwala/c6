@@ -1132,6 +1132,7 @@ public class utils {
 		ret += "," + getJSONStr("display_width", cp.display_width, false);
 		ret += "," + getJSONStr("display_style", cp.display_style, false);
 		ret += "," + getJSONStr("descr", cp.descr, false);
+		ret += "," + getJSONStr("descrar", cp.descrar, false);
 		ret += "," + getJSONStr("grouped", (cp.isGrouped ? "true" : "false"), false);
 		ret += "," + getJSONStr("qtree_type", cp.qtree_type, false);
 		ret += "," + getJSONStr("hide_col", (cp.hide_col ? "true" : "false"), false);

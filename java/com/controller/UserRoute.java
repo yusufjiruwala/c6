@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
@@ -32,6 +33,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,6 +56,7 @@ import com.models.Batches.UserReports;
 import com.tools.queries.QuickRepMetaData;
 import com.tools.utilities.SQLJson;
 
+@EnableAsync
 @RestController
 @Scope("session")
 public class UserRoute {
@@ -149,7 +153,9 @@ public class UserRoute {
 			// ------------get-get-screens
 			if (params.get("command").equals("get-screens")) {
 				Connection con = instanceInfo.getmDbc().getDbConnection();
-				ResultSet rs = QueryExe.getSqlRS("select CODE, DESCR, PROFILES, FLAG, GROUPNAME, ON_DISPLAY, nvl(DESCR_A,descr) DESCR_A  from c6_screens order by code", con);
+				ResultSet rs = QueryExe.getSqlRS(
+						"select CODE, DESCR, PROFILES, FLAG, GROUPNAME, ON_DISPLAY, nvl(DESCR_A,descr) DESCR_A  from c6_screens order by code",
+						con);
 				ret = "{" + utils.getJSONsqlMetaData(rs, con, "", "") + "}";
 			}
 
@@ -597,8 +603,17 @@ public class UserRoute {
 		String ret = "";
 		String rid = params.get("report-id");
 		ret = "{}";
-		int n = batches.addBatch(rid, instanceInfo, params, true);
 		String rb = utils.nvl(params.get("runbackground"), "false");
+
+//		if (!rb.equals("true")) {
+//			int n = batches.addBatch(rid, instanceInfo, params, true);
+//			ret = batches.getListUserReports().get(n).getReturnString();
+//		} else {
+//			ret=quickRepDataAsync(params);
+//		}
+
+		int n = batches.addBatch(rid, instanceInfo, params, true);
+
 		if (!rb.equals("true")) {
 			while (batches.getListUserReports().get(n).status.equals(UserReports.STATUS_START)) {
 				try {
@@ -613,6 +628,11 @@ public class UserRoute {
 		return ret;
 
 	}
+//	@Async
+//	public CompletableFuture<String> quickRepDataAsync(Map<String,String> params){
+//		String ret=
+//		return CompletableFuture<String>
+//	}
 
 	private String buildSql(Map<String, String> params) {
 		List<String> cols = new ArrayList<String>();
@@ -687,7 +707,7 @@ public class UserRoute {
 				ResultSet rs2 = QueryExe.getSqlRS(
 						"select field_name from c6_qry2 where code='" + rs.getString("SQL") + "' order by INDEXNO",
 						con);
-				int ii=0;
+				int ii = 0;
 				if (rs2 != null) {
 					rs2.beforeFirst();
 					while (rs2.next()) {
@@ -733,6 +753,7 @@ public class UserRoute {
 
 			QueryExe qe = new QueryExe(con);
 			qe.setSqlStr(sql);
+			System.out.println("About to execute : " + sql);
 			qe.parse();
 
 			for (int i = 0; i < fn; i++) {
@@ -850,10 +871,9 @@ public class UserRoute {
 
 			}
 
-			rs.getStatement().close();			
+			rs.getStatement().close();
 			rs.close();
 
-			
 		}
 
 		for (int i = 0; i < lctb.getVisbleQrycols().size(); i++) {

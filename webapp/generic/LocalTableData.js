@@ -1,6 +1,7 @@
 sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./Row"],
     function (DataCell, Column, Row) {
         'use strict';
+
         function LocalTableData() {
             this.SUMMARY_SUM = 0;
             this.SUMMARY_COUNT = 1;
@@ -77,13 +78,13 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
 
                 var o = {};
                 var c = this.cols[key];
-                if (c.mColName=="_rowid")
+                if (c.mColName == "_rowid")
                     continue;
                 o.colname = c.mColName;
                 o.data_type = c.getMUIHelper().data_type;
                 o.display_format = c.getMUIHelper().display_format;
                 o.display_width = Util.nvl(c.getMUIHelper().display_width, 75) * 2;
-                o.display_align = "ALIGN_"+c.getMUIHelper().display_align.toUpperCase();
+                o.display_align = "ALIGN_" + c.getMUIHelper().display_align.toUpperCase();
                 o.display_style = c.getMUIHelper().display_style;
                 o.descr = Util.nvl(c.mTitle, c.mColName);
                 o.summary = c.mSummary;
@@ -98,7 +99,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
                 o.parent_title_span = c.mTitleParentSpan;
                 mtCols.push(o);
             }
-            return "\"metadata\":"+JSON.stringify(mtCols);
+            return "\"metadata\":" + JSON.stringify(mtCols);
         };
 
         LocalTableData.prototype.parse = function (strData) {
@@ -115,6 +116,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
                 c.getMUIHelper().display_align = Util.nvl(this.dataJson.metadata[key].display_align, "").replace("ALIGN_", "").toLowerCase();
                 c.getMUIHelper().display_style = Util.nvl(this.dataJson.metadata[key].display_style, "");
                 c.mTitle = Util.nvl(this.dataJson.metadata[key].descr, c.mColName);
+                c.mTitleAr = Util.nvl(this.dataJson.metadata[key].descrar, c.mColName);
                 c.mSummary = this.dataJson.metadata[key].summary;
                 c.mGrouped = (this.dataJson.metadata[key].grouped == "true" ? true : false);
                 c.mQtreeType = Util.nvl(this.dataJson.metadata[key].qtree_type, "");
@@ -130,7 +132,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             for (var rn in this.dataJson.data) {
                 var r = new Row(this.cols.length);
                 for (var key in this.dataJson.data[rn]) {
-                    if (key=="_rowid") continue;
+                    if (key == "_rowid") continue;
                     var cp = this.getColPos(key);
                     r.cells[cp].setValue(this.dataJson.data[rn][key]);
                 }
@@ -229,7 +231,13 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
                 return false;
             var op = col.mCfOperator;
             var cmpval = this.parseValues(col.mCfOperator, rowno);
-            return eval(cmpval);
+            try {
+                return eval(cmpval);
+            }
+            catch(err) {
+                console.log(err);
+                return;
+            }
             //var rowval = this.getFieldValue(rowno, col.mColName);
 
 

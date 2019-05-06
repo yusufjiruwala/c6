@@ -16,7 +16,7 @@ sap.ui.jsview('bin.Dashboard', {
         jQuery.sap.require("sap.viz.library");
         jQuery.sap.require("sap.ui.table.library");
         jQuery.sap.require("sap.ui.layout.library");
-
+        jQuery.sap.require("sap.ui.commons.library");
 
 
         Util.setLanguageModel(this);
@@ -35,6 +35,7 @@ sap.ui.jsview('bin.Dashboard', {
             var oModel = new sap.ui.model.json.JSONModel(dt);
             sap.ui.getCore().setModel(oModel, "settings");
         });
+
         // get screen data and store it in --screen-- model.. set default screen by URL parameter...
         Util.doAjaxGet("exe?command=get-screens", "", false).done(function (data) {
             if (data != undefined) {
@@ -56,7 +57,7 @@ sap.ui.jsview('bin.Dashboard', {
                     that.screen = dt[j].CODE;
                     that.screen_name = dt[j].DESCR;
                     if (that.sLangu=="AR")
-                        that.screen_name= UtilGen.nvl(dt[0].DESCR_A,dt[0].DESCR);
+                        that.screen_name= UtilGen.nvl(dt[j].DESCR_A,dt[j].DESCR);
                     that.screen_type = dt[j].GROUPNAME;
                 }
             }
@@ -67,12 +68,14 @@ sap.ui.jsview('bin.Dashboard', {
         this.rows = [];  // rows will be generated in this array
 
         this.custBar = that.createToolbar();
+
         this.pg = new sap.m.Page({
             showHeader: true,
             customHeader: this.custBar,
 
             content: []
         });
+
         if (that.screen_type == "Dashboard")
             this.buildDashboardModel();
         else {
@@ -80,14 +83,15 @@ sap.ui.jsview('bin.Dashboard', {
             UtilGen.clearPage(that.pg);
             that.pg.addContent(fr);
             that.lblTitle.setText(that.screen_name);
-
         }
+
 //this.pg.addContent();
 
         var app = new sap.m.App({pages: [this.pg]});
         return app;
 
     },
+
     createDashBoard: function () {
         var that = this;
         UtilGen.clearPage(this.pg);

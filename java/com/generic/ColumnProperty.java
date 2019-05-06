@@ -28,6 +28,7 @@ public class ColumnProperty {
 	public String display_type = "";
 	public int display_width = 70;
 	public String descr = "";
+	public String descrar = "";
 	public int pos = 0;
 	public String display_align = "";
 	public String display_format = "";

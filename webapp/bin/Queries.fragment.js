@@ -25,8 +25,8 @@ sap.ui.jsfragment("bin.Queries", {
         this.setModel(oModel, "data");
 
 
-        ( view.byId("filterBox") != undefined ? view.byId("filterBox").destroy() : "" );
-        ( view.byId("profile") != undefined ? view.byId("profile").destroy() : "" );
+        (view.byId("filterBox") != undefined ? view.byId("filterBox").destroy() : "");
+        (view.byId("profile") != undefined ? view.byId("profile").destroy() : "");
         view.cb = new sap.m.ComboBox(
             {
                 items: {
@@ -81,7 +81,7 @@ sap.ui.jsfragment("bin.Queries", {
         });
 
         this.createResultPage();
-        ( sap.ui.getCore().byId("reportApp") != undefined ? sap.ui.getCore().byId("reportApp").destroy() : "" );
+        (sap.ui.getCore().byId("reportApp") != undefined ? sap.ui.getCore().byId("reportApp").destroy() : "");
 
         this.setCurrentProfile();
         var splitApp = new sap.m.SplitApp("reportApp").addStyleClass("");
@@ -124,7 +124,7 @@ sap.ui.jsfragment("bin.Queries", {
         Util.doAjaxJson("sqlmetadata?", {
             sql: "SELECT M1.MENU_CODE CODE," + artit +
             "M1.PARENT_MENUCODE LIST_GROUP_CODE," +
-            artit2+
+            artit2 +
             " M1.TYPE_OF_EXEC,M1.EXEC_LINE FROM C6_MAIN_MENUS M1,C6_MAIN_MENUS M2 " +
             "WHERE M2.MENU_CODE=M1.PARENT_MENUCODE AND " +
             " M1.GROUP_CODE='" + cod + "' AND " +
@@ -137,7 +137,7 @@ sap.ui.jsfragment("bin.Queries", {
             that.qv.switchType("list");
             that.qv.loadData();
 
-            ( view.byId("searchField") != undefined ? view.byId("searchField").destroy() : "" );
+            (view.byId("searchField") != undefined ? view.byId("searchField").destroy() : "");
             that.filterBox.addItem(new sap.m.SearchField(view.createId("searchField"), {
                     placeholder: "Search..",
                     width: "100%",
@@ -203,7 +203,7 @@ sap.ui.jsfragment("bin.Queries", {
         view.qv = new QueryView("tbl");
 //        that.graphToolBar = new sap.m.Toolbar();
         var repTitle = (that.selRec == undefined ? "" : that.selRec.TITLE);
-        (view.byId("resultTitle") != undefined ? view.byId().destroy("resultTitle") : null);
+        (view.byId("resultTitle") != undefined ? view.byId("resultTitle").destroy() : null);
         var tol = new sap.m.Toolbar({
             content: [
                 (!sap.ui.Device.system.phone ? null :
@@ -216,11 +216,14 @@ sap.ui.jsfragment("bin.Queries", {
                         }
                     })),
                 new sap.m.Title(view.createId("resultTitle"), {text: repTitle}).addStyleClass("titleFont"),
+                new sap.m.ToolbarSpacer(),
                 new sap.m.Button({
                     icon: "sap-icon://nav-back",
                     press: function () {
                         var splitApp = sap.ui.getCore().byId("reportApp");
                         splitApp.toDetail(that.pgQuery, "flip");
+                        if (!sap.ui.Device.system.phone)
+                            splitApp.setMode(sap.m.SplitAppMode.ShowHideMode);
                     }
                 }),
                 new sap.m.Button({
@@ -238,46 +241,91 @@ sap.ui.jsfragment("bin.Queries", {
 
             ]
         });
+        var clk = function () {
+            var oMenu = new sap.m.Menu({
+                title: "random",
+                itemSelected: function (oEvent) {
+                    var oItem = oEvent.getParameter("item");
+                    if (oItem.getCustomData()[0].getKey() == "advance_para")
+                        that.show_advance_para();
+                    if (oItem.getCustomData()[0].getKey() == "graph_new") {
+                        that.show_add_new_graph();
+                    }
+                    if (oItem.getCustomData()[0].getKey() == "graph") {
+                        var rep = oItem.getCustomData()[1].getValue();
+                        var dx = rep;
+                        if (dx.REP_TYPE == "SQL" || dx.REP_TYPE == "DATASET" || dx.REP_TYPE == "TABLE") {
+                            splitApp.toDetail(that.pgGraph, "slide");
+                            that.show_graph_sql(dx);
+                        }
+
+                        if (dx.REP_TYPE == "OPTIONS") {
+                            splitApp.toDetail(that.pgGraph, "slide");
+                            that.show_graph_option(dx);
+
+                        }
+                        if (dx.REP_TYPE == "PDF") {
+                            that.show_pre_pdf(dx);
+                        }
+
+                    }
+                }
+            });
+            Util.addMenuSubReps(view, oMenu, false);
+            oMenu.openBy(view.byId("menu"));
+        };
         view.subrep = undefined;
         if (view.byId("txtSubGroup") != undefined) {
             var rid = view.byId("txtSubGroup").getSelectedItem().getKey();
+
+
             Util.doAjaxGet("exe?command=get-subrep&report-id=" + rid, "", false).done(function (data) {
                 var dtx = JSON.parse("{" + data + "}").subrep;
+
                 view.subrep = dtx;
-                for (var i in dtx) {
-                    (view.byId("subrep_" + dtx[i].KEYFLD) != undefined ? view.byId().destroy("subrep_" + dtx[i].KEYFLD) : null);
-                    var bt = new sap.m.Button(view.createId("subrep_" + dtx[i].KEYFLD), {
-                        customData: [{key: i}],
-                        press: function (event) {
-                            var d = event.getSource().getCustomData()[0].getKey();
-                            var dx = view.subrep[d];
-                            var splitApp = sap.ui.getCore().byId("reportApp");
+                (view.byId("menu") != undefined ? view.byId("menu").destroy() : null);
+                var menu = new sap.m.Button(view.createId("menu"), {
+                    text: '\u2807 {i18n>action}',
+                    press: clk
+                }).addStyleClass("menuicon");
+                tol.addContent(menu);
 
-                            if (dx.REP_TYPE == "SQL" || dx.REP_TYPE == "DATASET" || dx.REP_TYPE == "TABLE") {
-                                splitApp.toDetail(that.pgGraph, "slide");
-                                that.show_graph_sql(dx);
-                            }
+                // for (var i in dtx) {
+                //     (view.byId("subrep_" + dtx[i].KEYFLD) != undefined ? view.byId().destroy("subrep_" + dtx[i].KEYFLD) : null);
+                //     var bt = new sap.m.Button(view.createId("subrep_" + dtx[i].KEYFLD), {
+                //         customData: [{key: i}],
+                //         press: function (event) {
+                //             var d = event.getSource().getCustomData()[0].getKey();
+                //             var dx = view.subrep[d];
+                //             var splitApp = sap.ui.getCore().byId("reportApp");
+                //
+                //             if (dx.REP_TYPE == "SQL" || dx.REP_TYPE == "DATASET" || dx.REP_TYPE == "TABLE") {
+                //                 splitApp.toDetail(that.pgGraph, "slide");
+                //                 that.show_graph_sql(dx);
+                //             }
+                //
+                //             if (dx.REP_TYPE == "OPTIONS") {
+                //                 splitApp.toDetail(that.pgGraph, "slide");
+                //                 that.show_graph_option(dx);
+                //
+                //             }
+                //             if (dx.REP_TYPE == "PDF") {
+                //                 that.show_pre_pdf(dx);
+                //             }
+                //
+                //         }
+                //     });
+                //     if (dtx[i].ICON_NAME == "NONE") {
+                //         bt.setText("..");
+                //     } else {
+                //         bt.setIcon("sap-icon://" + dtx[i].ICON_NAME);
+                //     }
+                //
+                //     bt.setTooltip(dtx[i].REP_TITLE);
 
-                            if (dx.REP_TYPE == "OPTIONS") {
-                                splitApp.toDetail(that.pgGraph, "slide");
-                                that.show_graph_option(dx);
+                //    tol.addContent(bt);
+                //}
 
-                            }
-                            if (dx.REP_TYPE == "PDF") {
-                                that.show_pre_pdf(dx);
-                            }
-
-                        }
-                    });
-                    if (dtx[i].ICON_NAME == "NONE") {
-                        bt.setText("..");
-                    } else {
-                        bt.setIcon("sap-icon://" + dtx[i].ICON_NAME);
-                    }
-
-                    bt.setTooltip(dtx[i].REP_TITLE);
-                    tol.addContent(bt);
-                }
 
             });
         }
@@ -293,64 +341,70 @@ sap.ui.jsfragment("bin.Queries", {
         );
         this.pgResult.addContent(scroll);
         scroll.addContent(view.qv.getControl());
-    },
-    createViewQuery: function (selRec) {
-        var that = this;
-        var view = this.view;
-        var repTitle = selRec.TITLE;
-        that.selRec = selRec;
+    }
+    ,
+    createViewQuery:
+
+        function (selRec) {
+            var that = this;
+            var view = this.view;
+            var repTitle = selRec.TITLE;
+            that.selRec = selRec;
 
 
-        var qmdl = sap.ui.getCore().getModel("query_para");
-        this.query_para = {};
-        if (qmdl != undefined)
-            view.query_para = qmdl.getData();
+            var qmdl = sap.ui.getCore().getModel("query_para");
+            this.query_para = {};
+            if (qmdl != undefined)
+                view.query_para = qmdl.getData();
 
-        this.qv = new QueryView("qryDetails");
-        var titleBox = new sap.m.FlexBox({
-            width: "100%",
-            height: "20px",
-            justifyContent: sap.m.FlexJustifyContent.Center,
-            items: [new sap.m.Text({text: repTitle}).addStyleClass("titleFont blackText")]
-        });
+            this.qv = new QueryView("qryDetails");
+            var titleBox = new sap.m.FlexBox({
+                width: "100%",
+                height: "20px",
+                justifyContent: sap.m.FlexJustifyContent.Center,
+                items: [new sap.m.Text({text: repTitle}).addStyleClass("titleFont blackText")]
+            });
 
-        (view.byId("txtSubGroup") != undefined ? view.byId("txtSubGroup").destroy() : null);
-        var txtSubGroup = new sap.m.ComboBox(view.createId("txtSubGroup"),
-            {
-                items: {
-                    path: "/",
-                    template: new sap.ui.core.ListItem({
-                        text: "{rep_name} - {rep_code}",
-                        key: "{rep_code}"
-                    }),
-                    templateShareable: true
-                },
-                selectionChange: function (event) {
+            (view.byId("txtSubGroup") != undefined ? view.byId("txtSubGroup").destroy() : null);
+            var txtSubGroup = new sap.m.ComboBox(view.createId("txtSubGroup"),
+                {
+                    items: {
+                        path: "/",
+                        template: new sap.ui.core.ListItem({
+                            text: "{rep_name} - {rep_code}",
+                            key: "{rep_code}"
+                        }),
+                        templateShareable: true,
+
+                    },
+                    width: "80%",
+                    selectionChange: function (event) {
+                        that.onChangeReport();
+                    }
+
+                });
+            var titleBox = new sap.m.FlexBox({
+                width: "100%",
+                justifyContent: sap.m.FlexJustifyContent.Center,
+                items: [new sap.m.Text({text: repTitle}).addStyleClass("blackText titleFont ")]
+            });
+
+            that.pgQuery.addContent(titleBox);
+            Util.doAjaxGet("exe?command=get-quickrep-metadata&report-id=" + selRec.EXEC_LINE, "",false).done(function (data) {
+                var dtx = JSON.parse(data);
+                var txtSubGroup = view.byId("txtSubGroup");
+                txtSubGroup.setModel(new sap.ui.model.json.JSONModel(dtx.subreport));
+                that.view.reportsData = dtx;
+                console.log(dtx);
+                if (view.byId("txtSubGroup").getItems().length > 0) {
+                    view.byId("txtSubGroup").setSelectedItem(view.byId("txtSubGroup").getItems()[0]);
                     that.onChangeReport();
                 }
 
             });
-        var titleBox = new sap.m.FlexBox({
-            width: "100%",
-            justifyContent: sap.m.FlexJustifyContent.Center,
-            items: [new sap.m.Text({text: repTitle}).addStyleClass("blackText titleFont ")]
-        });
+        }
 
-        that.pgQuery.addContent(titleBox);
-
-        Util.doAjaxGet("exe?command=get-quickrep-metadata&report-id=" + selRec.EXEC_LINE, "", false).done(function (data) {
-            var dtx = JSON.parse(data);
-            var txtSubGroup = view.byId("txtSubGroup");
-            txtSubGroup.setModel(new sap.ui.model.json.JSONModel(dtx.subreport));
-            that.view.reportsData = dtx;
-            console.log(dtx);
-            if (view.byId("txtSubGroup").getItems().length > 0) {
-                view.byId("txtSubGroup").setSelectedItem(view.byId("txtSubGroup").getItems()[0]);
-                that.onChangeReport();
-            }
-
-        });
-    },
+    ,
     onChangeReport: function () {
         var that = this;
         var view = this.view;
@@ -369,18 +423,18 @@ sap.ui.jsfragment("bin.Queries", {
             //UtilGen.clearPage(that.pgQuery);
         }
 
-        that.sf = new sap.ui.layout.form.SimpleForm({
+        that.sf = new sap.ui.layout.form.SimpleForm(view.createId("pgParaBar"), {
             editable: true,
             layout: sap.ui.layout.form.SimpleFormLayout.ResponsiveGridLayout,
 
-            labelSpanXL: 3,
+            labelSpanXL: 2,
             labelSpanL: 3,
             labelSpanM: 3,
             labelSpanS: 12,
             adjustLabelSpan: false,
-            emptySpanXL: 4,
-            emptySpanL: 4,
-            emptySpanM: 4,
+            emptySpanXL: 2,
+            emptySpanL: 2,
+            emptySpanM: 2,
             emptySpanS: 0,
             columnsXL: 2,
             columnsL: 2,
@@ -406,42 +460,75 @@ sap.ui.jsfragment("bin.Queries", {
         var chk = new sap.m.CheckBox(view.createId("chkBackGroundPara"), {
             selected: false
         });
-        that.sf.addContent(new sap.m.Text({text: "Run Batch"}));
+        that.sf.addContent(new sap.ui.commons.Label({text: "Run Background on server"}));
         that.sf.addContent(chk);
         that.sf.addContent(new sap.m.Label());
-        that.sf.addContent(new sap.m.Button({
-                text: "Execute",
+        that.sf.getToolbar().addContent(new sap.m.ToolbarSpacer());
+        (that.view.byId("refreshResultPara") != undefined ? that.view.byId("refreshResultPara").destroy() : null);
+        that.sf.getToolbar().addContent(new sap.m.Button(view.createId("refreshResultPara"), {
+                text: "{i18n>execute_query}",
                 icon: "sap-icon://physical-activity",
                 press: function (event) {
                     that.refresh("para");
-                    var splitApp = sap.ui.getCore().byId("reportApp");
-                    splitApp.toDetail(that.pgResult, "flip");
-                    that.createResultPage();
-                    splitApp.hideMaster();
-                    (that.view.byId("showResultPg") != undefined ? that.view.byId("showResultPg").destroy() : null);
-                    that.sf.getToolbar().addContent(new sap.m.Button(that.view.createId("showResultPg"), {
-                            text: "",
-                            icon: "sap-icon://undo",
-                            press: function (event) {
-                                var splitApp = sap.ui.getCore().byId("reportApp");
-                                splitApp.toDetail(that.pgResult, "flip");
-                                splitApp.hideMaster();
-                            }
-                        }).addStyleClass("")
-                    );
+                    var chkBkgr = view.byId("chkBackGroundPara");
+                    if (!chkBkgr.getSelected()) {
+                        var splitApp = sap.ui.getCore().byId("reportApp");
+                        splitApp.toDetail(that.pgResult, "flip");
+                        that.createResultPage();
+                        splitApp.hideMaster();
+                        if (!sap.ui.Device.system.phone)
+                            splitApp.setMode(sap.m.SplitAppMode.HideMode);
+
+                        (that.view.byId("showResultPg") != undefined ? that.view.byId("showResultPg").destroy() : null);
+                        that.sf.getToolbar().addContent(new sap.m.Button(that.view.createId("showResultPg"), {
+                                text: "",
+                                icon: "sap-icon://undo",
+                                press: function (event) {
+                                    var splitApp = sap.ui.getCore().byId("reportApp");
+                                    splitApp.toDetail(that.pgResult, "flip");
+                                    splitApp.hideMaster();
+                                    if (!sap.ui.Device.system.phone)
+                                        splitApp.setMode(sap.m.SplitAppMode.HideMode);
+                                }
+                            }).addStyleClass("")
+                        );
+                    }
                 }
             }).addStyleClass("")
         );
-        that.sf.addContent(new sap.m.Label());
-        that.sf.addContent(new sap.m.Button({
+        that.sf.addContent(new sap.m.Label()).addStyleClass("sapUiLargeMarginBottom");
+        that.sf.getToolbar().addContent(new sap.m.Button({
                 text: "Preference",
                 icon: "sap-icon://action-settings",
                 press: function (event) {
 
                 }
-            }).addStyleClass("sapUiLargeMarginBottom")
+            }).addStyleClass("")
         );
-    },
+        that.fetch_data = false;
+        var ps = "&report-id=" + view.byId("txtSubGroup").getSelectedItem().getKey();
+        Util.doAjaxGetSpin("exe?command=get-batch-status" + ps, "", false, function (data) {
+            var dt = JSON.parse(data);
+            if (dt.status == "END") {
+                var pgbar = view.byId("pgParaBar");
+                var chkBkgr = view.byId("chkBackGroundPara");
+                chkBkgr.setSelected(true);
+                for (var v in pgbar.getContent())
+                    try {
+                        pgbar.getContent()[v].setEnabled(false);
+                    } catch (er) {
+                    }
+                clearInterval(that.rcv_data_timer);
+                var bt = view.byId("refreshResultPara");
+                bt.setText("Fetch data..");
+                bt.setEnabled(true);
+                that.fetch_data = true;
+
+            }
+        }, undefined, false);
+    }
+    ,
+
     refresh: function (iadd) {
         //variables
         var view = this.view;
@@ -456,7 +543,26 @@ sap.ui.jsfragment("bin.Queries", {
 
         if (this.fetch_data) {
             var ps = "&report-id=" + view.byId("txtSubGroup").getSelectedItem().getKey();
-            Util.doAjaxGet("exe?command=get-batch-data" + ps, "", false, function (data) {
+            Util.doAjaxGet("exe?command=get-batch-data" + ps, "", false).done(function (data) {
+                var splitApp = sap.ui.getCore().byId("reportApp");
+                splitApp.toDetail(that.pgResult, "flip");
+                that.createResultPage();
+                splitApp.hideMaster();
+                if (!sap.ui.Device.system.phone)
+                    splitApp.setMode(sap.m.SplitAppMode.HideMode);
+
+                (that.view.byId("showResultPg") != undefined ? that.view.byId("showResultPg").destroy() : null);
+                that.sf.getToolbar().addContent(new sap.m.Button(that.view.createId("showResultPg"), {
+                    text: "",
+                    icon: "sap-icon://undo",
+                    press: function (event) {
+                        var splitApp = sap.ui.getCore().byId("reportApp");
+                        splitApp.toDetail(that.pgResult, "flip");
+                        splitApp.hideMaster();
+                        if (!sap.ui.Device.system.phone)
+                            splitApp.setMode(sap.m.SplitAppMode.HideMode);
+                    }
+                }).addStyleClass(""));
                 that._rcvData(view, data, false);
             });
             this.fetch_data = false;
@@ -500,9 +606,12 @@ sap.ui.jsfragment("bin.Queries", {
 
         if (chkBkgr.getSelected()) {
             ps += "&runbackground=true";
-            for (var v in pgbar.getItems())
-                if (!(pgbar.getItems()[v] instanceof sap.m.Label))
-                    pgbar.getItems()[v].setEnabled(false);
+            for (var v in pgbar.getContent())
+                if (!(pgbar.getContent()[v] instanceof sap.m.Label))
+                    try {
+                        pgbar.getContent()[v].setEnabled(false);
+                    } catch (er) {
+                    }
 
         }
 
@@ -524,7 +633,7 @@ sap.ui.jsfragment("bin.Queries", {
         //
         // });
         var that = this;
-        Util.doAjaxGetSpin("exe?command=get-quickrep-data&" + (ps), "", false, function (data) {
+        Util.doAjaxGetSpin("exe?command=get-quickrep-data&" + (ps), "", (!chkBkgr.getSelected()), function (data) {
                 if (!chkBkgr.getSelected())
                     that._rcvData(view, data, chkBkgr.getSelected());
                 else {
@@ -545,7 +654,8 @@ sap.ui.jsfragment("bin.Queries", {
 //                view.oBar2.getContentMiddle()[0].getItems()[0].setText(tit + " - " + no);
             });
         }
-    },
+    }
+    ,
     _rcvData: function (view, data, chkBkgr) {
         var that = this;
         if (!chkBkgr) {
@@ -575,6 +685,7 @@ sap.ui.jsfragment("bin.Queries", {
             }
         } else {
             var ps = "&report-id=" + view.byId("txtSubGroup").getSelectedItem().getKey();
+            clearInterval(that.rcv_data_timer);
             Util.doAjaxGetSpin("exe?command=get-batch-status" + ps, "", false, function (data) {
                 var dt = JSON.parse(data);
                 if (dt.status == "END") {
@@ -583,13 +694,15 @@ sap.ui.jsfragment("bin.Queries", {
                     bt.setText("Fetch data..");
                     bt.setEnabled(true);
                     that.fetch_data = true;
+
                 }
             }, undefined, false);
         }
 
-    },
+    }
+    ,
     do_report_status: function (iadd) {
-        var view = this.getView();
+        var view = this.view;
         var that = this;
         var ia = Util.nvl(iadd, "");
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -602,9 +715,12 @@ sap.ui.jsfragment("bin.Queries", {
                 var bt = view.byId("refreshResultPara");
                 bt.setEnabled(false);
                 var pgbar = view.byId("pgParaBar");
-                for (var v in pgbar.getItems())
-                    if (!(pgbar.getItems()[v] instanceof sap.m.Label))
-                        pgbar.getItems()[v].setEnabled(false);
+                for (var v in pgbar.getContent())
+                    if (!(pgbar.getContent()[v] instanceof sap.m.Label))
+                        try {
+                            pgbar.getContent()[v].setEnabled(false);
+                        } catch (er) {
+                        }
             } else if (dt.status == "END") {
                 var bt = view.byId("refreshResultPara");
                 clearInterval(that.rcv_data_timer);
@@ -612,9 +728,12 @@ sap.ui.jsfragment("bin.Queries", {
                 bt.setText("Fetch data..");
                 that.fetch_data = true;
                 var pgbar = view.byId("pgParaBar");
-                for (var v in pgbar.getItems())
-                    if (!(pgbar.getItems()[v] instanceof sap.m.Label))
-                        pgbar.getItems()[v].setEnabled(false);
+                for (var v in pgbar.getContent())
+                    if (!(pgbar.getContent()[v] instanceof sap.m.Label))
+                        try {
+                            pgbar.getContent()[v].setEnabled(false);
+                        } catch (er) {
+                        }
                 bt.setEnabled(true);
                 Util.doAjaxGetSpin("exe?command=get-batch-params" + ps, "", false, function (data) {
                     console.log(data);
@@ -652,17 +771,21 @@ sap.ui.jsfragment("bin.Queries", {
             } else if (dt.status == "NONE") {
                 clearInterval(that.rcv_data_timer);
                 var bt = view.byId("refreshResultPara");
-                bt.setText("Show >> ");
+                bt.setText(view.getModel("i18n").getResourceBundle().getText("execute_query"));
                 bt.setEnabled(true);
                 that.fetch_data = false;
                 var pgbar = view.byId("pgParaBar");
-                for (var v in pgbar.getItems())
-                    if (!(pgbar.getItems()[v] instanceof sap.m.Label))
-                        pgbar.getItems()[v].setEnabled(true);
+                for (var v in pgbar.getContent())
+                    if (!(pgbar.getContent()[v] instanceof sap.m.Label))
+                        try {
+                            pgbar.getContent()[v].setEnabled(true);
+                        } catch (er) {
+                        }
             }
 
         }, undefined, false);
-    },
+    }
+    ,
     show_graph_option: function (rep) {
         var that = this;
         var view = this.view;
@@ -722,7 +845,8 @@ sap.ui.jsfragment("bin.Queries", {
 
         });
 
-    },
+    }
+    ,
     show_graph: function (rep) {
         if (rep.REP_TYPE == "SQL") {
             this.show_graph_sql(rep);
@@ -759,9 +883,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -783,7 +907,8 @@ sap.ui.jsfragment("bin.Queries", {
         }
         this.executeGraph(rep, selectedEntries, gData);
 
-    },
+    }
+    ,
 
     show_graph_sql: function (rep) {
         if (rep.REP_TYPE == "DATASET") {
@@ -818,9 +943,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -898,7 +1023,8 @@ sap.ui.jsfragment("bin.Queries", {
         this._addHeaderGraphToolbar(rep);
 
         this.executeGraph(rep, selectedEntries, gData);
-    },
+    }
+    ,
 
     executeGraph: function (rep, selectedEntries, gData) {
         var view = this.view;
@@ -1052,7 +1178,8 @@ sap.ui.jsfragment("bin.Queries", {
         oVizFrame.setHeight("80%");
         this.add_selected_table(rep, selectedEntries);
 
-    },
+    }
+    ,
     add_selected_table: function (rep, selectedEntries) {
         var view = this.view;
         var that = this;
@@ -1140,7 +1267,8 @@ sap.ui.jsfragment("bin.Queries", {
             content: h
         }).addStyleClass("sapUiSmallMarginTop");
         that.pgGraph.addContent(oo);
-    },
+    }
+    ,
     show_query: function (rep) {
         var view = this.view;
         var that = this;
@@ -1169,9 +1297,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -1226,7 +1354,8 @@ sap.ui.jsfragment("bin.Queries", {
             that.subqry.loadData();
             Util.stopSpin();
         }, undefined, true);
-    },
+    }
+    ,
     show_pre_pdf: function (rep) {
         var view = this.view;
         var that = this;
@@ -1249,7 +1378,7 @@ sap.ui.jsfragment("bin.Queries", {
             // only upload pic of MEASURES field contains and multiple sub reports delimeted with single quot.
             if (Util.nvl(rep.MEASURES, '') !== '' &&
                 ((rep.MEASURES.toUpperCase().indexOf("'" + view.tabs.getItems()[v].getName().toUpperCase() + "'") !== -1) ||
-                rep.MEASURES.toUpperCase() == view.tabs.getItems()[v].getName().toUpperCase())) {
+                    rep.MEASURES.toUpperCase() == view.tabs.getItems()[v].getName().toUpperCase())) {
                 view.tabs.setSelectedItem(view.tabs.getItems()[v]);
                 var o = view.tabs.getItems()[v].getContent()[0].$().outerHTML();
                 var oo = new sap.ui.core.HTML({
@@ -1294,7 +1423,8 @@ sap.ui.jsfragment("bin.Queries", {
         })
         dlg.open();
 
-    },
+    }
+    ,
     show_pdf: function (rep) {
 
         var view = this.view;
@@ -1322,9 +1452,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -1392,11 +1522,17 @@ sap.ui.jsfragment("bin.Queries", {
                 var blob = new Blob([this.response], {type: "application/pdf"});
                 var link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
+                link.target = "_blank";
+                link.style.display = "none";
+                document.body.appendChild(link);
                 link.download = rep.DIMENSIONS + new Date() + ".pdf";
                 link.click();
+                document.body.removeChild(link);
+
             }
         });
-    },
+    }
+    ,
 
     showFilterWindow: function () {
         var view = this.view;
@@ -1410,7 +1546,7 @@ sap.ui.jsfragment("bin.Queries", {
             (view.byId("txtflt" + i) != undefined ? view.byId("txtflt" + i).destroy() : null);
             var t = new sap.m.Input(view.createId("txtflt" + i), {
                 width: "100%",
-                placeholder: "Filter for field # " + view.qv.mLctb.cols[i].mTitle,
+                placeholder: "Filter for field # " + Util.getLangDescrAR(view.qv.mLctb.cols[i].mTitle, view.qv.mLctb.cols[i].mTitleAr),
                 value: Util.nvl(view.filterData[view.qv.mLctb.cols[i].mColName], "")
             });
             txts.push(t);
@@ -1497,7 +1633,8 @@ sap.ui.jsfragment("bin.Queries", {
                 (view.byId("txtflt" + i) != undefined ? view.byId("txtflt" + i).destroy() : null);
             }
         })
-    },
+    }
+    ,
     printGraph: function (rep) {
         var view = this.view;
         var that = this;
@@ -1509,8 +1646,8 @@ sap.ui.jsfragment("bin.Queries", {
         var o = oVizFrame.$().outerHTML() + tblHtml;
         var h = "<div class='company'>" + sett["COMPANY_NAME"] + "</div> " +
             (rep == undefined ? "" :
-            "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
-            " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>");
+                "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
+                " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>");
 
         var newWin = window.open("");
 
@@ -1524,7 +1661,8 @@ sap.ui.jsfragment("bin.Queries", {
             newWin.print();
         }, 1000);
 
-    },
+    }
+    ,
     fetchFixReports: function (showOnDialog, callBack) {
         return;
         var that = this;
@@ -1580,7 +1718,8 @@ sap.ui.jsfragment("bin.Queries", {
             dlg.open();
 
         }
-    },
+    }
+    ,
     runParas: function () {
         var that = this;
         var view = this.view;
@@ -1626,7 +1765,8 @@ sap.ui.jsfragment("bin.Queries", {
                     }
                 }
         }
-    },
+    }
+    ,
     _addHeaderGraphToolbar: function (rep) {
         var view = this.view;
         var that = this;
