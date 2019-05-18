@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAccStatmentDet2" language="groovy" pageWidth="595" pageHeight="842" columnWidth="588" leftMargin="0" rightMargin="7" topMargin="7" bottomMargin="7" uuid="28fcc65d-e58e-4bdb-beea-e193a4510963">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="220"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<template><![CDATA["voucherStyle.jrtx"]]></template>
 	<style name="Row_lvl" mode="Transparent" markup="none" fontSize="10">

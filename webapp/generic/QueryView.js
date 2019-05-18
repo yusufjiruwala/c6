@@ -316,6 +316,9 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             for (var i = 0; i < this.mLctb.cols.length; i++) {
                 cc = this.mLctb.cols[i];
                 var a = cc.getMUIHelper().display_align;
+                // if (cc.mColName.endsWith("_"))
+                //     cc.mHideCol = true;
+
                 if (cc.getMUIHelper().display_format == "MONEY_FORMAT")
                     a = "end";
                 if (cc.getMUIHelper().display_format == "QTY_FORMAT")
@@ -897,9 +900,9 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             // purpose  :  header will show parameters, report title, etc..
             h = ""
             cnt == 0;
-            var rep = view.byId("txtSubGroup").getValue();
+            var rep = (view.byId("txtSubGroup") != undefined ? view.byId("txtSubGroup").getValue() : "");
             var company = "<div class='company'>" + sett["COMPANY_NAME"] + "</div> " +
-                "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
+                "<div class='reportTitle'>" + (view.reportsData != undefined ? view.reportsData.report_info.report_name : "") +
                 " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>";
 
             var dtitle = "";
@@ -908,22 +911,23 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             // purpose   :  adding parameters on top of the page
             var vl = "";
             var ia = Util.nvl(iadd, "para");
-            for (var i = 0; i < Util.nvl(colData.parameters, "").length; i++) {
-                if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
-                    vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
-                else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
-                    vl = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
-                else
-                    vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
+            if (colData != undefined)
+                for (var i = 0; i < Util.nvl(colData.parameters, "").length; i++) {
+                    if (view.colData.parameters[i].PARA_DATATYPE === "BOOLEAN")
+                        vl = (view.byId("para_" + ia + i).getSelected() ? "TRUE" : "FALSE");
+                    else if (view.colData.parameters[i].PARA_DATATYPE === "GROUP")
+                        vl = Util.nvl(view.byId("para_" + ia + i).getSelectedButton().getCustomData()[0].getKey());
+                    else
+                        vl = Util.nvl(view.byId("para_" + ia + i).getValue(), "");
 
-                tmp += "<td class='paraLabel'>" + colData.parameters[i].PARA_DESCRARB + ":</td>" +
-                    "<td class='paraText'>" + Util.nvl(Util.htmlEntities(vl), "-") + "</td>";
-                if (i > 0 && i % 3 == 0) {
-                    dtitle += "<tr>" + tmp + "</tr>";
-                    tmp = "";
+                    tmp += "<td class='paraLabel'>" + colData.parameters[i].PARA_DESCRARB + ":</td>" +
+                        "<td class='paraText'>" + Util.nvl(Util.htmlEntities(vl), "-") + "</td>";
+                    if (i > 0 && i % 3 == 0) {
+                        dtitle += "<tr>" + tmp + "</tr>";
+                        tmp = "";
+                    }
+
                 }
-
-            }
 
             // table header and also for colSPan of parent label, supported by only 2 row.
             var hCol = "";

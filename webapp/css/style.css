@@ -41,6 +41,9 @@
     background-color: black !important;
 }
 
+.redText {
+    color: red !important;
+}
 .whiteBlackText {
     color: black !important;
     background-color: white !important;
@@ -467,4 +470,14 @@
 
 .sapUiFormResGrid.sapUiFormToolbar>div:first-child {
     background-color: lightblue!important;
+}
+
+.blinking {
+    animation: blinkingText 1.5s infinite;
+}
+
+@keyframes blinkingText {
+    50% {
+        opacity: 0;
+    }
 }

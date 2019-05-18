@@ -960,6 +960,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     }
                 }));
                 dlg.open();
+            },
+            getDaysBetween: function (dt1, dt2) {
+                var oneDay = 24 * 60 * 60 * 1000;
+                return Math.round((dt1.getTime() - dt2.getTime()) / (oneDay));
+
             }
         }
         return Util;

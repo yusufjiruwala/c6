@@ -2,6 +2,9 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
 
     createContent: function (oController) {
         jQuery.sap.require("sap.ui.commons.library");
+        jQuery.sap.require("sap.ui.commons.library");
+        jQuery.sap.require("sap.m.MessageBox");
+
         this.view = oController.getView();
         this.oController = oController;
         var that = this;
@@ -38,6 +41,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
     },
     createView: function () {
         var that = this;
+        sett = sap.ui.getCore().getModel("settings").getData();
         UtilGen.clearPage(this.mainPage);
         var vbox = new sap.m.VBox({height: "100%"});
         var pnl1 = new sap.m.Panel(
@@ -111,7 +115,6 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
 
 
         this.qv = new QueryView();
-        this.load_data();
 
         this.qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
         this.qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
@@ -121,14 +124,62 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         //this.qv.getControl().setVisibleRowCount(100);
         this.qv.getControl().setFixedBottomRowCount(0);
         this.qv.getControl().addStyleClass("noColumnBorder");
+        this.searchField = new sap.m.SearchField({
+            liveChange: function (event) {
+                UtilGen.doFilterLiveTable(event, that.qv, ["ATHLET_NAME", "ATHLET_CODE"]);
+            }
+        });
+        this.locations = UtilGen.createControl(sap.m.ComboBox, this.view, "location", {
+            customData: [{key: ""}],
+            items: {
+                path: "/",
+                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                templateShareable: true
+            },
+            selectionChange: function (event) {
+                that.load_data();
+            }
+        }, "string", undefined, undefined, "select code,name from locations order by 1");
+        var sqlQry = "select -1 code,'ALL' name from dual union all " +
+            " select 10 code, 'Expiry 10 days' name from dual union all " +
+            " select 0 code, 'All Expired' name from dual";
+
+        this.query_type = UtilGen.createControl(sap.m.ComboBox, this.view, "query_type", {
+            customData: [{key: ""}],
+            items: {
+                path: "/",
+                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                templateShareable: true
+            },
+            selectionChange: function (event) {
+                that.load_data();
+            }
+        }, "string", undefined, undefined, sqlQry);
+
+
+        UtilGen.setControlValue(this.locations, sett["DEFAULT_LOCATION"]);
+        UtilGen.setControlValue(this.query_type, -1);
+
+        var bt = new sap.m.Button({
+            icon: "sap-icon://print",
+            press: function () {
+                that.qv.printHtml(that.view, "para");
+            }
+        });
+
+        this.toolbar = new sap.m.Toolbar({
+            content: [this.locations, this.query_type, this.searchField, bt]
+        });
         var sc = new sap.m.ScrollContainer();
 
         sc.addContent(this.qv.getControl());
         layout.setAlignItems("Center");
         layout.setJustifyContent("Center");
         vbox.addItem((layout));
+        vbox.addItem(this.toolbar);
         vbox.addItem(sc);
         vbox.setHeight("100%");
+        this.load_data();
         this.mainPage.addContent(vbox);
 
     },
@@ -161,7 +212,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         var data = odata.getProperty(odata.getPath());
 
         var oC = {
-            qryStrKF: data.KEYFLD + "",
+            qryStrKF: data.KEYFLD_ + "",
             getView: function () {
 
                 return that.view;
@@ -179,12 +230,54 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
     },
     load_data: function (period) {
         var that = this;
-        var sql = "select to_char(start_date,'dd/mm/rrrr') start_date,athlet_code,athlet_name,tel,amount,keyfld from ft_contract where flag=1 order by start_date desc";
+        var loc = UtilGen.getControlValue(that.locations);
+        var qt = UtilGen.getControlValue(that.query_type);
+        var sql = "select f.athlet_code,f.athlet_name,f.tel,to_char(f.start_date,'dd/mm/rrrr') start_date," +
+            " to_char(f.end_date,'dd/mm/rrrr') end_date," +
+            " round(f.end_date-sysdate) expiry_in ," +
+            "c.balance," +
+            "f.keyfld keyfld_ ," +
+            "f.SALEINV SALEINV_ " +
+            "from ft_contract f,C_CUST_BAL c " +
+            "where f.flag=1 and " +
+            " (round(f.end_date-sysdate)<=" + qt + " or " + qt + "=-1) and " +
+            " c.code(+)=f.athlet_code and " +
+            " f.location_code='" + loc + "'" +
+            " order by f.start_date desc";
 
         var dat = Util.execSQL(sql);
-        if (dat.ret == "SUCCESS" && dat.data.length > 0) {
+        if (dat.ret == "SUCCESS") {
+
             that.qv.setJsonStr("{" + dat.data + "}");
+
+            var cc = that.qv.mLctb.getColByName("BALANCE");
+            cc.getMUIHelper().display_format = "MONEY_FORMAT";
+            var cc = that.qv.mLctb.getColByName("ATHLET_CODE");
+            cc.mTitle = "Code";
+            var cc = that.qv.mLctb.getColByName("ATHLET_NAME");
+            cc.mTitle = "Name";
+
             that.qv.loadData();
+
+
+            if (dat.data.length > 0) {
+
+
+                for (var jj = 0; jj < that.qv.mLctb.cols.length; jj++)
+                    that.qv.mLctb.cols[jj].getMUIHelper().data_type = "STRING";
+                var c = that.qv.mLctb.getColPos("EXPIRY_IN");
+                that.qv.mLctb.cols[c].getMUIHelper().data_type = "NUMBER";
+                that.qv.mLctb.cols[c].mCfOperator = ":EXPIRY_IN <= 0 && :EXPIRY_IN != 0 ";
+                that.qv.mLctb.cols[c].mCfTrue = "font-weight: bold;color:red!important;";
+
+                that.qv.mLctb.cols[1].mCfOperator = ":EXPIRY_IN > 0 && :EXPIRY_IN <= 10 && :EXPIRY_IN != 0 ";
+                that.qv.mLctb.cols[1].mCfTrue = "color:orange!important;";
+
+                that.qv.mLctb.cols[0].mCfOperator = ":SALEINV_ !=0 ";
+                that.qv.mLctb.cols[0].mCfTrue = "font-weight: bold;background-color:yellow!important;";
+
+            }
+
         }
     },
     openSubscriber: function () {
@@ -198,7 +291,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         var data = odata.getProperty(odata.getPath());
 
         var oC = {
-            qryStr: data.KEYFLD + "",
+            qryStr: data.KEYFLD_ + "",
             getView: function () {
                 return that.view;
             }
@@ -225,9 +318,9 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
 
         var odata = that.qv.getControl().getContextByIndex(sl[0]);
         var data = odata.getProperty(odata.getPath());
-        this.selectedInd = data.KEYFLD;
+        this.selectedInd = data.KEYFLD_;
         var oC = {
-            qryStrKF: data.KEYFLD + "",
+            qryStrKF: data.KEYFLD_ + "",
             qryStrAthletCode: data.ATHLET_CODE,
             qryStrAthletCodeName: data.ATHLET_NAME,
             getView: function () {
@@ -254,7 +347,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         var data = odata.getProperty(odata.getPath());
 
         var oC = {
-            qryStrKF: data.KEYFLD + "",
+            qryStrKF: data.KEYFLD_ + "",
             qryStrAthletCode: data.ATHLET_CODE,
             qryStrAthletCodeName: data.ATHLET_NAME,
             getView: function () {

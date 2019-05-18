@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptSale_alzamel" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ad6628cc-e7d5-4d2a-a1cb-769ce4b5f83c">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<parameter name="keyfld" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[""]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select
+o.name comp_name,o.SPECIFICATION,
+C.LOCATION_CODE, C.FILENO, C.KEYFLD, C.ATHLET_CODE, C.ATHLET_NAME, C.START_DATE, C.END_DATE, C.AMOUNT, C.TRAINING_TARGET, C.TRAINING_STAGE, C.SESSION_CODE, C.SPORT_TYPE, C.INJURY_TYPE, C.INJURY_PLACE, C.SURGERY_DATE, C.NOTES, C.AGE, C.TEL, C.NATIONALITY, C.CIVILID, C.PERIOD_REHAB, C.PT, C.HYDRO, C.REHAB, C.FITNESS, C.QUALITY, C.PRICE_HYDRO, C.PRICE_REHAB, C.PRICE_PT, C.PRICE_FITNESS, C.PRICE_QUALITY, C.HYDRO_REFER, C.PT_REFER, C.REHAB_REFER, C.FITNESS_REFER, C.QUALITY_REFER, C.INVOICE_DATE, C.INVOICE_DESCR, C.CASH_CODE, C.DISC_AMT, C.JV_KEYFLD, C.FLAG, C.SALEINV, C.CASH_TYPE, C.FILE_REFER, C.PRICE_FILE,
+(select invoice_no from pur1 where keyfld=c.saleinv) inv_no,
+(select max(name) from c_ycust where code=c.cash_code) cash_title
+from ft_contract c,company o
+where o.crnt='X' and
+c.keyfld=$P{keyfld}]]>
+	</queryString>
+	<field name="COMP_NAME" class="java.lang.String"/>
+	<field name="SPECIFICATION" class="java.lang.String"/>
+	<field name="LOCATION_CODE" class="java.lang.String"/>
+	<field name="FILENO" class="java.math.BigDecimal"/>
+	<field name="KEYFLD" class="java.math.BigDecimal"/>
+	<field name="ATHLET_CODE" class="java.lang.String"/>
+	<field name="ATHLET_NAME" class="java.lang.String"/>
+	<field name="START_DATE" class="java.sql.Timestamp"/>
+	<field name="END_DATE" class="java.sql.Timestamp"/>
+	<field name="AMOUNT" class="java.math.BigDecimal"/>
+	<field name="TRAINING_TARGET" class="java.lang.String"/>
+	<field name="TRAINING_STAGE" class="java.lang.String"/>
+	<field name="SESSION_CODE" class="java.lang.String"/>
+	<field name="SPORT_TYPE" class="java.lang.String"/>
+	<field name="INJURY_TYPE" class="java.lang.String"/>
+	<field name="INJURY_PLACE" class="java.lang.String"/>
+	<field name="SURGERY_DATE" class="java.sql.Timestamp"/>
+	<field name="NOTES" class="java.lang.String"/>
+	<field name="AGE" class="java.math.BigDecimal"/>
+	<field name="TEL" class="java.lang.String"/>
+	<field name="NATIONALITY" class="java.lang.String"/>
+	<field name="CIVILID" class="java.lang.String"/>
+	<field name="PERIOD_REHAB" class="java.math.BigDecimal"/>
+	<field name="PT" class="java.math.BigDecimal"/>
+	<field name="HYDRO" class="java.math.BigDecimal"/>
+	<field name="REHAB" class="java.math.BigDecimal"/>
+	<field name="FITNESS" class="java.math.BigDecimal"/>
+	<field name="QUALITY" class="java.math.BigDecimal"/>
+	<field name="PRICE_HYDRO" class="java.math.BigDecimal"/>
+	<field name="PRICE_REHAB" class="java.math.BigDecimal"/>
+	<field name="PRICE_PT" class="java.math.BigDecimal"/>
+	<field name="PRICE_FITNESS" class="java.math.BigDecimal"/>
+	<field name="PRICE_QUALITY" class="java.math.BigDecimal"/>
+	<field name="HYDRO_REFER" class="java.lang.String"/>
+	<field name="PT_REFER" class="java.lang.String"/>
+	<field name="REHAB_REFER" class="java.lang.String"/>
+	<field name="FITNESS_REFER" class="java.lang.String"/>
+	<field name="QUALITY_REFER" class="java.lang.String"/>
+	<field name="INVOICE_DATE" class="java.sql.Timestamp"/>
+	<field name="INVOICE_DESCR" class="java.lang.String"/>
+	<field name="CASH_CODE" class="java.lang.String"/>
+	<field name="DISC_AMT" class="java.math.BigDecimal"/>
+	<field name="JV_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="FLAG" class="java.math.BigDecimal"/>
+	<field name="SALEINV" class="java.math.BigDecimal"/>
+	<field name="CASH_TYPE" class="java.math.BigDecimal"/>
+	<field name="FILE_REFER" class="java.lang.String"/>
+	<field name="PRICE_FILE" class="java.math.BigDecimal"/>
+	<field name="INV_NO" class="java.math.BigDecimal"/>
+	<field name="CASH_TITLE" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="479" splitType="Stretch">
+			<rectangle radius="10">
+				<reportElement x="0" y="115" width="555" height="168" uuid="7756151e-ff14-4aa6-91e9-0e538b1b47a3"/>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="strCompanySpec" x="105" y="40" width="440" height="29" uuid="6d2a3dac-edbc-49f8-b8f3-46a4b26c527e"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{SPECIFICATION}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame">
+				<reportElement x="2" y="0" width="89" height="69" uuid="8c8253a0-f37f-480a-84dd-d055844c0d96"/>
+				<imageExpression><![CDATA["company_logo.bmp"]]></imageExpression>
+			</image>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="strCompanyName" x="105" y="10" width="440" height="30" uuid="af8ebd55-b413-4fee-9169-dd1b09213d29"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{COMP_NAME}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="2" y="78" width="550" height="1" uuid="6def58cd-30a4-4003-a857-9e926537a815"/>
+			</line>
+			<staticText>
+				<reportElement style="labelPara" x="205" y="79" width="133" height="36" uuid="eb84a041-207b-4b8f-8410-fdfd890f042f"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="16" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[فاتورة المبيعات]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="labelPara" x="445" y="178" width="101" height="21" uuid="8e60bab8-886c-4475-8992-d895092c5e2c"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[الرمز والاسم /]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="labelPara" x="393" y="208" width="52" height="21" uuid="a5c976b6-a29a-41e5-9fca-4d3dda5c276a"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[هاتف /]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="labelPara" x="241" y="208" width="52" height="21" uuid="fafdf8c2-16b9-48b4-83a8-2ec781ccfca3"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[جنسية /]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="139" y="208" width="102" height="21" uuid="c250e8e0-861e-44b3-9c45-5942565f9542"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{NATIONALITY}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="293" y="208" width="110" height="21" uuid="10e37894-62f2-492b-9c1c-05060cc90f42"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{TEL}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="3" y="179" width="454" height="21" uuid="dc7bab41-122d-4a13-954c-004b552ef130"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ATHLET_CODE}+" : "+ $F{ATHLET_NAME}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="labelPara" x="494" y="208" width="52" height="21" uuid="811c0e68-edce-40e9-b298-fbed425530ec"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[عمر /]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="labelPara" x="87" y="208" width="52" height="21" uuid="60df7981-75d7-42c0-948f-fbe3e7cc5a75"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[Civl ID ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="457" y="208" width="49" height="21" uuid="53d8b569-9915-4996-938b-5c3d93be2549"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{AGE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="3" y="208" width="84" height="21" uuid="03099c23-8bff-4fce-8176-134ec9638138"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CIVILID}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="labelPara" x="403" y="241" width="142" height="21" uuid="c8c22330-e72a-4c87-8f54-058287661d19"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[الاشتراك من /Rehab]]></text>
+			</staticText>
+			<textField pattern="yyyy/MM/dd" isBlankWhenNull="true">
+				<reportElement style="strPara" x="311" y="241" width="92" height="21" uuid="a56ccee0-17fe-43e7-89f8-fad2349c32cb"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{START_DATE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="labelPara" x="270" y="241" width="29" height="21" uuid="c5f62910-8e07-4e55-9078-d93c30710baa"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[إلى /]]></text>
+			</staticText>
+			<textField pattern="yyyy/MM/dd" isBlankWhenNull="true">
+				<reportElement style="strPara" x="178" y="241" width="92" height="21" uuid="78f04dc6-5153-4430-88c4-c76c198638d8"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{START_DATE}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="0" y="304" width="552" height="175" uuid="b46c1568-6439-455e-b5bb-796625cc4aed"/>
+				<subreportParameter name="DISC">
+					<subreportParameterExpression><![CDATA[$F{DISC_AMT}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="p_keyfld">
+					<subreportParameterExpression><![CDATA[$F{SALEINV}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "rptsale2.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement style="labelPara" x="475" y="115" width="77" height="21" uuid="c58f6050-9da0-47e4-b828-320335bd4345"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[/ Invoice No]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="365" y="115" width="110" height="21" uuid="c4332c15-f2ae-43c2-83b1-fe82efa5ace5"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{INV_NO}]]></textFieldExpression>
+			</textField>
+			<textField pattern="yyyy/MM/dd" isBlankWhenNull="true">
+				<reportElement style="strPara" x="5" y="120" width="110" height="21" uuid="1b3be205-b736-47a5-9d4f-5993e798904f"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{INVOICE_DATE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="labelPara" x="116" y="117" width="101" height="21" uuid="fbde9992-962f-4b73-81fe-f49a90ec173a"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[/ Date ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="labelPara" x="471" y="138" width="77" height="21" uuid="b5ccebe0-8ca6-460e-bbc7-a918e3e9f83c"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[/ Cash Code]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strPara" x="4" y="138" width="467" height="21" uuid="23fcfc72-1d2b-4153-9756-ec290eea2d30"/>
+				<box leftPadding="2" rightPadding="2"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{CASH_TITLE} +" - "+$F{CASH_CODE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

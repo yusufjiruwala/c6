@@ -40,7 +40,7 @@
 			<rightPen lineWidth="0.25"/>
 		</box>
 	</style>
-	<style name="labelPara" vAlign="Middle" fontName="Times New Roman" fontSize="10"/>
+	<style name="labelPara" vAlign="Middle" fontName="DejaVu Sans" fontSize="12"/>
 	<style name="strPara" vAlign="Middle" fontName="Times New Roman" fontSize="10">
 		<box leftPadding="5">
 			<pen lineWidth="0.25"/>

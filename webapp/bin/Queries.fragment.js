@@ -25,8 +25,8 @@ sap.ui.jsfragment("bin.Queries", {
         this.setModel(oModel, "data");
 
 
-        ( view.byId("filterBox") != undefined ? view.byId("filterBox").destroy() : "" );
-        ( view.byId("profile") != undefined ? view.byId("profile").destroy() : "" );
+        (view.byId("filterBox") != undefined ? view.byId("filterBox").destroy() : "");
+        (view.byId("profile") != undefined ? view.byId("profile").destroy() : "");
         view.cb = new sap.m.ComboBox(
             {
                 items: {
@@ -81,7 +81,7 @@ sap.ui.jsfragment("bin.Queries", {
         });
 
         this.createResultPage();
-        ( sap.ui.getCore().byId("reportApp") != undefined ? sap.ui.getCore().byId("reportApp").destroy() : "" );
+        (sap.ui.getCore().byId("reportApp") != undefined ? sap.ui.getCore().byId("reportApp").destroy() : "");
 
         this.setCurrentProfile();
         var splitApp = new sap.m.SplitApp("reportApp").addStyleClass("");
@@ -124,7 +124,7 @@ sap.ui.jsfragment("bin.Queries", {
         Util.doAjaxJson("sqlmetadata?", {
             sql: "SELECT M1.MENU_CODE CODE," + artit +
             "M1.PARENT_MENUCODE LIST_GROUP_CODE," +
-            artit2+
+            artit2 +
             " M1.TYPE_OF_EXEC,M1.EXEC_LINE FROM C6_MAIN_MENUS M1,C6_MAIN_MENUS M2 " +
             "WHERE M2.MENU_CODE=M1.PARENT_MENUCODE AND " +
             " M1.GROUP_CODE='" + cod + "' AND " +
@@ -137,7 +137,7 @@ sap.ui.jsfragment("bin.Queries", {
             that.qv.switchType("list");
             that.qv.loadData();
 
-            ( view.byId("searchField") != undefined ? view.byId("searchField").destroy() : "" );
+            (view.byId("searchField") != undefined ? view.byId("searchField").destroy() : "");
             that.filterBox.addItem(new sap.m.SearchField(view.createId("searchField"), {
                     placeholder: "Search..",
                     width: "100%",
@@ -759,9 +759,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -818,9 +818,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -1169,9 +1169,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -1249,7 +1249,7 @@ sap.ui.jsfragment("bin.Queries", {
             // only upload pic of MEASURES field contains and multiple sub reports delimeted with single quot.
             if (Util.nvl(rep.MEASURES, '') !== '' &&
                 ((rep.MEASURES.toUpperCase().indexOf("'" + view.tabs.getItems()[v].getName().toUpperCase() + "'") !== -1) ||
-                rep.MEASURES.toUpperCase() == view.tabs.getItems()[v].getName().toUpperCase())) {
+                    rep.MEASURES.toUpperCase() == view.tabs.getItems()[v].getName().toUpperCase())) {
                 view.tabs.setSelectedItem(view.tabs.getItems()[v]);
                 var o = view.tabs.getItems()[v].getContent()[0].$().outerHTML();
                 var oo = new sap.ui.core.HTML({
@@ -1322,9 +1322,9 @@ sap.ui.jsfragment("bin.Queries", {
             var fnd = true;
             // do not add selectedEntries if subgroup or summary line..
             if (view.qv.mLctb.cols[0].mGrouped && (
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
-                    data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
-                ))
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4095)) ||
+                data[view.qv.mLctb.cols[0].mColName].startsWith(String.fromCharCode(4094))
+            ))
                 fnd = false;
             if (fnd)
                 selectedEntries.push(data);
@@ -1509,8 +1509,8 @@ sap.ui.jsfragment("bin.Queries", {
         var o = oVizFrame.$().outerHTML() + tblHtml;
         var h = "<div class='company'>" + sett["COMPANY_NAME"] + "</div> " +
             (rep == undefined ? "" :
-            "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
-            " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>");
+                "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
+                " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>");
 
         var newWin = window.open("");
 
