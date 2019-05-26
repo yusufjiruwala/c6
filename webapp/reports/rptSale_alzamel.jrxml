@@ -100,12 +100,12 @@ c.keyfld=$P{keyfld}]]>
 				<reportElement x="2" y="78" width="550" height="1" uuid="6def58cd-30a4-4003-a857-9e926537a815"/>
 			</line>
 			<staticText>
-				<reportElement style="labelPara" x="205" y="79" width="133" height="36" uuid="eb84a041-207b-4b8f-8410-fdfd890f042f"/>
+				<reportElement style="labelPara" x="217" y="78" width="148" height="36" uuid="eb84a041-207b-4b8f-8410-fdfd890f042f"/>
 				<box leftPadding="2" rightPadding="2"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="16" isBold="true" isUnderline="true"/>
 				</textElement>
-				<text><![CDATA[فاتورة المبيعات]]></text>
+				<text><![CDATA[فاتورة اشتراكات]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="labelPara" x="445" y="178" width="101" height="21" uuid="8e60bab8-886c-4475-8992-d895092c5e2c"/>
@@ -217,7 +217,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right">
 					<font fontName="DejaVu Sans" size="12"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{START_DATE}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{END_DATE}]]></textFieldExpression>
 			</textField>
 			<subreport>
 				<reportElement x="0" y="304" width="552" height="175" uuid="b46c1568-6439-455e-b5bb-796625cc4aed"/>

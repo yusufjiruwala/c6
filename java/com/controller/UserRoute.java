@@ -199,7 +199,7 @@ public class UserRoute {
 						instanceInfo.getmDbc().getDbConnection());
 				ret = utils.getJSONStr("return", ret, true);
 			}
-
+			
 			if (params.get("command").equals("get-subrep")) {
 				String id = params.get("report-id");
 				ret = getSubRepJson("subrep", id);

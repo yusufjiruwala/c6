@@ -6,19 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="b1ac3e54-c214-4ad7-8623-7eda25904726" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/bin/Queries.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/Queries.fragment.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/bin/forms/fitness/drana.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/forms/fitness/drana.fragment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/bin/forms/fitness/newsub.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/forms/fitness/newsub.fragment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/bin/forms/fitness/payments.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/forms/fitness/payments.fragment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/css/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/generic/QueryView.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/generic/QueryView.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/generic/Util.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/generic/Util.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/generic/UtilGen.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/generic/UtilGen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/i18n/i18n.properties" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/i18n/i18n.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/i18n/i18n_ar.properties" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/i18n/i18n_ar.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/reports/rptAccStatmentDet2.jrxml" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/reports/rptAccStatmentDet2.jrxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webapp/reports/voucherStyle.jrtx" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/reports/voucherStyle.jrtx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/reports/rptSale_alzamel.jasper" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/reports/rptSale_alzamel.jasper" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/reports/rptSale_alzamel.jrxml" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/reports/rptSale_alzamel.jrxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/reports/rptsale2.jasper" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/reports/rptsale2.jasper" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -32,20 +23,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="drana.fragment.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/drana.fragment.js">
+      <file leaf-file-name="Athlet.fragment.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="243">
-              <caret line="102" column="17" selection-start-line="102" selection-start-column="17" selection-end-line="102" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="QueryView.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webapp/generic/QueryView.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="258">
-              <caret line="320" lean-forward="true" selection-start-line="318" selection-end-line="320" />
+            <state relative-caret-position="315">
+              <caret line="277" column="16" selection-start-line="277" selection-start-column="16" selection-end-line="277" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -129,9 +111,9 @@
         <option value="$PROJECT_DIR$/webapp/bin/forms/fitness/payments.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/css/style.css" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/fitness/newsub.fragment.js" />
-        <option value="$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/fitness/drana.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/generic/QueryView.js" />
+        <option value="$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js" />
       </list>
     </option>
   </component>
@@ -157,6 +139,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -190,11 +173,18 @@
               <item name="forms" type="462c0819:PsiDirectoryNode" />
               <item name="fitness" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="main" type="b2602c69:ProjectViewProjectNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="webapp" type="462c0819:PsiDirectoryNode" />
+              <item name="bin" type="462c0819:PsiDirectoryNode" />
+              <item name="forms" type="462c0819:PsiDirectoryNode" />
+              <item name="lg" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -547,13 +537,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/session.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1282">
-          <caret line="197" column="41" lean-forward="true" selection-start-line="197" selection-start-column="41" selection-end-line="197" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/i18n/i18n_ar.properties">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
@@ -565,16 +548,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="28">
           <caret line="61" column="24" lean-forward="true" selection-start-line="61" selection-start-column="24" selection-end-line="61" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/payments.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="79">
-          <caret line="548" column="22" selection-start-line="548" selection-start-column="22" selection-end-line="548" selection-end-column="22" />
-          <folding>
-            <marker date="1557770058844" expanded="true" signature="10327:10470" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -620,31 +593,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js">
+    <entry file="file://$PROJECT_DIR$/webapp/generic/QueryView.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3855">
-          <caret line="257" column="31" selection-start-line="257" selection-start-column="31" selection-end-line="257" selection-end-column="31" />
+        <state relative-caret-position="433">
+          <caret line="326" column="16" lean-forward="true" selection-start-line="326" selection-start-column="16" selection-end-line="326" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/payments.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="548" column="22" selection-start-line="548" selection-start-column="22" selection-end-line="548" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/session.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1109">
+          <caret line="173" column="25" lean-forward="true" selection-start-line="173" selection-start-column="25" selection-end-line="173" selection-end-column="25" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/newsub.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="397">
-          <caret line="577" lean-forward="true" selection-start-line="577" selection-end-line="577" />
+        <state relative-caret-position="735">
+          <caret line="577" selection-start-line="577" selection-end-line="577" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/drana.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
+        <state relative-caret-position="626">
           <caret line="102" column="17" selection-start-line="102" selection-start-column="17" selection-end-line="102" selection-end-column="17" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/generic/QueryView.js">
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fitness/Athlet.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="320" lean-forward="true" selection-start-line="318" selection-end-line="320" />
+        <state relative-caret-position="315">
+          <caret line="277" column="16" selection-start-line="277" selection-start-column="16" selection-end-line="277" selection-end-column="16" />
         </state>
       </provider>
     </entry>
