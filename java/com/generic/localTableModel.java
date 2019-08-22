@@ -211,7 +211,7 @@ public class localTableModel implements TableModel, Serializable {
 					}
 				}
 			}
-
+			
 			if (fnd == no_of_fnd) {
 				rows.add(r);
 				fnd = 0;
