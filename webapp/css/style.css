@@ -529,3 +529,18 @@
 .sapUiFormResGrid.sapUiFormToolbar>div:first-child {
     background-color: lightblue!important;
 }
+
+.whiteText {
+    color: white !important;
+
+}
+
+.blinking {
+    animation: blinkingText 1.5s infinite;
+}
+
+@keyframes blinkingText {
+    50% {
+        opacity: 0;
+    }
+}

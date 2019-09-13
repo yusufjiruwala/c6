@@ -4,7 +4,6 @@
  */
 package com.generic;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.math.BigDecimal;
@@ -575,10 +574,9 @@ public class utils {
 			pnm = getParamName(sq, parano);
 			pnm = pnm.toUpperCase().trim();
 			if (pnm.length() > 0) {
-				if (mapParameters.get(pnm)==null)
-					System.out.println(pnm+" parameter is not exist !");
-				
-					
+				if (mapParameters.get(pnm) == null)
+					System.out.println(pnm + " parameter is not exist !");
+
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_STRING)) {
 					if (mapParameters.get(pnm).getValue() != null) {
 						ps.setString(parano, (String) mapParameters.get(pnm).getValue());
@@ -586,7 +584,7 @@ public class utils {
 						ps.setString(parano, "");
 					}
 				}
-				
+
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_DATE)) {
 					if (mapParameters.get(pnm).getValue() != null) {
 						java.sql.Date jdt = null;
@@ -598,7 +596,7 @@ public class utils {
 						ps.setDate(parano, null);
 					}
 				}
-				
+
 				if (mapParameters.get(pnm).getValueType().equals(Parameter.DATA_TYPE_DATETIME)) {
 					if (mapParameters.get(pnm).getValue() != null) {
 						java.sql.Timestamp jdt = null;
@@ -1041,15 +1039,15 @@ public class utils {
 		}
 		return ret;
 	}
-	
-	public static String getJSONMapString(Map<String, String> mp,boolean includeBrackets) {
+
+	public static String getJSONMapString(Map<String, String> mp, boolean includeBrackets) {
 		String ret = "";
 		for (String key : mp.keySet()) {
 			ret += (ret.length() == 0 ? "" : ",") + getJSONStr(key, mp.get(key), includeBrackets);
 		}
 		return ret;
 	}
-	
+
 	public static String getJSONsql(String var, ResultSet rs, Connection con, String excludeColumn,
 			String includeColumn) throws SQLException {
 
@@ -1076,7 +1074,7 @@ public class utils {
 	public static String getJSONsqlMetaData(ResultSet rs, Connection con, String excludeColumn, String includeColumn)
 			throws SQLException {
 
-		if (rs == null || !rs.first())
+		if (rs == null) // || !rs.first())
 			return "";
 		String ret = "", met = "";
 		String tmp1 = "", cn = "";
@@ -1084,10 +1082,17 @@ public class utils {
 		for (int i = 0; i < rsm.getColumnCount(); i++) {
 			tmp1 = getJSONStr("colname", rsm.getColumnName(i + 1), false);
 			tmp1 += "," + getJSONStr("width", "30", false);
+			if (rsm.getColumnType(i + 1) == java.sql.Types.DATE || rsm.getColumnType(i + 1) == java.sql.Types.TIMESTAMP)
+				tmp1 += "," + getJSONStr("data_type", "DATE", false);
+			else if (isNumber(rsm.getColumnType(i + 1)))
+				tmp1 += "," + getJSONStr("data_type", "NUMBER", false);
+			else
+				tmp1 += "," + getJSONStr("data_type", "STRING", false);
 			met += (met.length() > 0 ? "," : "") + "{" + tmp1 + "}";
 
 		}
-
+		if (!rs.first())
+			return "\"metadata\":" + "[" + met + "] ," + "\"data\":" + "[]";
 		rs.beforeFirst();
 
 		while (rs.next()) {
@@ -1199,7 +1204,7 @@ public class utils {
 			// ret = new java.util.Date(cln.getTimeInMillis());
 		}
 
-		if (vl.equals("$FIRSTDATEOFPERIOD")) {			
+		if (vl.equals("$FIRSTDATEOFPERIOD")) {
 			String cp = inf.getMmapVar().get("CURRENT_PERIOD") + "";
 			ResultSet rs = QueryExe.getSqlRS("SELECT FROMDATE FROM FISCALPERIOD WHERE CODE='" + cp + "'", con);
 			if (rs != null) {
@@ -1210,7 +1215,7 @@ public class utils {
 				rs.close();
 			}
 			// ret = new java.util.Date(cln.getTimeInMillis());
-		}		
+		}
 
 		if (vl.equals("$ENDDATEOFPERIOD")) {
 			String cp = inf.getMmapVar().get("CURRENT_PERIOD") + "";
@@ -1222,8 +1227,8 @@ public class utils {
 				rs.close();
 			}
 		}
-		
-		if (vl.equals("$FROMCUST")) {			
+
+		if (vl.equals("$FROMCUST")) {
 			ResultSet rs = QueryExe.getSqlRS("SELECT min(code) FROM c_ycust WHERE iscust='Y'", con);
 			if (rs != null) {
 				rs.first();
@@ -1231,21 +1236,21 @@ public class utils {
 				if (rs.getString(1) != null)
 					ret = rs.getString(1);
 				rs.close();
-			}		
-		}	
-		
-		if (vl.equals("$TOCUST")) {			
+			}
+		}
+
+		if (vl.equals("$TOCUST")) {
 			ResultSet rs = QueryExe.getSqlRS("SELECT max(code) FROM c_ycust WHERE iscust='Y'", con);
 			if (rs != null) {
 				rs.first();
-				
+
 				if (rs.getString(1) != null)
 					ret = rs.getString(1);
 				rs.close();
-			}		
-		}	
-		
-		if (vl.equals("$FROMSUPP")) {			
+			}
+		}
+
+		if (vl.equals("$FROMSUPP")) {
 			ResultSet rs = QueryExe.getSqlRS("SELECT min(code) FROM c_ycust WHERE issupp='Y'", con);
 			if (rs != null) {
 				rs.first();
@@ -1253,20 +1258,20 @@ public class utils {
 				if (rs.getString(1) != null)
 					ret = rs.getString(1);
 				rs.close();
-			}		
-		}	
-		
-		if (vl.equals("$TOSUPP")) {			
+			}
+		}
+
+		if (vl.equals("$TOSUPP")) {
 			ResultSet rs = QueryExe.getSqlRS("SELECT max(code) FROM c_ycust WHERE issupp='Y'", con);
 			if (rs != null) {
 				rs.first();
-				
+
 				if (rs.getString(1) != null)
 					ret = rs.getString(1);
 				rs.close();
-			}		
-		}	
-		
+			}
+		}
+
 		if (vl.equals("$TODAY"))
 			ret = new java.util.Date(cln.getTimeInMillis());
 
@@ -1299,6 +1304,5 @@ public class utils {
 
 		return b4_str + str_insert + str.substring(b4_str.length() + 1, str.length());
 	}
-
 
 }

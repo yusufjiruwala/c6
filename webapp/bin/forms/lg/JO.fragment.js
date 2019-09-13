@@ -1,4 +1,4 @@
-sap.ui.jsfragment("lg.JO", {
+sap.ui.jsfragment("bin.forms.lg.JO", {
 
     createContent: function (oController) {
         var that = this;
@@ -24,7 +24,7 @@ sap.ui.jsfragment("lg.JO", {
     createView: function () {
         var that = this;
         this.qv = new QueryView("test");
-        var sq = "select reference,descr from items  where reference like 'K400%OPC%' order by descr2";
+        var sq = "select reference,descr from items  where reference like '%' order by descr2";
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             that.qv.setJsonStr("{" + data.data + "}");
             that.qv.mLctb.cols[0].mColClass = "sap.m.Input";

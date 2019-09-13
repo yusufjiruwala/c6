@@ -645,10 +645,23 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var sett = sap.ui.getCore().getModel("settings").getData();
 
                 if (typeof dt == "string") {
-                    return "to_date(" + dt + ",'" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
+                    return "to_date('" + dt + "','" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
                 } else if (dt instanceof Date) {
                     var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
-                    return "to_date(" + sf.format(dt) + ",'" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
+                    return "to_date('" + sf.format(dt) + "','" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
+                }
+            },
+            quoted: function (qt) {
+                return "'" + this.nvl(qt, "") + "'";
+            },
+            toOraDateTimeString: function (dt) {
+                var sett = sap.ui.getCore().getModel("settings").getData();
+
+                if (typeof dt == "string") {
+                    return "to_date('" + dt + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA"], "DD/MM/RRRR HH24:MI") + "')";
+                } else if (dt instanceof Date) {
+                    var sf = new simpleDateFormat(Util.nvl(sett["ENGLISH_DATE_FORMAT_LONG"], 'dd/MM/yyyy k:m'));
+                    return "to_date('" + sf.format(dt) + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA_LONG"], "DD/MM/RRRR HH24:MI") + "')";
                 }
             },
             createGrid2Obj: function (grid, layoutData1, layoutData2, lblStr, inputObjClass) {
@@ -817,6 +830,176 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var s = Util.nvl(sLang, sap.ui.getCore().getConfiguration().getLanguage());
                 return (s == "AR" ? this.nvl(otStr, enStr) : enStr);
 
+            },
+            showSearchTable: function (sql, container, flcol, fnOnselect) {
+
+                container.removeAllItems();
+                var qv = new QueryView();
+                qv.getControl().addStyleClass("sapUiSizeCondensed");
+
+                var searchField = new sap.m.SearchField({
+                    liveChange: function (event) {
+                        var flts = [];
+                        var val = event.getParameter("newValue");
+                        for (var i in qv.mLctb.cols) {
+                            if (flcol != undefined && flcol.indexOf(qv.mLctb.cols[i].mColName) > -1)
+                                flts.push(new sap.ui.model.Filter({
+                                    path: qv.mLctb.cols[i].mColName,
+                                    operator: sap.ui.model.FilterOperator.Contains,
+                                    value1: val
+                                }));
+                        }
+                        var f = new sap.ui.model.Filter({
+                            filters: flts,
+                            and: false
+                        });
+                        var lst = qv.getControl();
+
+                        var filter = new sap.ui.model.Filter(f, false);
+                        var binding = lst.getBinding("rows");
+                        binding.filter(filter);
+                    }
+                });
+                container.addItem(searchField);
+
+                var dat = this.execSQL(sql);
+                if (dat.ret == "SUCCESS" && dat.data.length > 0) {
+                    qv.setJsonStr("{" + dat.data + "}");
+                    qv.loadData();
+                    container.addItem(qv.getControl());
+                    qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
+                    qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
+                    return qv;
+                }
+                return null;
+            },
+            showSearchList: function (sql, colDes, colVal, fnConfirm) {
+                // if (e.getParameters().refreshButtonPressed)
+                //     return;
+                //
+                // if (e.getParameters().clearButtonPressed) {
+                //     that.subs.athlet_code.setValue("");
+                //     return
+                // }
+
+                var v = sql;
+                Util.doAjaxJson("sqlmetadata", {
+                    sql: v,
+                    ret: "NONE",
+                    data: null
+                }, false).done(function (data) {
+                    console.log(data);
+                    var dt = JSON.parse("{" + data.data + "}").data;
+                    sap.ui.getCore().setModel(new sap.ui.model.json.JSONModel(dt), "searchList");
+                    var t = {
+                        colDes: colDes,
+                        colVal: colVal,
+                        frag_liveChange: function (event) {
+                            var val = event.getParameter("value");
+                            var filter = new sap.ui.model.Filter(colDes, sap.ui.model.FilterOperator.Contains, val);
+                            var binding = event.getSource().getBinding("items");
+                            binding.filter(filter);
+                        },
+                        frag_confirm: function (event) {
+                            var val = event.getParameters().selectedItem.getTitle();
+                            var valx = event.getParameters().selectedItem.getCustomData()[0];
+                            fnConfirm(valx.getKey(), val);
+                            // that.subs.athlet_code.setValue(valx.getKey());
+                            // that.subs.athlet_name.setValue(val);
+                        }
+                    };
+                    var oFragment = sap.ui.jsfragment("bin.searchList", t);
+                    oFragment.open();
+                });
+            },
+            execSQL: function (sql) {
+                var dtx;
+                if (sql.toLowerCase().startsWith("select")) {
+                    this.doAjaxJson("sqlmetadata", {
+                            sql: sql,
+                            ret: "NONE",
+                            data: null
+                        }
+                        ,
+                        false
+                    ).done(function (data) {
+                        dtx = data;
+                    });
+                }
+                else {
+                    var oSql = {
+                        "sql": sql,
+                        "ret": "NONE",
+                        "data": null
+                    };
+
+                    this.doAjaxJson("sqlexe", oSql, false).done(function (data) {
+                        dtx = data;
+                    });
+                }
+                if (dtx == undefined || dtx.ret != "SUCCESS") {
+                    console.log(sql);
+                    if (dtx != undefined)
+                        throw dtx.ret;
+                    else
+                        throw "Unexpected error in executing sql";
+                }
+                return dtx;
+            }
+            ,
+            getSQLValue: function (sql) {
+                var dat = this.execSQL(sql);
+                if (dat.ret == "SUCCESS" && dat.data.length > 0) {
+                    var dtx = JSON.parse("{" + dat.data + "}").data;
+                    return dtx[0][Object.keys(dtx[0])[0]];
+                    //return dtx[0].VALUE;
+                }
+                return "";
+            },
+            show_list: function (sql, cols, retCols, fnSel, width, height, visibleRowCount) {
+                var vbox = new sap.m.VBox({width: "100%"});
+                var dlg = new sap.m.Dialog({
+                    content: [vbox],
+                    contentHeight: this.nvl(height, "500px"),
+                    contentWidth: this.nvl(width, "400px")
+                });
+
+                var qv = this.showSearchTable(sql, vbox, cols);
+                qv.getControl().addStyleClass("noColumnBorder");
+                if (visibleRowCount != undefined) {
+                    qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
+                    qv.getControl().setVisibleRowCount(this.nvl(visibleRowCount, 6));
+                }
+
+                if (qv == null) return;
+                dlg.addButton(new sap.m.Button({
+                    text: "Select", press: function () {
+                        var sl = qv.getControl().getSelectedIndices();
+                        if (sl.length <= 0) {
+                            sap.m.MessageToast.show("Must select !");
+                            return;
+                        }
+                        var odata = qv.getControl().getContextByIndex(sl[0]);
+                        var data = odata.getProperty(odata.getPath());
+                        if (fnSel(data))
+                            dlg.close();
+                    }
+                }));
+                dlg.open();
+            },
+
+            getCellColValue: function (tbl, rowno, colname) {
+                var oModel = tbl.getModel();
+                var cv = oModel.getProperty("/" + rowno + "/" + colname);
+                return cv;
+            },
+            getCurrentCellColValue: function (tbl, colname) {
+                var oModel = tbl.getModel();
+//                var rowVis = tbl.getFirstVisibleRow();
+                var i = tbl.getSelectedIndices()[0];
+                var cc = tbl.getContextByIndex(i);
+                var cv = oModel.getProperty(cc.sPath + "/" + colname);
+                return cv;
             }
         };
 

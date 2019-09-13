@@ -2,6 +2,7 @@ sap.ui.define(["./DataCell"], function (DataCell) {
     'use strict';
 
     function Column() {
+        this.parentmLcTb;
         this.mUIHelper = {
             canEdit: false,
             data_type: "string",
@@ -29,13 +30,24 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mCfFalse = "";
         this.mTitleParent = "";
         this.mTitleParentSpan = 1;
+        this.eValidateColumn;
+        this.eOther;
+        this.eOnSearch;
+        this.mSearchSQL;
+        this.mLookUpCols;
+        this.mRetValues;
+        this.mDefaultValue;
     }
 
     Column.prototype = {
         constructor: Column,
         getMUIHelper: function () {
             return this.mUIHelper
+        },
+        getParent: function () {
+            return this.parentmLcTb;
         }
+
     }
     return Column;
 });

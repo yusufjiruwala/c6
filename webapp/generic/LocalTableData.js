@@ -101,8 +101,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             }
             return "\"metadata\":" + JSON.stringify(mtCols);
         };
-
-        LocalTableData.prototype.parse = function (strData) {
+        LocalTableData.prototype.parseCol = function (strData) {
             this.resetData();
             this.dataJson = JSON.parse(strData);
             this.jsonString = strData;
@@ -110,6 +109,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
                 var c = new Column();
                 c.mColName = this.dataJson.metadata[key].colname;
                 c.mColpos = key;
+                c.parentmLcTb = this;
                 c.getMUIHelper().data_type = this.dataJson.metadata[key].data_type;
                 c.getMUIHelper().display_format = this.dataJson.metadata[key].display_format;
                 c.getMUIHelper().display_width = Util.nvl(this.dataJson.metadata[key].display_width, 75) * 2;
@@ -129,11 +129,27 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
                 c.mTitleParentSpan = Util.nvl(this.dataJson.metadata[key].parent_title_span, 1);
                 this.cols.push(c);
             }
+
+        };
+        LocalTableData.prototype.parse = function (strData, onlyDetails) {
+
+            if (!Util.nvl(onlyDetails, false))
+                this.parseCol(strData);
+            else {
+                this.dataJson = JSON.parse(strData);
+                this.jsonString = strData;
+                for (var i = 0; i < this.rows.length; i++)
+                    this.rows[i].cells = [];
+                this.rows = [];
+            }
+
             for (var rn in this.dataJson.data) {
                 var r = new Row(this.cols.length);
                 for (var key in this.dataJson.data[rn]) {
                     if (key == "_rowid") continue;
                     var cp = this.getColPos(key);
+                    if (this.cols[cp].mUIHelper.data_type == "DATE")
+                        r.cells[cp].setValue(new Date(this.dataJson.data[rn][key]));
                     r.cells[cp].setValue(this.dataJson.data[rn][key]);
                 }
                 this.rows.push(r);
@@ -142,36 +158,65 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             this.masterRows = this.rows.slice(0);
 
         };
-        LocalTableData.prototype.format = function () {
-            if (this.cols <= 0)
-                return "";
-            var datastr = "data :";
-            var metastr = "{ \"metadata\":[ ";
-            var tmpstr = "";
-            for (var c in this.cols) {
-                tmpstr += (c == 0 ? "" : ",") +
-                    '{"colname":"' + this.cols[c].mColName.replace(/\//g, "___") + '"}';
-            }
-            metastr += tmpstr + "]";
-            if (this.rows.length == 0)
-                return metastr + "}";
-            datastr = '"data": [';
-            tmpstr = "";
-            var rstr = "";
-            for (var r in this.rows) {
-                rstr = "";
-                for (var c in this.cols) {
-                    rstr += (rstr.length == 0 ? "" : ",") + '"' +
-                        this.cols[c].mColName.replace(/\//g, "___") + '":' + Util.getParsedJsonValue(this.rows[r].cells[c].getValue());
-                }
-                rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
-                tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";
-            }
 
-            datastr += tmpstr + "] }";
-            //console.log(metastr + "," + datastr);
-            return metastr + "," + datastr;
-        };
+        LocalTableData.prototype.addRow = function () {
+
+            var r = new Row(this.cols.length);
+            this.rows.push(r);
+            var rn = this.rows.length - 1;
+            for (var k in this.cols) {
+                if (this.cols[k].mDefaultValue != undefined)
+                    this.setFieldValue(rn, this.cols[k].mColName, this.cols[k].mDefaultValue);
+                if (this.cols[k].mDefaultValue == "#AUTONUMBER_")
+                    this.setFieldValue(rn, this.cols[k].mColName, rn + 1);
+            }
+            this.masterRows = this.rows.slice(0);
+            return rn;
+        },
+            LocalTableData.prototype.insertRow = function (idx) {
+                var r = new Row(this.cols.length);
+                // this.rows.push(r);
+                this.rows.splice(idx, 0, r);
+                var rn = this.rows.indexOf(r);
+                for (var k in this.cols) {
+                    if (this.cols[k].mDefaultValue != undefined)
+                        this.setFieldValue(rn, this.cols[k].mColName, this.cols[k].mDefaultValue);
+                    if (this.cols[k].mDefaultValue == "#AUTONUMBER_")
+                        this.setFieldValue(rn, this.cols[k].mColName, rn + 1);
+                }
+                this.masterRows = this.rows.slice(0);
+                return rn;
+            },
+            LocalTableData.prototype.format = function () {
+                if (this.cols <= 0)
+                    return "";
+                var datastr = "data :";
+                var metastr = "{ \"metadata\":[ ";
+                var tmpstr = "";
+                for (var c in this.cols) {
+                    tmpstr += (c == 0 ? "" : ",") +
+                        '{"colname":"' + this.cols[c].mColName.replace(/\//g, "___") + '"}';
+                }
+                metastr += tmpstr + "]";
+                if (this.rows.length == 0)
+                    return metastr + "}";
+                datastr = '"data": [';
+                tmpstr = "";
+                var rstr = "";
+                for (var r in this.rows) {
+                    rstr = "";
+                    for (var c in this.cols) {
+                        rstr += (rstr.length == 0 ? "" : ",") + '"' +
+                            this.cols[c].mColName.replace(/\//g, "___") + '":' + Util.getParsedJsonValue(this.rows[r].cells[c].getValue());
+                    }
+                    rstr += (rstr.length == 0 ? "" : ",") + '"_rowid":"' + r + '"';
+                    tmpstr += (r == 0 ? "" : ",") + "{" + rstr + "}";
+                }
+
+                datastr += tmpstr + "] }";
+                //console.log(metastr + "," + datastr);
+                return metastr + "," + datastr;
+            };
 
 
         LocalTableData.prototype.resetData = function () {
@@ -234,7 +279,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             try {
                 return eval(cmpval);
             }
-            catch(err) {
+            catch (err) {
                 console.log(err);
                 return;
             }
@@ -295,8 +340,7 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
 
             return JSON.parse(tmpstr);
         };
-
-
         return LocalTableData;
 
-    });
+    })
+;

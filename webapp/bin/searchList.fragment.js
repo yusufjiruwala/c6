@@ -2,11 +2,12 @@ sap.ui.jsfragment("bin.searchList", {
 
     createContent: function (oController) {
         oModel = sap.ui.getCore().getModel("searchList");
+        var that = this;
         this.setModel(oModel, "data");
         var oTempl = new sap.m.StandardListItem({
-            title: "{TITLE}-{CODE}",
+            title: "{" + oController.colDes + "}-{" + oController.colVal + "}",
             active: true,
-            customData: {key: "{CODE}"}
+            customData: {key: "{" + oController.colVal + "}"}
         });
 
         var oDlg = new sap.m.SelectDialog({

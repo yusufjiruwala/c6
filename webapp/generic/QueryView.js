@@ -151,11 +151,28 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
         QueryView.prototype.getLcData = function () {
             return this.mLctb;
         };
+        QueryView.prototype.setJsonStrMetaData = function (strJson) {
+            this.colMerged = false;
+            this.mJsonString = strJson;
+            this.mViewSettings = {};
 
+            if (this.mLctb == undefined)
+                this.mLctb = new LocalTableData();
+            this.mLctb.parseCol(strJson);
+
+            this.setTreeColsType();
+            this.switchType("table");
+            if (this.mColParent != undefined && this.mColParent.length > 0)
+                this.switchType("tree");
+            if (this.mColLstGroup != undefined && this.mColLstGroup.length > 0)
+                this.switchType("list");
+
+
+        };
         // set json string if queryType is tree and assign all columns.
         //
-        QueryView.prototype.setJsonStr = function (strJson) {
 
+        QueryView.prototype.setJsonStr = function (strJson) {
             this.colMerged = false;
             this.mJsonString = strJson;
             this.mViewSettings = {};
@@ -166,7 +183,6 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.mLctb.parse(strJson);
 
             this.setTreeColsType();
-
 
             this.switchType("table");
 
@@ -288,8 +304,44 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             }
 
         };
-        QueryView.prototype.loadData = function () {
+        QueryView.prototype.updateDataToTable = function () {
+            var dt = JSON.stringify(this.getControl().getModel().getData());
+            dt = "{\"data\":" + dt + "}";
+            this.mLctb.parse(dt, true);
+
+        };
+        QueryView.prototype.addRow = function (dontReload) {
+            if (this.mLctb.rows.length > 0)
+                this.updateDataToTable();
+
+            var idx = this.mLctb.addRow();
+            if (Util.nvl(dontReload, false) == false) {
+                var dt = this.buildJsonData();
+                var oModel = new sap.ui.model.json.JSONModel();
+                oModel.setData(dt);
+                this.getControl().setModel(oModel);
+                this.getControl().bindRows("/");
+            }
+            return idx;
+        };
+        QueryView.prototype.insertRow = function (idx, dontReload) {
+            if (this.mLctb.rows.length > 0)
+                this.updateDataToTable();
+            var idx = this.mLctb.insertRow(idx);
+            if (Util.nvl(dontReload, false) == false) {
+                var dt = this.buildJsonData();
+                var oModel = new sap.ui.model.json.JSONModel();
+                oModel.setData(dt);
+                this.getControl().setModel(oModel);
+                this.getControl().bindRows("/");
+            }
+            return idx;
+
+        };
+
+        QueryView.prototype.loadData = function (noDestroy) {
             //resetingg,
+            var that = this;
             if (this.queryType == "list") {
                 this.loadData_list();
                 return;
@@ -299,6 +351,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             var cells = [];
             this.b4_cf_val1 = [];
             this.b4_cf_val = [];
+
             this.getControl().setEnableGrouping(false);
             for (var i = 0; i < this.getControl().getColumns().length; i++) {
                 this.getControl().getColumns()[i].setGrouped(false);
@@ -309,10 +362,10 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.getControl().setEnableGrouping(false);
             this.getControl().destroyColumns();
 
-
             var dt = this.buildJsonData();
             var cc = null;
             // purpose    : settiong columns ,  format, alignment , multilable,
+
             for (var i = 0; i < this.mLctb.cols.length; i++) {
                 cc = this.mLctb.cols[i];
                 var a = cc.getMUIHelper().display_align;
@@ -321,14 +374,144 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 if (cc.getMUIHelper().display_format == "QTY_FORMAT")
                     a = "center";
                 var colClass = eval(UtilGen.nvl(cc.mColClass, "sap.ui.commons.Label"));
-                // object for adding multiLabel or Label
-                var l = {
-                    template: new colClass({
+                var o;
+                // if (colClass != sap.m.ComboBox) {
+                if (colClass != SelectText)
+                    o = new colClass({
                         // technical   : replacing global "___" with colname for cross tab.
                         "text": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         "value": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         textAlign: Util.getAlignTable(a)
-                    }),
+                    });
+                else
+                    o = new colClass({
+                        // "value": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
+                        "codeValue": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
+                        textAlign: Util.getAlignTable(a)
+                    });
+
+                // } else {
+                //     o = new sap.m.ComboBox({
+                //         items: {
+                //             path: "/",
+                //             template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                //             templateShareable: false
+                //         },
+                //         selectedKey: "{" + that.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
+                //         selectionChange: function (ev) {
+                //             console.log(ev);
+                //         }
+                //     });
+                //o.bindProperty("selectedKey", "CODE");
+                if (colClass == SelectText) {
+                    var dtxx = [];
+                    if (cc.mSearchSQL.startsWith("@")) {
+                        var spt = cc.mSearchSQL.substring(1).split(",");
+                        for (var i1 in spt) {
+                            var dttt = {CODE: "", TITLE: ""};
+                            var sx = spt[i1].split("/");
+                            dttt.CODE = "" + sx[0];
+                            dttt.TITLE = "" + sx[1];
+                            dtxx.push(dttt);
+                        }
+                    }
+                    o.setLookupModel(new sap.ui.model.json.JSONModel(dtxx));
+                }
+                //     o.applySettings({
+                //         items: {
+                //             path: "/",
+                //             template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                //             templateShareable: false
+                //         },
+                //     });
+                //     o.setModel(new sap.ui.model.json.JSONModel(dtxx));
+                // }
+                //
+                if (o instanceof sap.m.InputBase) {
+                    o.attachBrowserEvent("keydown", function (evt) {
+                        if (evt.key == "Escape") {
+                            that.getControl().focus();
+                        }
+                        if (evt.key == "ArrowDown") {
+                            var rowno = that.getControl().indexOfRow(this.getParent());
+                            var colno = this.getParent().indexOfCell(this);
+
+                            if (rowno < that.getControl().getRows().length - 1) {
+                                rowno++;
+                                that.getControl().getRows()[rowno].getCells()[colno].focus();
+
+                            }
+                        }
+                        if (evt.key == "ArrowUp") {
+                            var rowno = that.getControl().indexOfRow(this.getParent());
+                            var colno = this.getParent().indexOfCell(this);
+
+                            if (rowno > 0) {
+                                rowno--;
+                                that.getControl().getRows()[rowno].getCells()[colno].focus();
+                            }
+                        }
+                        if (evt.key == "F5") {
+                            evt.preventDefault();
+                            var colno = this.getParent().indexOfCell(this);
+                            var rowno = that.getControl().indexOfRow(this.getParent()) + that.getControl().getFirstVisibleRow();
+                            //if (rowno + 1 < that.getControl().getRows().length)
+                            that.insertRow(rowno + 1);
+//                            else
+                            //                              that.insertRow(rowno);
+
+                            that.getControl().getRows()[rowno - that.getControl().getFirstVisibleRow()].getCells()[colno].focus();
+                        }
+
+                    });
+                    // if combobox have list of values then add it into sap.m.CombBox model. ( check either LOV in sql or data )
+                    if (o instanceof sap.m.ComboBox) {
+                        // o.bindAggregation("items",
+                        //     {
+                        //         path: "/",
+                        //         template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                        //         templateShareable: true
+                        //     });
+                        // var dtx = [];
+                        // // check either LOV in sql or data
+                        // if (cc.mSearchSQL.startsWith("@")) {
+                        //     var spt = cc.mSearchSQL.substring(1).split(",");
+                        //     for (var i in spt) {
+                        //         var dt = {CODE: "", NAME: ""};
+                        //         var s = spt[i].split("/");
+                        //         dt.CODE = s[0];
+                        //         dt.NAME = s[1];
+                        //         dtx.push(dt);
+                        //     }
+                        // }
+                        // } else
+                        //     dtx = Util.execSQL(cc.mSearchSQL);
+                        //
+                        // o.setModel(new sap.ui.model.json.JSONModel(dtx));
+                    }
+                }
+                if (cc.eValidateColumn != undefined && (o instanceof sap.m.InputBase)) {
+                    o.attachChange(null, cc.eValidateColumn);
+                }
+
+
+                if (cc.eValidateColumn != undefined && (o instanceof sap.m.Button)) {
+                    o.attachPress(null, cc.eValidateColumn);
+                }
+                if (cc.eValidateColumn != undefined && (o instanceof sap.m.SearchField)) {
+                    o.attachSearch(cc.eValidateColumn);
+                }
+                if ((o instanceof SearchText)) {
+                    if (cc.eOnSearch != undefined)
+                        o.attachValueHelpRequest(null, cc.eOnSearch);
+                    if (cc.eValidateColumn != undefined)
+                        o.attachChange(null, cc.eValidateColumn);
+
+                }
+
+// object for adding multiLabel or Label
+                var l = {
+                    template: o,
                     width: (cc.getMUIHelper().display_width) + "px",
                     filterProperty: (this.queryType == 'tree' ? this.mLctb.cols[i].mColName : ''),
                     sortProperty: (this.queryType == 'tree' ? this.mLctb.cols[i].mColName : ''),
@@ -340,7 +523,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     text: Util.getLangDescrAR(cc.mTitle, cc.mTitleAr),
                     wrapping: true
                 })];
-                // if multilabel then add objects for multiLabel
+// if multilabel then add objects for multiLabel
                 if (Util.nvl(cc.mTitleParent, "").length > 0) {
                     l["multiLabels"] = [
                         new sap.ui.commons.TextView({
@@ -364,15 +547,18 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 col.push(c);
                 c.setMenu(null);
                 this.getControl().addColumn(c);
+                c.tableCol = cc;
                 if (cc.mHideCol)
                     c.setVisible(false);
+
+
             }
             this.col = col;
             var oModel = new sap.ui.model.json.JSONModel();
             oModel.setData(dt);
             this.getControl().setModel(oModel);
             this.getControl().bindRows("/");
-            var that = this;
+
 
             if (this.mLctb.cols.length <= 0) return;
 
@@ -389,7 +575,8 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 });
             }, 1000);
 
-        };
+        }
+        ;
 
         QueryView.prototype._sort = function (pCol, updateMR) {
             this.mLctb.rows.sort(function (a, b) {
@@ -611,7 +798,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
             }
 
-            if (o != undefined)
+            if (o != undefined && this.getControl().getFixedBottomRowCount() > 0)
                 o.push(footer);
             return o;
 
@@ -772,7 +959,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 var cf_tooltip = "";
                 // ----conditional formatting
                 for (var j = 0 + cellAdd; j < cellsCount; j++) {
-                    if (this.b4_cf_val1[j - cellAdd] == undefined) {
+                    if (this.b4_cf_val1[j - cellAdd] == undefined && this.getControl().getRows()[i].getCells()[j - cellAdd] != undefined) {
                         this.b4_cf_val1[j - cellAdd] = this.getControl().getRows()[i].getCells()[j - cellAdd].$().parent().parent().attr("style");
                         this.b4_cf_val[j - cellAdd] = this.getControl().getRows()[i].getCells()[j - cellAdd].$().attr("style");
                     }
@@ -848,12 +1035,14 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     this.getControl().getRows()[i].getCells()[0].$().parent().parent().attr("colspan", (cellAdd + 1) + "");
                 }
 
-                var cellValue2 = oModel.getProperty(this.mColLevel, currentRowContext);
-                for (var k = 0 + cellAdd; k < cellsCount; k++) {
-                    if (cellValue2 == this.minLevel)
-                        this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("qtFirstLevel");
-                    if (cellValue2 == this.minLevel + 1)
-                        this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("qtSecondLevel");
+                if (this.mColLevel != "") {
+                    var cellValue2 = oModel.getProperty(this.mColLevel, currentRowContext);
+                    for (var k = 0 + cellAdd; k < cellsCount; k++) {
+                        if (cellValue2 == this.minLevel)
+                            this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("qtFirstLevel");
+                        if (cellValue2 == this.minLevel + 1)
+                            this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("qtSecondLevel");
+                    }
                 }
             }
 

@@ -41,6 +41,9 @@
     <script src="generic/QueryView.js"></script>
     <!--<script src="generic/lib/handsontable.full.js"></script>-->
     <script src="generic/GridView.js"></script>
+    <script src="generic/SearchText.js"></script>
+    <script src="generic/SelectTextRenderer.js"></script>
+    <script src="generic/SelectText.js"></script>
 
 
     <link rel="stylesheet" type="text/css" href="css/style.css">
@@ -51,17 +54,21 @@
         sap.ui.localResources("bin");
         sap.ui.localResources("i18n");
         var UtilGen;
-        var Util ;
-        var LocalTableData ;
+        var Util;
+        var LocalTableData;
         var Gauge;
         var QueryView;
         var GridView;
+        var SearchText;
+        var SelectText;
 
         sap.ui.getCore().attachInit(function () {
             Util = sap.ui.require("sap/ui/ce/generic/Util");
             jQuery.sap.require("sap.m.library");
 
             UtilGen = sap.ui.require("sap/ui/ce/generic/UtilGen");
+            SearchText = sap.ui.require("sap/ui/ce/generic/SearchText");
+            SelectText = sap.ui.require("sap/ui/ce/generic/SelectText");
 
             LocalTableData = sap.ui.require("sap/ui/ce/generic/LocalTableData");
             Gauge = sap.ui.require("sap/ui/ce/generic/Gauge");
@@ -79,7 +86,7 @@
 
             new sap.m.Shell({
                 app: oCompContainer,
-                showLogout:false
+                showLogout: false
             }).placeAt("content");
 
             var oComponent = sap.ui.component({

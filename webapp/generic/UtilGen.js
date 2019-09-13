@@ -315,10 +315,524 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var expires = "expires=" + d.toUTCString();
                 document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
             },
-            cookieDelete:function (cname) {
-                document.cookie = cname+"=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            }
+            cookieDelete: function (cname) {
+                document.cookie = cname + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            },
+            createControl: function (component, view, id, setting, fldtype, fldFormat, fnChange, sqlStr) {
 
+                var s = this.nvl(setting, {});
+
+                (view.byId(id) != undefined ? view.byId(id).destroy() : null);
+                var c = new component(view.createId(id), s)
+                if (fldtype != undefined)
+                    c.field_type = fldtype;
+                if (fnChange != undefined)
+                    c.fnChange = fnChange;
+
+
+                if (fldtype == "number" && c instanceof sap.m.Input) {
+                    c.setTextAlign(sap.ui.core.TextAlign.End);
+                    c.attachLiveChange(function (oEvent) {
+                        var _oInput = oEvent.getSource();
+                        var val = _oInput.getValue();
+                        val = val.replace(/[^\d\.]/g, '');
+                        //_oInput.setValue(val);
+                        if (_oInput.getCustomData().length == 0)
+                            _oInput.addCustomData(new sap.ui.core.CustomData({key: val}))
+                        else
+                            _oInput.getCustomData()[0].setKey(parseFloat(val));
+                    });
+                    if (fldFormat != undefined) {
+                        c.field_format = fldFormat;
+                        c.attachChange(function (oEvent) {
+                            var df = new DecimalFormat(fldFormat);
+                            var _oInput = oEvent.getSource();
+                            var val = _oInput.getCustomData()[0].getKey();
+                            _oInput.setValue(df.format(parseFloat(val)));
+                            if (_oInput.fnChange != undefined) {
+                                fnChange(oEvent);
+                            }
+                        });
+                    }
+                }
+
+                if (c instanceof sap.m.ComboBox && sqlStr != undefined) {
+                    var dat = Util.execSQL(sqlStr);
+                    if (dat.ret == "SUCCESS" && dat.data.length > 0) {
+                        var dtx = JSON.parse("{" + dat.data + "}").data;
+                        c.setModel(new sap.ui.model.json.JSONModel(dtx));
+                    }
+                }
+
+                if (c.getCustomData().length == 0)
+                    c.addCustomData(new sap.ui.core.CustomData({key: ""}));
+
+                if (c instanceof sap.m.DatePicker) {
+                    var sett = sap.ui.getCore().getModel("settings").getData();
+                    c.setValueFormat(sett["ENGLISH_DATE_FORMAT"]);
+                    c.setDisplayFormat(sett["ENGLISH_DATE_FORMAT"]);
+                }
+                return c;
+
+            },
+            getControlValue(comp) {
+                var customVal = "";
+                if (comp.getCustomData().length > 0)
+                    customVal = comp.getCustomData()[0].getKey();
+                if (customVal == "NaN")
+                    customVal = "";
+                if (comp instanceof sap.m.Text)
+                    return this.nvl(customVal, comp.getText());
+                if (comp instanceof sap.m.SearchField)
+                    return this.nvl(customVal, comp.getValue());
+                if (comp instanceof sap.m.DatePicker)
+                    return comp.getDateValue();
+                if (comp instanceof sap.m.ComboBoxBase)
+                    return this.nvl(comp.getSelectedKey(), comp.getValue());
+                if (comp instanceof sap.m.CheckBox)
+                    if (comp.trueValues != undefined)
+                        return (comp.getSelected() ? comp.trueValues[0] : comp.trueValues[1]);
+                    else
+                        return (comp.getSelected() ? "Y" : "N");
+                if (comp instanceof sap.m.InputBase)
+                    return this.nvl(customVal, comp.getValue());
+
+            },
+            setControlValue: function (comp, pVal, pCustomVal, executeChange) {
+                var val = this.nvl(pVal, "") + "";
+                var customVal = Util.nvl(pCustomVal, Util.nvl(pVal, ""));
+                if (comp.field_type != undefined && comp.field_type == "number") {
+                    val = val.replace(/[^\d\.]/g, '');
+                    if (comp.getCustomData().length == 0)
+                        comp.addCustomData(new sap.ui.core.CustomData({key: val}))
+                    else
+                        comp.getCustomData()[0].setKey(parseFloat(val));
+                    comp.setValue(val);
+                    if (executeChange)
+                        comp.fireChange();
+                    return;
+                }
+                if (comp instanceof sap.m.InputBase || comp instanceof sap.m.SearchField) {
+                    comp.setValue(val);
+                    if (customVal.length > 0)
+                        if (comp.getCustomData().length == 0)
+                            comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                        else
+                            comp.getCustomData()[0].setKey(customVal);
+                    if (comp instanceof sap.m.InputBase && executeChange)
+                        comp.fireChange();
+                }
+
+                if (comp instanceof sap.m.ComboBoxBase) {
+                    comp.setSelectedItem(this.getIndexByKey(comp, val));
+                    if (comp.getCustomData().length == 0)
+                        comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                    else
+                        comp.getCustomData()[0].setKey(customVal);
+
+                    if (executeChange)
+                        comp.fireChange();
+
+                }
+                if (comp instanceof sap.m.Text) {
+                    comp.setText(val);
+                    if (customVal.length > 0)
+                        if (comp.getCustomData().length == 0)
+                            comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                        else
+                            comp.getCustomData()[0].setKey(customVal);
+
+
+                }
+                if (comp instanceof sap.m.DatePicker) {
+
+                    if (this.nvl(pVal, "").length == 0)
+                        comp.setDateValue(null);
+                    else
+                        comp.setDateValue(new Date(pVal));
+
+                    if (executeChange)
+                        comp.fireChange();
+
+                }
+                if (comp instanceof sap.m.CheckBox) {
+                    if (comp.trueValues != undefined)
+                        (val == comp.trueValues[0] ? comp.setSelected(true) : comp.setSelected(false));
+                    if (executeChange)
+                        comp.fireSelect();
+
+                }
+
+
+            },
+            //---------------------------------------------------------------------------------------------------------
+            // all value labelspan , emptyspan == small, medium , large, xlarge-----------------
+            //---------------------------------------------------------------------------------------------------------
+            formCreate: function (title, editable, content, labelSpan, emptySpan, columns) {
+                var ls = labelSpan;
+                var es = emptySpan;
+                var cs = columns;
+                var ed = false;
+                var cnt = [];
+
+                if (editable)
+                    ed = true;
+                if (labelSpan == undefined || labelSpan.length == 0)
+                    ls = [12, 3, 3, 2];
+                if (emptySpan == undefined || emptySpan.length == 0)
+                    es = [0, 2, 2, 2];
+                if (columns == undefined || columns.length == 0)
+                    cs = [1, 2, 2];
+                for (var i in content) {
+                    if (content[i] == undefined) {
+                        console.log("form element " + i + " is undefined !");
+                        continue;
+                    }
+                    if (typeof content[i] === "string" && !content[i].startsWith("@") && !content[i].startsWith("#"))
+                        cnt.push(new sap.m.Label({text: content[i]}));
+                    else if (typeof content[i] === "string" && content[i].startsWith("@"))
+                        cnt.push(new sap.m.Text({
+                                text: content[i].substr(1),
+                                textAlign: sap.ui.core.TextAlign.Center
+                            }
+                        ));
+                    else if (typeof content[i] === "string" && content[i].startsWith("#"))
+                        cnt.push(new sap.ui.core.Title({text: content[i].substr(1)}));
+                    else
+                        cnt.push(content[i]);
+                }
+                return new sap.ui.layout.form.SimpleForm({
+
+                    editable: ed,
+                    layout: sap.ui.layout.form.SimpleFormLayout.ResponsiveGridLayout,
+                    labelSpanXL: ls[3],
+                    labelSpanL: ls[2],
+                    labelSpanM: ls[1],
+                    labelSpanS: ls[0],
+                    adjustLabelSpan: false,
+                    emptySpanXL: es[3],
+                    emptySpanL: es[2],
+                    emptySpanM: es[1],
+                    emptySpanS: es[0],
+                    columnsXL: cs[2],
+                    columnsL: cs[1],
+                    columnsM: cs[0],
+                    singleContainerFullSize: false,
+                    content: cnt,
+                    toolbar: new sap.m.Toolbar({
+                        content: [
+                            new sap.m.Title({text: title, level: "H4", titleStyle: "H4"}),
+                        ]
+                    })
+                });
+            }
+            ,
+            formAddItem(frm, label, controls) {
+                frm.addContent(new sap.m.Label({text: label}));
+                if (controls instanceof Array)
+                    for (var i in controls)
+                        frm.addContent(controls[i]);
+                else
+                    frm.addContent(controls);
+            }
+            ,
+            getSQLInsertString: function (tbl, flds, excFlds) {
+                var sett = sap.ui.getCore().getModel("settings").getData();
+                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+                var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+
+
+                var kys = [];
+                var str = "";
+                var vl = "";
+
+                // add additional fields and values to vls.
+                if (flds != undefined)
+                    for (var key in flds) {
+                        str += (str.length == 0 ? "" : ",") + key;
+                        vl += (vl.length == 0 ? "" : ",") + flds[key];
+                    }
+
+                for (var key in tbl) {
+                    if (!key.startsWith("_") || (excFlds != undefined && excFlds.indexOf(key) < 0)) {
+                        str += (str.length == 0 ? "" : ",") + key;
+                        var val = this.getControlValue(tbl[key]);
+
+                        // if (tbl[key].getCustomData().length > 0 &&
+                        //     tbl[key].getCustomData()[0].getKey().trim().length > 0
+                        // )
+                        //     val = this.nvl(tbl[key].getCustomData()[0].getKey().trim(), tbl[key].getValue());
+
+
+                        // if (tbl[key] instanceof sap.m.SearchField &&
+                        //     tbl[key].getCustomData().length > 0)
+                        //     val = this.nvl(tbl[key].getCustomData()[0].getKey(), tbl[key].getValue());
+                        //
+                        val = "'" + (val + "").replace("'", "''") + "'";
+
+                        if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() != undefined)
+                            val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + "')";
+                        if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() == undefined)
+                            val = "null";
+                        if (tbl[key].field_type != undefined && tbl[key].field_type == "number")
+                            val = tbl[key].getValue();
+                        if (tbl[key].field_type != undefined && tbl[key].field_type == "money")
+                            val = df.parse(tbl[key].getValue());
+
+                        vl += (vl.length == 0 ? "" : ",") + val;
+                    }
+                }
+
+                return "(" + str + ') values (' + vl + ")";
+
+            }
+            ,
+            getSQLUpdateString: function (tbl, tbl_name, flds, where, excFlds) {
+                var sett = sap.ui.getCore().getModel("settings").getData();
+                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+                var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+
+
+                var kys = [];
+                var str = "";
+                var vl = "";
+
+                // add additional fields and values to vls.
+                if (flds != undefined)
+                    for (var key in flds)
+                        str += (str.length == 0 ? "" : ",") + key + "=" + flds[key];
+
+                for (var key in tbl) {
+                    if (!key.startsWith("_") || (excFlds != undefined && excFlds.indexOf(key) < 0)) {
+                        var val = this.getControlValue(tbl[key]);
+                        //
+                        // if (tbl[key] instanceof Text)
+                        //     val = tbl[key].getText();
+                        //
+                        // if (tbl[key] instanceof sap.m.SearchField &&
+                        //     tbl[key].getCustomData().length > 0)
+                        //     val = this.nvl(tbl[key].getCustomData()[0].getKey(), tbl[key].getValue());
+                        //
+                        // if (tbl[key].getCustomData().length > 0 &&
+                        //     tbl[key].getCustomData()[0].getKey().trim().length > 0
+                        // )
+                        //     val = this.nvl(tbl[key].getCustomData()[0].getKey().trim(), tbl[key].getValue());
+
+                        val = "'" + (val + "").replace("'", "''") + "'";
+
+                        if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() != undefined)
+                            val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + "')";
+                        if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() == undefined)
+                            val = "null";
+                        if (tbl[key].field_type != undefined && tbl[key].field_type == "money")
+                            val = df.parse(tbl[key].getValue());
+
+                        str += (str.length == 0 ? "" : ",") + key + "=" + val;
+                    }
+                }
+
+                return "update " + tbl_name + " set " + str + (this.nvl(where, "").length == 0 ? "" : " where ") + this.nvl(where, "");
+
+            }
+            ,
+            loadDataFromJson(subs, dtx, executeChange) {
+                for (var key in subs) {
+                    var vl = dtx[key.toUpperCase()];
+                    if (subs[key] != undefined && vl != undefined)
+                        this.setControlValue(subs[key], vl, vl, this.nvl(executeChange, false));
+
+                }
+            },
+            doFilterLiveTable(event, qv, flcol) {
+                var flts = [];
+                var val = event.getParameter("newValue");
+                for (var i in qv.mLctb.cols) {
+                    if (flcol.indexOf(qv.mLctb.cols[i].mColName) > -1)
+                        flts.push(new sap.ui.model.Filter({
+                            path: qv.mLctb.cols[i].mColName,
+                            operator: sap.ui.model.FilterOperator.Contains,
+                            value1: val
+                        }));
+                }
+                var f = new sap.ui.model.Filter({
+                    filters: flts,
+                    and: false
+                });
+                var lst = qv.getControl();
+
+                var filter = new sap.ui.model.Filter(f, false);
+                var binding = lst.getBinding("rows");
+                binding.filter(filter);
+
+            },
+            parseDefaultValue: function (vl) {
+                var retVal = Util.nvl(vl, "");
+                if (retVal.startsWith("#DATE_"))
+                    retVal = new Date(vl.replace("#DATE_", ""));
+                if (retVal.startsWith("#NUMBER_"))
+                    retVal = parseFloat(vl.replace("#NUMBER_", ""));
+                return retVal;
+            },
+            // this function should be executed before load data in localtabledata model.
+            applyCols: function (grp, qv) {
+                var cls = {
+                    "TEXTFIELD": "sap.m.Input",
+                    "DATEFIELD": "sap.m.DatePicker",
+                    "COMBOBOX": "SelectText",
+                    "CHECKBOX": "sap.m.CheckBox",
+                    "SEARCHFIELD": "SearchText"
+                };
+                var aligns = {
+                    "ALIGN_LEFT": "left",
+                    "ALIGN_RIGHT": "right",
+                    "ALIGN_CENTER": "center"
+                };
+
+                var visibleCol = [], invisibleCol = []; // visible and invisible column to arrange first visible and then invisible in localtabledata
+                var sqlStr = "select *from cp_setcols where profile=0 and setgrpcode='" + grp + "'  order by POSITION"
+                var dat = Util.execSQL(sqlStr);
+                if (dat.ret == "SUCCESS" ) {
+                    var dtx = JSON.parse("{" + dat.data + "}").data;
+                    //invisible all columns first and then only visible which is available.
+                    for (var col in qv.mLctb.cols)
+                        qv.mLctb.cols[col].mHideCol = true;
+                    for (var col in dtx) {
+                        var cx = qv.mLctb.getColByName(dtx[col].ITEM_NAME);
+                        if (dtx[col].DISPLAY_TYPE != "INVISIBLE") {
+                            cx.mHideCol = false;
+                            visibleCol.push(cx);
+                        }
+                        cx.mColClass = Util.nvl(cls[dtx[col].EDITOR_CLASS], "sap.m.Text");
+                        cx.mUIHelper.display_align = Util.nvl(aligns[dtx[col].ALIGN], "center");
+                        cx.mUIHelper.display_format = Util.nvl(dtx[col].USE_FORMAT, "");
+                        cx.mUIHelper.display_width = Util.nvl(dtx[col].DISPLAY_WIDTH, "30");
+                        cx.mTitle = Util.nvl(dtx[col].DESCR, dtx[col].ITEM_NAME);
+                        cx.mSearchSQL = Util.nvl(dtx[col].LOV_SQL, "");
+                        cx.mLookUpCols = Util.nvl(dtx[col].LOOKUP_COLUMN, "");
+                        cx.mRetValues = Util.nvl(dtx[col].RETURN_VALUES, "");
+                        cx.eOther = Util.nvl(dtx[col].VALIDATE_EVENT, "");
+                        cx.mDefaultValue = Util.nvl(UtilGen.parseDefaultValue(dtx[col].DEFAULT_VALUE), '');
+
+                        if (cx.eValidateColumn != undefined) {
+
+                        }
+
+                        if (cx.mSearchSQL.length > 0) {
+                            if (cx.eOther != undefined && cx.eOther.length > 0) {
+                                cx.eValidateColumn = function (evtx) {
+                                    var row = evtx.getSource().getParent();
+                                    var column_no = evtx.getSource().getParent().indexOfCell(evtx.getSource());
+                                    var columns = evtx.getSource().getParent().getParent().getColumns();
+                                    var table = evtx.getSource().getParent().getParent(); // get table control.
+                                    var oModel = table.getModel();
+                                    var rowStart = table.getFirstVisibleRow(); //starting Row index
+                                    var currentRowoIndexContext = table.getContextByIndex(rowStart + table.indexOfRow(row));
+                                    var newValue = evtx.getParameter("value");
+
+                                    var tm = -1;
+                                    var clx = -1;
+                                    for (clx in columns) {
+                                        if (columns[clx].getVisible()) tm++;
+                                        if (tm == column_no) {
+                                            break;
+                                        }
+                                    }
+                                    if (clx < 0) return;
+                                    var cx = columns[clx].tableCol;
+                                    var evl = cx.eOther.replace(/:newValue/g, "\"'" + newValue + "'\"");
+                                    if (!eval(evl))
+                                        this.requestFocus();
+
+
+                                }
+                            }
+                            cx.eOnSearch = function (evtx) {
+
+                                var tbl = evtx.getSource().getParent().getParent(); // get table control.
+
+                                if (evtx.getParameters().clearButtonPressed || evtx.getParameters().refreshButtonPressed) {
+                                    return;
+                                }
+
+                                //// get visible column no
+                                var clno = evtx.getSource().getParent().indexOfCell(evtx.getSource());
+                                var cls = evtx.getSource().getParent().getParent().getColumns();
+
+
+                                var tm = -1;
+                                var clx = -1;
+                                for (clx in cls) {
+                                    if (cls[clx].getVisible()) tm++;
+                                    if (tm == clno) {
+                                        break;
+                                    }
+                                }
+                                if (clx < 0) return;
+                                var cx = cls[clx].tableCol;
+                                //// end getting visible column no
+
+                                var row = evtx.getSource().getParent();
+                                var sq = cx.mSearchSQL;
+                                var lk = Util.nvl(cx.mLookUpCols, "").split(",");
+                                var rt = Util.nvl(cx.mRetValues, "").split(",");
+                                Util.show_list(sq, lk, rt, function (data) {
+                                    console.log(data);
+                                    if (rt.length == 0)
+                                        return;
+                                    var oModel = tbl.getModel();
+                                    var rowStart = tbl.getFirstVisibleRow(); //starting Row index
+                                    var currentRowoIndexContext = tbl.getContextByIndex(rowStart + tbl.indexOfRow(row));
+                                    for (var i in rt) {
+                                        var rts = rt[i].split("=");
+                                        oModel.setProperty(currentRowoIndexContext.sPath + "/" + rts[0], data[rts[1]]);
+                                    }
+                                    return true;
+                                }, "100%", "100%", 10);
+                            };
+                        }
+                    } //for (var col in dtx)
+                    // moving all visible column in starting of mLcTb
+                    for (var col in qv.mLctb.cols)
+                        if (qv.mLctb.cols[col].mHideCol)
+                            invisibleCol.push(qv.mLctb.cols[col]);
+                    qv.mLctb.cols = [];
+                    for (var i in visibleCol) {
+                        visibleCol[i].mColpos = parseInt(i) + 1;
+                        qv.mLctb.cols.push(visibleCol[i]);
+                    }
+                    var tr = qv.mLctb.cols.length - 1;
+                    for (var i in invisibleCol) {
+                        invisibleCol[i].mColpos = tr + parseInt(i) + 1;
+                        qv.mLctb.cols.push(invisibleCol[i]);
+                    }
+                }
+
+            },
+            getInsertRowString: function (mLctb, tblName, rowno, excludeCols) {
+                var sett = sap.ui.getCore().getModel("settings").getData();
+                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+
+                var sq1 = "insert into " + tblName;
+                var sq2 = "";
+                var sq3 = "";
+                for (var c in mLctb.cols) {
+                    var val = Util.nvl(mLctb.getFieldValue(rowno, mLctb.cols[c].mColName), "");
+                    if (excludeCols != undefined && excludeCols.indexOf(mLctb.cols[c].mColName) <= -1)
+                        sq2 += (sq2.length > 0 ? "," : "") + mLctb.cols[c].mColName;
+                    if (mLctb.cols[c].getMUIHelper().display_format == "SHORT_DATE_FORMAT")
+                        val = Util.toOraDateString(val);
+                    else if (mLctb.cols[c].getMUIHelper().data_type == "DATE" && mLctb.cols[c].getMUIHelper().display_format != "SHORT_DATE_FORMAT")
+                        val = (val != "" ? Util.toOraDateTimeString(new Date(val)) : "");
+                    else {
+                        val = "'" + val + "'";
+                    }
+                    if (excludeCols != undefined && excludeCols.indexOf(mLctb.cols[c].mColName) <= -1)
+                        sq3 += (sq3.length > 0 ? "," : "") + Util.nvl(val, 'null');
+                }
+                return sq1 + "(" + sq2 + ") values (" + sq3 + ")";
+
+            }
+            ,
         };
 
 
