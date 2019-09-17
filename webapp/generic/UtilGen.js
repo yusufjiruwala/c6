@@ -323,7 +323,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var s = this.nvl(setting, {});
 
                 (view.byId(id) != undefined ? view.byId(id).destroy() : null);
-                var c = new component(view.createId(id), s)
+                var c = new component(view.createId(id), s).addStyleClass("sapUiSizeCondensed");
                 if (fldtype != undefined)
                     c.field_type = fldtype;
                 if (fnChange != undefined)
@@ -357,14 +357,28 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 }
 
                 if (c instanceof sap.m.ComboBox && sqlStr != undefined) {
-                    var dat = Util.execSQL(sqlStr);
-                    if (dat.ret == "SUCCESS" && dat.data.length > 0) {
-                        var dtx = JSON.parse("{" + dat.data + "}").data;
-                        c.setModel(new sap.ui.model.json.JSONModel(dtx));
+                    if (sqlStr.startsWith("@")) {
+                        var dtxx = [];
+                        var spt = sqlStr.substring(1).split(",");
+                        for (var i1 in spt) {
+                            var dttt = {CODE: "", NAME: ""};
+                            var sx = spt[i1].split("/");
+                            dttt.CODE = "" + sx[0];
+                            dttt.NAME = "" + sx[1];
+                            dtxx.push(dttt);
+                        }
+                        c.setModel(new sap.ui.model.json.JSONModel(dtxx));
+                    } else {
+                        var dat = Util.execSQL(sqlStr);
+                        if (dat.ret == "SUCCESS" && dat.data.length > 0) {
+                            var dtx = JSON.parse("{" + dat.data + "}").data;
+                            c.setModel(new sap.ui.model.json.JSONModel(dtx));
+                        }
                     }
                 }
 
-                if (c.getCustomData().length == 0)
+                if (c.getCustomData().length == 0
+                )
                     c.addCustomData(new sap.ui.core.CustomData({key: ""}));
 
                 if (c instanceof sap.m.DatePicker) {
@@ -397,7 +411,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 if (comp instanceof sap.m.InputBase)
                     return this.nvl(customVal, comp.getValue());
 
-            },
+            }
+            ,
             setControlValue: function (comp, pVal, pCustomVal, executeChange) {
                 var val = this.nvl(pVal, "") + "";
                 var customVal = Util.nvl(pCustomVal, Util.nvl(pVal, ""));
@@ -464,7 +479,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 }
 
 
-            },
+            }
+            ,
             //---------------------------------------------------------------------------------------------------------
             // all value labelspan , emptyspan == small, medium , large, xlarge-----------------
             //---------------------------------------------------------------------------------------------------------
@@ -592,7 +608,6 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
                 var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
 
-
                 var kys = [];
                 var str = "";
                 var vl = "";
@@ -602,6 +617,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     for (var key in flds)
                         str += (str.length == 0 ? "" : ",") + key + "=" + flds[key];
 
+                // put field=value in string
                 for (var key in tbl) {
                     if (!key.startsWith("_") || (excFlds != undefined && excFlds.indexOf(key) < 0)) {
                         var val = this.getControlValue(tbl[key]);
@@ -628,6 +644,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                             val = df.parse(tbl[key].getValue());
 
                         str += (str.length == 0 ? "" : ",") + key + "=" + val;
+
                     }
                 }
 
@@ -642,7 +659,14 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         this.setControlValue(subs[key], vl, vl, this.nvl(executeChange, false));
 
                 }
-            },
+            }
+            ,
+            resetDataJson(subs) {
+                for (var key in subs)
+                    this.setControlValue(subs[key], "", false);
+
+            }
+            ,
             doFilterLiveTable(event, qv, flcol) {
                 var flts = [];
                 var val = event.getParameter("newValue");
@@ -664,7 +688,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var binding = lst.getBinding("rows");
                 binding.filter(filter);
 
-            },
+            }
+            ,
             parseDefaultValue: function (vl) {
                 var retVal = Util.nvl(vl, "");
                 if (retVal.startsWith("#DATE_"))
@@ -672,7 +697,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 if (retVal.startsWith("#NUMBER_"))
                     retVal = parseFloat(vl.replace("#NUMBER_", ""));
                 return retVal;
-            },
+            }
+            ,
             // this function should be executed before load data in localtabledata model.
             applyCols: function (grp, qv) {
                 var cls = {
@@ -691,7 +717,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var visibleCol = [], invisibleCol = []; // visible and invisible column to arrange first visible and then invisible in localtabledata
                 var sqlStr = "select *from cp_setcols where profile=0 and setgrpcode='" + grp + "'  order by POSITION"
                 var dat = Util.execSQL(sqlStr);
-                if (dat.ret == "SUCCESS" ) {
+                if (dat.ret == "SUCCESS") {
                     var dtx = JSON.parse("{" + dat.data + "}").data;
                     //invisible all columns first and then only visible which is available.
                     for (var col in qv.mLctb.cols)
@@ -807,7 +833,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     }
                 }
 
-            },
+            }
+            ,
             getInsertRowString: function (mLctb, tblName, rowno, excludeCols) {
                 var sett = sap.ui.getCore().getModel("settings").getData();
                 var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
@@ -837,6 +864,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
 
         return UtilGen;
-    });
+    })
+;
 
 

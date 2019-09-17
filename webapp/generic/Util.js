@@ -13,7 +13,6 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             objToStr: function (obj) {
                 var str = '';
-                x``
                 for (var p in obj) {
                     if (obj.hasOwnProperty(p)) {
                         str += p + '::' + obj[p] + '\n';
@@ -913,7 +912,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 });
             },
             execSQL: function (sql) {
-                var dtx;
+                var dtx = undefined;
                 if (sql.toLowerCase().startsWith("select")) {
                     this.doAjaxJson("sqlmetadata", {
                             sql: sql,
@@ -951,6 +950,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var dat = this.execSQL(sql);
                 if (dat.ret == "SUCCESS" && dat.data.length > 0) {
                     var dtx = JSON.parse("{" + dat.data + "}").data;
+                    if (dtx.length == 0) return "";
                     return dtx[0][Object.keys(dtx[0])[0]];
                     //return dtx[0].VALUE;
                 }
@@ -994,6 +994,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return cv;
             },
             getCurrentCellColValue: function (tbl, colname) {
+                if (tbl.getSelectedIndices().length == 0)
+                    return undefined;
                 var oModel = tbl.getModel();
 //                var rowVis = tbl.getFirstVisibleRow();
                 var i = tbl.getSelectedIndices()[0];

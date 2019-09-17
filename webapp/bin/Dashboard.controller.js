@@ -6,6 +6,7 @@ sap.ui.controller('bin.Dashboard', {
      * @memberOf bin.Dashboard **/
     onInit: function () {
         $('<div class=loadingDiv>Loading libraries</div>').prependTo(document.body);
+        this.getView().addStyleClass(sap.ui.Device.support.touch ? "sapUiSizeCozy" : "sapUiSizeCompact");
     },
 
     /**

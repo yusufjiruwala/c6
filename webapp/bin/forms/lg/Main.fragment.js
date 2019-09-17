@@ -105,7 +105,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         });
 
         pnl1.attachBrowserEvent("click", function (e) {
-            that.showNewSubscriber();
+            that.openJo();
         });
         pnl2.attachBrowserEvent("click", function (e) {
             that.openContract();
@@ -214,14 +214,11 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         var that = this;
         // var loc = UtilGen.getControlValue(that.locations);
         // var qt = UtilGen.getControlValue(that.query_type);
-        var sql = "select *from v_lg_jo where " + " ord_flag=2 " +
-            " ORDER BY ord_ref,ord_refnm,ORD_DATE,ORD_NO ";
+        var sql = "select *from v_lg_jo where " + " ord_flag=2  ORDER BY ORD_DATE desc";
 
         var dat = Util.execSQL(sql);
         if (dat.ret == "SUCCESS") {
-
             that.qv.setJsonStr("{" + dat.data + "}");
-
             // var cc = that.qv.mLctb.getColByName("BALANCE");
             // cc.getMUIHelper().display_format = "MONEY_FORMAT";
             // var cc = that.qv.mLctb.getColByName("ATHLET_CODE");
@@ -230,8 +227,6 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             // cc.mTitle = "Name";
 
             if (dat.data.length > 0) {
-
-
                 for (var jj = 0; jj < that.qv.mLctb.cols.length; jj++)
                     that.qv.mLctb.cols[jj].getMUIHelper().data_type = "STRING";
                 var c = that.qv.mLctb.getColPos("ORD_DATE");
@@ -246,13 +241,16 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
 
                 // that.qv.mLctb.cols[0].mCfOperator = ":SALEINV_ !=0 ";
                 // that.qv.mLctb.cols[0].mCfTrue = "font-weight: bold;background-color:yellow!important;";
+
                 that.qv.loadData();
+
+
             }
 
         }
     },
     openContract: function () {
-        var that=this;
+        var that = this;
         var oC = {
             getView: function () {
                 return that.view;
@@ -267,6 +265,25 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         UtilGen.clearPage(this.pgCnt);
         this.pgCnt.addContent(sp);
         this.app.to(this.pgCnt, "slide");
+    },
+    openJo: function () {
+        var that = this;
+        var oC = {
+            qryStr: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
+            getView:
+                function () {
+                    return that.view;
+                }
+        };
+        var sp = sap.ui.jsfragment("bin.forms.lg.JO", oC);
+        sp.backFunction = function () {
+            that.app.to(that.mainPage, "show");
+            that.createView();
+        };
+        sp.app = this.app;
+        UtilGen.clearPage(this.pgJo);
+        this.pgJo.addContent(sp);
+        this.app.to(this.pgJo, "slide");
     }
 });
 
