@@ -427,7 +427,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         return true;
     },
     save_data: function () {
-        var that=this;
+        var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
         if (!this.validateSave())
             return;
         var k = "";

@@ -1,4 +1,4 @@
-sap.ui.jsfragment("bin.forms.lg.PO", {
+sap.ui.jsfragment("bin.forms.lg.SO", {
 
     createContent: function (oController) {
         var that = this;
@@ -13,7 +13,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
-            ord_code: 103,
+            ord_code: 111,
             pur_keyfld: -1,
             pur_and_srv: 'N',
             pur_inv_no: -1
@@ -66,7 +66,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.frm.getToolbar().addContent(new sap.m.ToolbarSpacer());
         (this.view.byId("poMsgInv") != undefined ? this.view.byId("poMsgInv").destroy() : null);
         this.frm.getToolbar().addContent(new sap.m.Text(view.createId("poMsgInv"), {text: ""}).addStyleClass("redText blinking"));
-        this.frm.getToolbar().addContent(new sap.m.Title({text: "Purchase Order Request"}));
+        this.frm.getToolbar().addContent(new sap.m.Title({text: "Sales Order Request"}));
 
 
         var sc = new sap.m.ScrollContainer();
@@ -77,6 +77,10 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.pgPO.addContent(sc);
         this.createViewFooter(sc);
 
+        setTimeout(function () {
+            $($(".sapUiFormResGrid , .sapUiFormToolbar")[0]).addClass("greyTB");
+            $(".sapUiFormResGrid , .sapUiFormToolbar").addClass("greyTB")
+        }, 500);
     },
     createViewFooter: function (sc) {
         var that = this;
@@ -154,6 +158,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.view.byId("poMsgInv").setText("");
         this.view.byId("poCmdSave").setEnabled(true);
         this.view.byId("poCmdDel").setEnabled(true);
+        this.o1.ord_ref.setEnabled(false);
 
         if (this.qryStrPO == "") {
             this.showFRDE();
@@ -162,6 +167,11 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             UtilGen.setControlValue(this.o1.ord_date, new Date());
             UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
             this.o1.ord_no.setEnabled(true);
+            var dt = Util.execSQL("select ord_ref,ord_refnm from order1 where ord_code=106 and ord_no=" + Util.quoted());
+            if (dt.ret == "SUCCESS") {
+                var dtx = JSON.parse("{" + dt.data + "}").data;
+                UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
+            }
 
         } else {
             var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + Util.quoted(this.qryStrPO));
@@ -294,9 +304,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             var vl = that.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
             that.qv.mLctb.setFieldValue(i, "ORD_ALLQTY", vl);
         }
-        var avg = UtilGen.getControlValue(this.o2.ord_amt_lc) / UtilGen.getControlValue(this.o2.ord_amt);
 
-        // check if insert or update.
         if (this.qryStrPO == "") {
             k = UtilGen.getSQLInsertString(this.o1, {
                 "ord_code": this.vars.ord_code,
@@ -306,8 +314,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                 "ORD_AMT": UtilGen.getControlValue(this.o2.ord_amt),
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
-                "CREATED_DATE": "sysdate",
-                "ORD_FC_RATE": avg
+                "CREATED_DATE": "sysdate"
             });
             k = "insert into order1 " + k + ";";
             var s1 = "";
@@ -324,8 +331,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                     "ORD_AMT": UtilGen.getControlValue(this.o2.ord_amt),
                     "ORD_REFNM": Util.quoted(custName),
                     "MODIFIED_BY": Util.quoted(sett["LOGON_USER"]),
-                    "MODIFIED_DATE": "sysdate",
-                    "ORD_FC_RATE": avg
+                    "MODIFIED_DATE": "sysdate"
 
                 },
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStrPO)) + ";";
@@ -498,14 +504,15 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
     },
     setItemSql: function () {
         var that = this;
-        var sql_fr = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0101'";
-        var sql_de = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0102'";
+        var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0101" : "0102");
+        var sql = "select cost_item,selling_descr descr,items.descr cost_item_descr,"
+            + " fc_price,fc_rate,fc_descr,lg_custitems.keyfld from "
+            + "lg_custitems,items where items.reference=cost_item and"
+            + " code='" + UtilGen.getControlValue(this.o1.ord_ref)
+            + "' and descr2 like (select descr2||'%' from items where parentitem=" + Util.quoted(cod)
+            + ") order by cost_item,type_of_frieght";
 
-        if (UtilGen.getControlValue(this.o1.oname) == "DE")
-            that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql_de;
-        else
-            that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql_fr;
-
+        that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
     }
 })
 ;

@@ -3,6 +3,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
     createContent: function (oController) {
         this.view = oController.getView();
         this.oController = oController;
+        this.lastIndexSelected = 0;
+        this.lastFirstRow = 0;
         var that = this;
 
         this.app = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
@@ -39,7 +41,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
     createView: function () {
 
         var that = this;
-        sett = sap.ui.getCore().getModel("settings").getData();
+        var sett = sap.ui.getCore().getModel("settings").getData();
         UtilGen.clearPage(this.mainPage);
         var vbox = new sap.m.VBox({height: "100%"});
         (this.view.byId("cmdJo") != undefined ? this.view.byId("cmdJo").destroy() : null);
@@ -105,13 +107,13 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         });
 
         pnl1.attachBrowserEvent("click", function (e) {
-            that.openJo();
+            that.openForm("bin.forms.lg.JO", that.pgJo);
         });
         pnl2.attachBrowserEvent("click", function (e) {
-            that.openContract();
+            that.openForm("bin.forms.lg.contracts", that.pgCnt);
         });
         pnl3.attachBrowserEvent("click", function (e) {
-            that.dranalysis();
+            that.openForm("bin.forms.lg.Req", that.pgReq);
         });
         pnl31.attachBrowserEvent("click", function (e) {
             that.addSession();
@@ -243,31 +245,20 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 // that.qv.mLctb.cols[0].mCfTrue = "font-weight: bold;background-color:yellow!important;";
 
                 that.qv.loadData();
-
-
+                if (that.qv.mLctb.rows.length > 0) {
+                    that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
+                    that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
+                }
             }
 
         }
     },
-    openContract: function () {
+
+    openForm: function (frag, frm) {
         var that = this;
-        var oC = {
-            getView: function () {
-                return that.view;
-            }
-        };
-        var sp = sap.ui.jsfragment("bin.forms.lg.contracts", oC);
-        sp.backFunction = function () {
-            that.app.to(that.mainPage, "show");
-            that.createView();
-        };
-        sp.app = this.app;
-        UtilGen.clearPage(this.pgCnt);
-        this.pgCnt.addContent(sp);
-        this.app.to(this.pgCnt, "slide");
-    },
-    openJo: function () {
-        var that = this;
+        this.lastFirstRow = that.qv.getControl().getFirstVisibleRow();
+        this.lastIndexSelected = that.qv.getControl().getSelectedIndex();
+
         var oC = {
             qryStr: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
             getView:
@@ -275,15 +266,17 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                     return that.view;
                 }
         };
-        var sp = sap.ui.jsfragment("bin.forms.lg.JO", oC);
+        var sp = sap.ui.jsfragment(frag, oC);
         sp.backFunction = function () {
             that.app.to(that.mainPage, "show");
             that.createView();
+            that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
+            that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
         };
         sp.app = this.app;
-        UtilGen.clearPage(this.pgJo);
-        this.pgJo.addContent(sp);
-        this.app.to(this.pgJo, "slide");
+        UtilGen.clearPage(frm);
+        frm.addContent(sp);
+        this.app.to(frm, "slide");
     }
 });
 
