@@ -73,6 +73,11 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
         sc.addContent(this.frm);
 
+        sc.addContent(new sap.m.Button({
+            icon: "sap-icon://add-activity", press: function () {
+                that.add_items();
+            }
+        }));
         sc.addContent(this.qv.getControl());
         this.pgPO.addContent(sc);
         this.createViewFooter(sc);
@@ -167,7 +172,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             UtilGen.setControlValue(this.o1.ord_date, new Date());
             UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
             this.o1.ord_no.setEnabled(true);
-            var dt = Util.execSQL("select ord_ref,ord_refnm from order1 where ord_code=106 and ord_no=" + Util.quoted());
+            var dt = Util.execSQL("select ord_ref,ord_refnm from order1 where ord_code=106 and ord_no=" + Util.quoted(this.qryStr));
             if (dt.ret == "SUCCESS") {
                 var dtx = JSON.parse("{" + dt.data + "}").data;
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
@@ -212,7 +217,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
-                UtilGen.applyCols("C6LGREQ.PO1", that.qv);
+                UtilGen.applyCols("C6LGREQ.SO1", that.qv);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
@@ -264,14 +269,24 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 sap.m.MessageToast.show("Must have Unique value for Receipt # " + rn);
                 return false;
             }
-            var rcp = Util.getSQLValue("select nvl(max(ord_no),'-1') from joined_order where ord_code=" +
-                that.vars.ord_code + " and ord_reference=" + that.qryStr +
-                " and ord_no!=" + Util.quoted(Util.nvl(that.qryStrPO, "-1")) +
+            // check if recipt already sold and have not in qty in hand..
+            var rcp = Util.getSQLValue("select (ord_allqty+saleret_qty)-(issued_qty+purret_qty) from joined_order where ord_code=103 " +
+                " and ord_reference=" + that.qryStr +
                 " and ord_rcptno=" + Util.quoted(rn));
-            if (rcp != -1) {
-                sap.m.MessageToast.show("Exist Receipt # " + rn + " in PO # " + rcp);
+            if (rcp <= 0) {
+                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold..");
                 return false;
             }
+            // check if any unposted RCPT NO sold in this JO
+
+            var rcp = Util.getSQLValue("select (ord_allqty) from joined_order where ord_code=" + that.vars.ord_code +
+                " and ord_reference=" + that.qryStr + " and ord_no!=" + Util.quoted(Util.nvl(that.qryStrPO, "-.1")) +
+                " and ord_flag=1 and ord_rcptno=" + Util.quoted(rn));
+            if (rcp > 0) {
+                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold in UN-POSTED....");
+                return false;
+            }
+
 
         }
         return true;
@@ -294,7 +309,9 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             "YEAR": "2000",
             "DELIVEREDQTY": 0,
             "ORDERDQTY": 0,
-            "LOCATION_CODE": sett["DEFAULT_LOCATION"]
+            "LOCATION_CODE": sett["DEFAULT_LOCATION"],
+            "ORD_COST_PRICE": "cst",
+            "STRA": sett["DEFAULT_STORE"]
 
         };
 
@@ -314,16 +331,31 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 "ORD_AMT": UtilGen.getControlValue(this.o2.ord_amt),
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
-                "CREATED_DATE": "sysdate"
+                "CREATED_DATE": "sysdate",
+                "STRA": sett["DEFAULT_STORE"]
             });
             k = "insert into order1 " + k + ";";
             var s1 = "";
             // sqls for insert string in order2 table.
-            for (var i = 0; i < this.qv.mLctb.rows.length; i++)
-                s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
+            for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                var sqt = "select nvl(max(ord_price*ORD_FC_rate),0) into cst "
+                    + " from joined_order where ord_refer= :RFR and ord_rcptno= :RNO and ord_reference= :ON and ord_code=103;";
+                //          " select nvl(sum(ord_allqty),0) into qnt from joined_order where ord_code=:COD "
+                // " and ord_reference=:ON " +
+                // " and ord_rcptno=:RNO;" +
+                // "if qnt>0 then raise no_data_found; end if; ";
 
-            k = "begin " + k + s1 + " end; ";
+                sqt = sqt.replace(/:RFR/g, Util.quoted(that.qv.mLctb.getFieldValue(i, "ORD_REFER")));
+                sqt = sqt.replace(/:RNO/g, Util.quoted(that.qv.mLctb.getFieldValue(i, "ORD_RCPTNO")));
+                sqt = sqt.replace(/:COD/g, Util.quoted(that.vars.ord_code));
+                sqt = sqt.replace(/:ON/g, that.qryStr);
 
+                defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
+                defaultValues["PO_SR_NO"] = this.qv.mLctb.getFieldValue(i, "PO_SR_NO");
+
+                s1 += (sqt + UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";").replace(/'cst'/g, 'cst');
+            }
+            k = "declare cst number:=0; qnt number:=0; begin " + k + s1 + " end; ";
         } else {
 
             k = UtilGen.getSQLUpdateString(this.o1, "order1",
@@ -331,16 +363,28 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                     "ORD_AMT": UtilGen.getControlValue(this.o2.ord_amt),
                     "ORD_REFNM": Util.quoted(custName),
                     "MODIFIED_BY": Util.quoted(sett["LOGON_USER"]),
-                    "MODIFIED_DATE": "sysdate"
+                    "MODIFIED_DATE": "sysdate",
+                    "STRA": sett["DEFAULT_STORE"]
 
                 },
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStrPO)) + ";";
 
             var s1 = "delete from order2 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStrPO + ";";  // sqls for insert string in order2 table.
-            for (var i = 0; i < this.qv.mLctb.rows.length; i++)
-                s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
+            for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                var sqt = "select nvl(max(ord_price*ORD_FC_rate),0) into cst "
+                    + " from joined_order where ord_refer= :RFR and ord_rcptno= :RNO and ord_reference= :ON and ord_code=103;";
 
-            k = "begin " + k + s1 + " end;";
+                sqt = sqt.replace(/:RFR/g, Util.quoted(that.qv.mLctb.getFieldValue(i, "ORD_REFER")));
+                sqt = sqt.replace(/:RNO/g, Util.quoted(that.qv.mLctb.getFieldValue(i, "ORD_RCPTNO")));
+                sqt = sqt.replace(/:COD/g, Util.quoted(that.vars.ord_code));
+                sqt = sqt.replace(/:ON/g, that.qryStr);
+
+                defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
+                defaultValues["PO_SR_NO"] = this.qv.mLctb.getFieldValue(i, "PO_SR_NO");
+
+                s1 += (sqt + UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";").replace(/'cst'/g, 'cst');
+            }
+            k = "declare cst number:=0; qnt number:=0; begin " + k + s1 + " end; ";
         }
 
         var oSql = {
@@ -504,15 +548,101 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
     },
     setItemSql: function () {
         var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+
         var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0101" : "0102");
-        var sql = "select cost_item,selling_descr descr,items.descr cost_item_descr,"
+
+        var sql = "select cost_item,replace(selling_descr,chr(9),'') descr,items.descr cost_item_descr,"
             + " fc_price,fc_rate,fc_descr,lg_custitems.keyfld from "
             + "lg_custitems,items where items.reference=cost_item and"
             + " code='" + UtilGen.getControlValue(this.o1.ord_ref)
-            + "' and descr2 like (select descr2||'%' from items where parentitem=" + Util.quoted(cod)
+            + "' and descr2 like (select descr2||'%' from items where reference=" + Util.quoted(cod)
             + ") order by cost_item,type_of_frieght";
 
         that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
+    },
+    add_items: function () {
+        var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+
+        var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0102" : "0101");
+
+        var sql = "select distinct items.reference cost_item,items.descr cost_item_descr,"
+            + " items.descr selling_descr,o2.ORD_RCPTNO RCPT_NO,"
+            + " (o2.ord_price*o2.ord_fc_rate) cost, o1.ord_ref,o1.ord_refnm,o1.ord_no,o1.ord_reference,"
+            + " 0 fc_price,1 fc_rate,'"
+            + sett["DEFAULT_CURRENCY"]
+            + "' fc_descr,o2.payment_reference,"
+            + " (ord_allqty+saleret_qty)-(issued_qty+purret_qty) Qty_in_Hand  from "
+            + " items ,order2 o2,order1 o1 "
+            + " where "
+            + " o2.ord_rcptno is not null  "
+            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) >0 "
+            + " and o2.ord_code=103 and o1.ord_code=103 and o1.ord_no=o2.ord_no "
+            + " and o1.ord_reference="
+            + Util.quoted(this.qryStr)
+            + " and descr2 like (select descr2||'%' from items where reference="
+            + Util.quoted(cod) + ") " + " order by o1.ord_no,cost_item"
+
+        // on selection of record function to pass show_list
+        var fnOnSelect = function (data) {
+            console.log(data);
+            that.qv.updateDataToTable();
+            var ld = that.qv.mLctb;
+
+            var itms = []; // selected items in list and remove if not avaialble.
+            // put all item and rcpt in one array
+            for (var i in data) {
+                itms.push(data[i].COST_ITEM + "-" + data[i].RCPT_NO);
+                var fnd_r = ld.findInJoin(["ORD_REFER", "ORD_RCPTNO"], data[i].COST_ITEM + "" + data[i].RCPT_NO);
+                if (fnd_r > -1)
+                    continue;
+                var idx = ld.rows.length - 1;
+                if (Util.nvl(ld.getFieldValue(idx, "ORD_REFER"), "") != "")
+                    idx = ld.addRow();
+
+                ld.setFieldValue(idx, "ORD_REFER", data[i].COST_ITEM);
+                ld.setFieldValue(idx, "DESCR", data[i].SELLING_DESCR);
+                ld.setFieldValue(idx, "ORD_RCPTNO", data[i].RCPT_NO);
+                ld.setFieldValue(idx, "PO_SR_NO", data[i].ORD_NO);
+            }
+            var ritms = []; // removable rows
+            for (var i = ld.rows.length - 1; i > -1; i--) {
+                var tmp = ld.getFieldValue(i, "ORD_REFER") + "-" + ld.getFieldValue(i, "ORD_RCPTNO");
+                if (itms.indexOf(tmp) == -1)
+                    ritms.push(i);
+            }
+            for (var i = 0; i < ritms.length; i++)
+                ld.deleteRow(ritms[i]);
+            for (var i = ld.rows.length - 1; i > -1; i--)
+                ld.setFieldValue(i, "ORD_POS", i + 1);
+
+
+            that.qv.updateDataToControl();
+            that.do_summary(true);
+            return true;
+        };
+
+        // after display show selected record.
+        var fnOnDisplay = function (qv) {
+            that.qv.updateDataToTable();
+            var ld1 = that.qv.mLctb;
+            var rfrs = [];
+            for (var j = 0; j < ld1.rows.length; j++)
+                rfrs.push(ld1.getFieldValue(j, "ORD_REFER") + "-" + ld1.getFieldValue(j, "ORD_RCPTNO"));
+
+            var ld = qv.mLctb;
+            qv.getControl().clearSelection();
+            var sl = qv.getControl().getSelectedIndices();
+            for (var i = 0; i < ld.rows.length; i++)
+                if (rfrs.indexOf(ld.getFieldValue(i, "COST_ITEM") + "-" + ld.getFieldValue(i, "RCPT_NO")) > -1)
+                    qv.getControl().addSelectionInterval(i, i);
+
+
+        };
+
+        Util.show_list(sql, undefined, undefined, fnOnSelect, "100%", "100%", 10, true, fnOnDisplay);
+
     }
 })
 ;

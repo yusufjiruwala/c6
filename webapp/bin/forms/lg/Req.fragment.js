@@ -112,15 +112,15 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
 
         // this.qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
         this.qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
-        this.qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Interactive);
-        this.qv.getControl().setAlternateRowColors(true);
+        //this.qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Interactive);
+        this.qv.getControl().setAlternateRowColors(false);
 
 
-        var sc = new sap.m.ScrollContainer();
+//        var sc = new sap.m.ScrollContainer({height: "100%"});
 
-        sc.addContent(this.qv.getControl());
+        //      sc.addContent(this.qv.getControl());
 
-        this.mainPage.addContent(sc);
+        this.mainPage.addContent(that.qv.getControl());
         UtilGen.setControlValue(this.types, "103", "103", true);
 
     },
@@ -150,7 +150,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
     loadData() {
         var that = this;
         var typ = UtilGen.getControlValue(this.types);
-        var sq = "select ord_no,ord_ref,ord_refnm,ord_amt,decode(ord_flag,'2','sap-icon://accept','sap-icon://less') ord_flag ,posted_date," +
+        var sq = "select ord_no,ord_ref,ord_refnm,ord_amt," +
+            "decode(ord_flag,'2','sap-icon://accept','sap-icon://less') ord_flag ,posted_date," +
             " (select max(invoice_no) from pur1  where keyfld=order1.pur_keyfld) invoice_no ,ord_code,ord_flag flgx " +
             "    from order1 where ord_reference=" + Util.quoted(this.qryStr) + " and ord_code=" + Util.quoted(typ);
 
@@ -162,7 +163,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             //that.qv.setJsonStr("{" + dt.data + "}");
             that.qv.loadData();
             if (that.qv.mLctb.rows.length > 0) {
-                that.qv.getControl().setSelectedIndex(0);
+                //that.qv.getControl().setSelectedIndex(0);
                 that.qv.getControl().setFirstVisibleRow(0);
             }
         }
@@ -212,10 +213,14 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             if (flg == 1)
                 switch (oc) {
                     case 103:
-                        sql = "x_pur_and_srv(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=103 and ord_no=" + on + ";";
+                        sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
+                            " where ord_code=103 and ord_no=" + on + ";" +
+                            " x_pur_and_srv(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=103 and ord_no=" + on + ";";
                         break;
                     case 111:
-                        sql = "x_sal_and_iss(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=103 and ord_no=" + on + ";";
+                        sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
+                            " where ord_code=111 and ord_no=" + on + ";" +
+                            "x_sal_and_iss(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=111 and ord_no=" + on + ";";
                         break;
                     default:
                         break;

@@ -285,7 +285,6 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             "DELIVEREDQTY": 0,
             "ORDERDQTY": 0,
             "LOCATION_CODE": sett["DEFAULT_LOCATION"]
-
         };
 
         // update control data to the model local data and then updates all reqquired values.
@@ -312,9 +311,10 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             k = "insert into order1 " + k + ";";
             var s1 = "";
             // sqls for insert string in order2 table.
-            for (var i = 0; i < this.qv.mLctb.rows.length; i++)
+            for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
-
+            }
             k = "begin " + k + s1 + " end; ";
 
         } else {
@@ -331,9 +331,10 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStrPO)) + ";";
 
             var s1 = "delete from order2 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStrPO + ";";  // sqls for insert string in order2 table.
-            for (var i = 0; i < this.qv.mLctb.rows.length; i++)
+            for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
-
+            }
             k = "begin " + k + s1 + " end;";
         }
 
