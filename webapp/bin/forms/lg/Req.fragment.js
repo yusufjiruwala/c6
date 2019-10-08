@@ -3,14 +3,16 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
     createContent: function (oController) {
         var that = this;
         this.oController = oController;
-
+        this.lastSel = undefined;
         this.view = oController.getView();
         this.qryStr = this.oController.qryStr;
+
         this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
 
 
         this.pgPO = new sap.m.Page({showHeader: false});
         this.pgSO = new sap.m.Page({showHeader: false});
+        this.pgDN = new sap.m.Page({showHeader: false});
         this.pgPI = new sap.m.Page({showHeader: false});
 
         this.bk = new sap.m.Button({
@@ -30,6 +32,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.joApp.addDetailPage(this.pgPO);
         this.joApp.addDetailPage(this.pgSO);
         this.joApp.addDetailPage(this.pgPI);
+        this.joApp.addDetailPage(this.pgDN);
         this.joApp.to(this.mainPage, "show");
         return this.joApp;
 
@@ -53,8 +56,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             },
             selectionChange: function (event) {
                 that.loadData();
+                that.lastSel = UtilGen.getControlValue(that.types);
             }
-        }, "string", undefined, undefined, "@103/Purchases,111/Sales,151/Performa Invoices");
+        }, "string", undefined, undefined, "@103/Purchases,111/Sales,151/Debit Notes,152/Credit Notes,153/Performa Invoice");
         var tb = new sap.m.Toolbar({
             content: [
                 new sap.m.Button({
@@ -65,13 +69,21 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "PO", press: function () {
                         that.qv.getControl().setSelectedIndex(-1);
+                        that.lastSel = "103";
                         that.openPO(103);
                     }
                 }),
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "SO", press: function () {
                         that.qv.getControl().setSelectedIndex(-1);
+                        that.lastSel = "111";
                         that.openPO(111);
+                    }
+                }),
+                new sap.m.Button({
+                    icon: "sap-icon://add", text: "Dr.Note", press: function () {
+                        that.lastSel = "111";
+                        that.openDN();
                     }
                 }),
                 new sap.m.Button({
@@ -86,7 +98,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.types,
                 new sap.m.Button({
                     icon: "sap-icon://open-folder", text: "", press: function () {
-                        that.openPO();
+                        if (UtilGen.getControlValue(that.types) == 151)
+                            that.openDN();
+                        else
+                            that.openPO();
                     }
                 }),
                 new sap.m.Button({
@@ -121,7 +136,20 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         //      sc.addContent(this.qv.getControl());
 
         this.mainPage.addContent(that.qv.getControl());
-        UtilGen.setControlValue(this.types, "103", "103", true);
+        if (that.lastSel != undefined)
+            UtilGen.setControlValue(this.types, that.lastSel, that.lastSel, true);
+        else
+            UtilGen.setControlValue(this.types, "103", "103", true);
+
+    },
+    openDN: function () {
+        var that=this;
+        var frm = that.pgDN;
+        var frmName = "bin.forms.lg.DN";
+        var ocAdd = {};
+        if (!that.validateDNSelection(ocAdd))
+            return;
+        that.openForm(frmName, frm, ocAdd)
 
     },
     openPO: function (ocx) {
@@ -129,6 +157,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var frmName = "bin.forms.lg.PO";
         var frm = this.pgPO;
         var oc = ocx;
+        var ocAdd = undefined;
         var slices = this.qv.getControl().getSelectedIndices();
         if (slices.length > 0)
             oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE"); // ord code to check type
@@ -141,10 +170,13 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             case 111:
                 frm = this.pgSO;
                 frmName = "bin.forms.lg.SO";
+                break;
+            case 151:
+                break;
             default:
                 break;
         }
-        this.openForm(frmName, frm)
+        this.openForm(frmName, frm, ocAdd)
     }
     ,
     loadData() {
@@ -169,23 +201,27 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         }
     }
     ,
-    openForm: function (frag, frm) {
+    openForm: function (frag, frm, ocAdd) {
         var that = this;
         var indic = that.qv.getControl().getSelectedIndices();
         var arPo = [];
-        var first = that.qv.getControl().getFirstVisibleRow();
-        for (var i = 0; i < indic.length; i++) {
+        for (var i = 0; i < indic.length; i++)
             arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), indic[i], "ORD_NO"), ""));
-        }
-        var oC = {
-            qryStr: this.qryStr,
-            qryStrPO: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
-            selectedReq: arPo,
-            getView:
-                function () {
-                    return that.view;
-                }
-        };
+
+        var oC;
+        if (ocAdd == undefined)
+            oC = {
+                qryStr: this.qryStr,
+                qryStrPO: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
+                selectedReq: arPo,
+                getView:
+                    function () {
+                        return that.view;
+                    }
+            };
+        else
+            oC = ocAdd;
+
         var sp = sap.ui.jsfragment(frag, oC);
         sp.backFunction = function () {
             that.joApp.to(that.mainPage, "show");
@@ -222,6 +258,11 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                             " where ord_code=111 and ord_no=" + on + ";" +
                             "x_sal_and_iss(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=111 and ord_no=" + on + ";";
                         break;
+                    case 151:
+                        sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
+                            " where ord_code=151 and ord_no=" + on + ";" +
+                            "x_dn_and_iss(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=151 and ord_no=" + on + ";";
+                        break;
                     default:
                         break;
                 }
@@ -234,6 +275,63 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             that.loadData();
         } else
             sap.m.MessageToast.show(dat.ret);
+    },
+    validateDNSelection: function (ocAdd) {
+        var that = this;
+        var oC = {};
+        var slices = this.qv.getControl().getSelectedIndices();
+        if (slices.length <= 0) {
+            sap.m.MessageToast.show("Must select POSTED SALES to create new...");
+            return false;
+        }
+
+        var oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE"); // ord code to check type
+        if (oc != 111 && oc != 151) {
+            sap.m.MessageToast.show("Must select POSTED SALES to create new...");
+            return false;
+        }
+
+
+        if (oc == 111 && slices.length > 1) {
+            sap.m.MessageToast.show("Must select only SINGLE POSTED SALES to create new...");
+            return false;
+        }
+
+        var flg = this.qv.mLctb.getFieldValue(slices[0], "FLGX"); // ord code to check type
+        if (oc == 111 && flg != 2) {
+            sap.m.MessageToast.show("Must be POSTED !");
+            return false;
+        }
+
+        if (oc == 151) {
+            var arPo = [];
+            for (var i = 0; i < slices.length; i++)
+                arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), slices[i], "ORD_NO"), ""));
+            oC = {
+                qryStr: this.qryStr,
+                qryStrPO: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
+                qryStrSO: "",
+                selectedReq: arPo,
+                getView:
+                    function () {
+                        return that.view;
+                    }
+            };
+        } else {
+            oC = {
+                qryStr: this.qryStr,
+                qryStrPO: "",
+                qryStrSO: (Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO")),
+                selectedReq: [],
+                getView:
+                    function () {
+                        return that.view;
+                    }
+            };
+        }
+        for (var i in oC)
+            ocAdd[i] = oC[i];
+        return true;
     }
 })
 ;
