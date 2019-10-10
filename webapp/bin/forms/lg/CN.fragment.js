@@ -1,4 +1,4 @@
-sap.ui.jsfragment("bin.forms.lg.DN", {
+sap.ui.jsfragment("bin.forms.lg.CN", {
 
     createContent: function (oController) {
         var that = this;
@@ -14,7 +14,7 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
-            ord_code: 151,
+            ord_code: 152,
             pur_keyfld: -1,
             pur_and_srv: 'N',
             pur_inv_no: -1
@@ -67,12 +67,12 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
         this.frm.getToolbar().addContent(new sap.m.ToolbarSpacer());
         (this.view.byId("poMsgInv") != undefined ? this.view.byId("poMsgInv").destroy() : null);
         this.frm.getToolbar().addContent(new sap.m.Text(view.createId("poMsgInv"), {text: ""}).addStyleClass("redText blinking"));
-        this.frm.getToolbar().addContent(new sap.m.Title({text: "Debit Note Request"}));
-
+        this.frm.getToolbar().addContent(new sap.m.Title({text: "Credit Note Request"}));
 
         var sc = new sap.m.ScrollContainer();
 
         sc.addContent(this.frm);
+        1
 
         sc.addContent(new sap.m.Button({
             icon: "sap-icon://add-activity", press: function () {
@@ -84,8 +84,8 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
         this.createViewFooter(sc);
 
         setTimeout(function () {
-            $($(".sapUiFormResGrid , .sapUiFormToolbar")[0]).addClass("yellowTB");
-            $(".sapUiFormResGrid , .sapUiFormToolbar").addClass("yellowTB")
+            $($(".sapUiFormResGrid , .sapUiFormToolbar")[0]).addClass("orangeTB");
+            $(".sapUiFormResGrid , .sapUiFormToolbar").addClass("orangeTB")
         }, 500);
     },
     createViewFooter: function (sc) {
@@ -195,9 +195,9 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                 UtilGen.loadDataFromJson(this.o1, dtx[0], true);
                 this.o1.ord_no.setEnabled(false);
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
+                this.qryStrSO=dtx[0].SO_REFERENCE;
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
-                this.qryStrSO = dtx[0].SO_REFERENCE;
 
             }
         }
@@ -228,7 +228,7 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
-                UtilGen.applyCols("C6LGREQ.SO1", that.qv);
+                UtilGen.applyCols("C6LGREQ.CN1", that.qv);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
@@ -284,8 +284,8 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
             var rcp = Util.getSQLValue("select (ord_allqty+saleret_qty)-(issued_qty+purret_qty) from joined_order where ord_code=103 " +
                 " and ord_reference=" + that.qryStr +
                 " and ord_rcptno=" + Util.quoted(rn));
-            if (rcp <= 0) {
-                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold..");
+            if (rcp > 0) {
+                sap.m.MessageToast.show("Receipt # " + rn + " , NOT sold..");
                 return false;
             }
             // check if any unposted RCPT NO sold in this JO
@@ -472,6 +472,7 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                         "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
                         "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
                         "end;";
+
                     sq = sq.replace(/:ord_code/g, that.vars.ord_code);
                     sq = sq.replace(/:ord_no/g, UtilGen.getControlValue(that.o1.ord_no));
                     var dat = Util.execSQL(sq);
@@ -581,17 +582,16 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
         var sql = "select distinct items.reference cost_item,items.descr cost_item_descr,"
             + " items.descr selling_descr,o2.ORD_RCPTNO RCPT_NO,"
             + " (o2.ord_price*o2.ord_fc_rate) cost, o1.ord_ref,o1.ord_refnm,o1.ord_no,o1.ord_reference,"
-            + " 0 fc_price,1 fc_rate,'"
-            + sett["DEFAULT_CURRENCY"]
-            + "' fc_descr,o2.payment_reference,"
+            + " ord_price,o2.ORD_FC_RATE, o2.ord_fc_descr,o2.payment_reference,"
             + " (ord_allqty+saleret_qty)-(issued_qty+purret_qty) Qty_in_Hand  from "
             + " items ,order2 o2,order1 o1 "
             + " where "
             + " o2.ord_rcptno is not null  "
-            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) >0 "
+            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) =0 "
             + " and o2.ord_code=103 and o1.ord_code=103 and o1.ord_no=o2.ord_no "
             + " and o1.ord_reference="
             + Util.quoted(this.qryStr)
+            + " and ord_refer||'-'||ord_rcptno in (select ord_refer||'-'||ord_rcptno from order2 where ord_code=111 and ord_no=" + that.qryStrSO + ")"
             + " and descr2 like (select descr2||'%' from items where reference="
             + Util.quoted(cod) + ") " + "" +
             " order by o1.ord_no,cost_item";
@@ -617,6 +617,9 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                 ld.setFieldValue(idx, "DESCR", data[i].SELLING_DESCR);
                 ld.setFieldValue(idx, "ORD_RCPTNO", data[i].RCPT_NO);
                 ld.setFieldValue(idx, "PO_SR_NO", data[i].ORD_NO);
+                ld.setFieldValue(idx, "ORD_PRICE", data[i].ORD_PRICE);
+                ld.setFieldValue(idx, "ORD_FC_RATE", data[i].ORD_FC_RATE);
+                ld.setFieldValue(idx, "ORD_FC_DESCR", data[i].ORD_FC_DESCR);
             }
             var ritms = []; // removable rows
             for (var i = ld.rows.length - 1; i > -1; i--) {

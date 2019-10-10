@@ -58,7 +58,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.loadData();
                 that.lastSel = UtilGen.getControlValue(that.types);
             }
-        }, "string", undefined, undefined, "@103/Purchases,111/Sales,151/Debit Notes,152/Credit Notes,153/Performa Invoice");
+        }, "string", undefined, undefined, "@103/Purchases,111/Sales,151/Debit Notes,152/Credit Notes,141/Sales Proforma");
         var tb = new sap.m.Toolbar({
             content: [
                 new sap.m.Button({
@@ -83,12 +83,18 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "Dr.Note", press: function () {
                         that.lastSel = "111";
-                        that.openDN();
+                        that.openDN(151);
                     }
                 }),
                 new sap.m.Button({
-                    icon: "sap-icon://add", text: "Performa", press: function () {
-                        that.openPO();
+                    icon: "sap-icon://add", text: "Cr.Note", press: function () {
+                        that.lastSel = "111";
+                        that.openDN(152);
+                    }
+                }),
+                new sap.m.Button({
+                    icon: "sap-icon://add", text: "Proforma", press: function () {
+                        that.openPO(141);
                     }
                 })
             ]
@@ -98,8 +104,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.types,
                 new sap.m.Button({
                     icon: "sap-icon://open-folder", text: "", press: function () {
-                        if (UtilGen.getControlValue(that.types) == 151)
-                            that.openDN();
+                        var sel = UtilGen.getControlValue(that.types)
+                        if (sel == 151 || sel == 152)
+                            that.openDN(sel);
                         else
                             that.openPO();
                     }
@@ -142,10 +149,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             UtilGen.setControlValue(this.types, "103", "103", true);
 
     },
-    openDN: function () {
-        var that=this;
+    openDN: function (dn) {
+        var that = this;
         var frm = that.pgDN;
-        var frmName = "bin.forms.lg.DN";
+        var frmName = (dn == 151 ? "bin.forms.lg.DN" : "bin.forms.lg.CN");
         var ocAdd = {};
         if (!that.validateDNSelection(ocAdd))
             return;
@@ -171,7 +178,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 frm = this.pgSO;
                 frmName = "bin.forms.lg.SO";
                 break;
-            case 151:
+            case 141:
+                frm = this.pgSO;
+                frmName = "bin.forms.lg.SP";
                 break;
             default:
                 break;
@@ -263,6 +272,11 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                             " where ord_code=151 and ord_no=" + on + ";" +
                             "x_dn_and_iss(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=151 and ord_no=" + on + ";";
                         break;
+                    case 152:
+                        sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
+                            " where ord_code=152 and ord_no=" + on + ";" +
+                            "x_cn_and_srv(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=152 and ord_no=" + on + ";";
+                        break;
                     default:
                         break;
                 }
@@ -286,7 +300,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         }
 
         var oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE"); // ord code to check type
-        if (oc != 111 && oc != 151) {
+        if (oc != 111 && oc != 151 && oc != 152) {
             sap.m.MessageToast.show("Must select POSTED SALES to create new...");
             return false;
         }
@@ -303,7 +317,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             return false;
         }
 
-        if (oc == 151) {
+        if (oc == 151 || oc == 152) {
             var arPo = [];
             for (var i = 0; i < slices.length; i++)
                 arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), slices[i], "ORD_NO"), ""));
