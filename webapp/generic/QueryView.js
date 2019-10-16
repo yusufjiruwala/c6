@@ -310,6 +310,15 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.mLctb.parse(dt, true);
 
         };
+
+        QueryView.prototype.updateDataToControl = function () {
+            var dt = this.buildJsonData();
+            var oModel = new sap.ui.model.json.JSONModel();
+            oModel.setData(dt);
+            this.getControl().setModel(oModel);
+            this.getControl().bindRows("/");
+        };
+
         QueryView.prototype.addRow = function (dontReload) {
             if (this.mLctb.rows.length > 0)
                 this.updateDataToTable();
@@ -324,6 +333,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             }
             return idx;
         };
+
         QueryView.prototype.insertRow = function (idx, dontReload) {
             if (this.mLctb.rows.length > 0)
                 this.updateDataToTable();
@@ -342,6 +352,8 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
         QueryView.prototype.loadData = function (noDestroy) {
             //resetingg,
             var that = this;
+            var sett = sap.ui.getCore().getModel("settings").getData();
+
             if (this.queryType == "list") {
                 this.loadData_list();
                 return;
@@ -369,40 +381,43 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             for (var i = 0; i < this.mLctb.cols.length; i++) {
                 cc = this.mLctb.cols[i];
                 var a = cc.getMUIHelper().display_align;
-                if (cc.getMUIHelper().display_format == "MONEY_FORMAT")
+                var f = cc.getMUIHelper().display_format;
+                if (cc.getMUIHelper().display_format == "MONEY_FORMAT") {
                     a = "end";
-                if (cc.getMUIHelper().display_format == "QTY_FORMAT")
+                    f = sett["FORMAT_MONEY_1"];
+                }
+                if (cc.getMUIHelper().display_format == "QTY_FORMAT") {
                     a = "center";
+                    f = sett["FORMAT_QTY_1"];
+                }
+                if (cc.getMUIHelper().display_format == "SHORT_DATE_FORMAT") {
+                    a = "center";
+                    f = sett["SHORT_DATE_FORMAT"];
+                }
+                if (cc.getMUIHelper().display_format == "NONE")
+                    f = "";
+
                 var colClass = eval(UtilGen.nvl(cc.mColClass, "sap.ui.commons.Label"));
                 var o;
                 // if (colClass != sap.m.ComboBox) {
                 if (colClass != SelectText)
-                    o = new colClass({
+                    o = UtilGen.createControl(colClass, this.view, "", {
                         // technical   : replacing global "___" with colname for cross tab.
                         "text": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         "value": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
-                        textAlign: Util.getAlignTable(a)
-                    });
+                        textAlign: Util.getAlignTable(a),
+                        width: "100%",
+                        src: "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
+                        enabled: this.mLctb.cols[i].mEnabled
+                    }, cc.getMUIHelper().data_type.toLowerCase(), f);
                 else
                     o = new colClass({
                         // "value": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         "codeValue": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
-                        textAlign: Util.getAlignTable(a)
+                        textAlign: Util.getAlignTable(a),
+                        enabled: this.mLctb.cols[i].mEnabled
                     });
 
-                // } else {
-                //     o = new sap.m.ComboBox({
-                //         items: {
-                //             path: "/",
-                //             template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
-                //             templateShareable: false
-                //         },
-                //         selectedKey: "{" + that.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
-                //         selectionChange: function (ev) {
-                //             console.log(ev);
-                //         }
-                //     });
-                //o.bindProperty("selectedKey", "CODE");
                 if (colClass == SelectText) {
                     var dtxx = [];
                     if (cc.mSearchSQL.startsWith("@")) {
@@ -417,16 +432,6 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     }
                     o.setLookupModel(new sap.ui.model.json.JSONModel(dtxx));
                 }
-                //     o.applySettings({
-                //         items: {
-                //             path: "/",
-                //             template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
-                //             templateShareable: false
-                //         },
-                //     });
-                //     o.setModel(new sap.ui.model.json.JSONModel(dtxx));
-                // }
-                //
                 if (o instanceof sap.m.InputBase) {
                     o.attachBrowserEvent("keydown", function (evt) {
                         if (evt.key == "Escape") {
@@ -457,10 +462,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                             var rowno = that.getControl().indexOfRow(this.getParent()) + that.getControl().getFirstVisibleRow();
                             //if (rowno + 1 < that.getControl().getRows().length)
                             that.insertRow(rowno + 1);
-//                            else
-                            //                              that.insertRow(rowno);
-
-                            that.getControl().getRows()[rowno - that.getControl().getFirstVisibleRow()].getCells()[colno].focus();
+                            that.getControl().getRows()[(rowno - that.getControl().getFirstVisibleRow())].getCells()[colno].focus();
                         }
 
                     });
@@ -939,7 +941,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 document.getElementById(this.getControl().getId()).offsetParent == null || rowCount == 0) {
                 if (this.scroll != undefined) clearInterval(this.scroll);
 
-                console.log('stopped interval scroll..');
+                // console.log('stopped interval scroll..');
                 return;
             }
             for (var i = 0; i < this.mLctb.cols.length; i++)
@@ -1027,6 +1029,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                         if (cv != undefined && (cv + "").trim().length > 0 &&
                             this.getControl().getRows()[i].getCells()[k - cellAdd] != undefined)
                             this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("yellow");
+
                     }
                 }
 
@@ -1107,6 +1110,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             }
 
             // table header and also for colSPan of parent label, supported by only 2 row.
+
             var hCol = "";
             var cs = []; // colspans in array for first row
             var nxtSpan = 0;
@@ -1417,8 +1421,6 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 that.getControl().addSelectionInterval(startRow, end);
             else
                 that.getControl().removeSelectionInterval(startRow, end);
-
-
         };
 
         QueryView.prototype.setViewSettings = function (vs, refresh) {

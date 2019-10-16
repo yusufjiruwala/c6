@@ -261,6 +261,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
 
         var oC = {
             qryStr: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
+            ordRef: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_REF"), ""),
+            ordRefNm: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_REFNM"), ""),
             getView:
                 function () {
                     return that.view;

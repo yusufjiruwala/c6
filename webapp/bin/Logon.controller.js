@@ -31,6 +31,7 @@ sap.ui.controller('bin.Logon', {
         Util.doAjaxGet(pth, "", false).done(function (data) {
             dt = JSON.parse(data);
             var oModel = new sap.ui.model.json.JSONModel(dt);
+
             sap.ui.getCore().setModel(oModel, "settings");
 
         });

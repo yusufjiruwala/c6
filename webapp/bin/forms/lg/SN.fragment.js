@@ -469,7 +469,7 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                     }
                     var sq = "begin " +
                         "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
-                        "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
+                        "delete from order2 where ord_code=:ord_code and ord_no=:ord_no; " +
                         "end;";
                     sq = sq.replace(/:ord_code/g, that.vars.ord_code);
                     sq = sq.replace(/:ord_no/g, UtilGen.getControlValue(that.o1.ord_no));

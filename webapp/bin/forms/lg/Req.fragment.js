@@ -6,6 +6,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.lastSel = undefined;
         this.view = oController.getView();
         this.qryStr = this.oController.qryStr;
+        this.ordRef = this.oController.ordRef;
+        this.ordRefNm = this.oController.ordRefNm;
 
         this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
 
@@ -59,6 +61,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.lastSel = UtilGen.getControlValue(that.types);
             }
         }, "string", undefined, undefined, "@103/Purchases,111/Sales,151/Debit Notes,152/Credit Notes,141/Sales Proforma");
+
         var tb = new sap.m.Toolbar({
             content: [
                 new sap.m.Button({
@@ -75,6 +78,13 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 }),
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "SO", press: function () {
+                        var slices = that.qv.getControl().getSelectedIndices();
+                        var sel = UtilGen.getControlValue(that.types)
+                        if (slices.length > 0 && sel == 141) {
+                            that.openSOSP();
+                            return;
+                        }
+
                         that.qv.getControl().setSelectedIndex(-1);
                         that.lastSel = "111";
                         that.openPO(111);
@@ -94,6 +104,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 }),
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "Proforma", press: function () {
+                        that.lastSel = "141";
                         that.openPO(141);
                     }
                 })
@@ -102,8 +113,26 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var tb1 = new sap.m.Toolbar({
             content: [
                 that.types,
+                // next type by pressing quick button.
+                new sap.m.Button({
+                    icon: "sap-icon://media-play",
+                    text: "",
+                    press: function () {
+                        var idx = that.types.getItems().indexOf(that.types.getSelectedItem());
+                        that.types.setSelectedItem(that.types.getItems()[(idx + 1) > that.types.getItems().length - 1 ? 0 : ++idx]);
+                        that.loadData();
+                        that.lastSel = UtilGen.getControlValue(that.types);
+
+                    }
+                }),
+                // open form according to what selected...
                 new sap.m.Button({
                     icon: "sap-icon://open-folder", text: "", press: function () {
+                        var slices = that.qv.getControl().getSelectedIndices();
+                        if (slices.length <= 0) {
+                            sap.m.MessageToast.show("Must select the record !");
+                            return;
+                        }
                         var sel = UtilGen.getControlValue(that.types)
                         if (sel == 151 || sel == 152)
                             that.openDN(sel);
@@ -111,12 +140,14 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                             that.openPO();
                     }
                 }),
+                //Print//
                 new sap.m.Button({
                     icon: "sap-icon://print", text: "", press: function () {
                         that.openPO();
                     }
                 }),
                 new sap.m.Title({text: "JO # " + that.qryStr}),
+                // Post as selected.
                 new sap.m.Button(view.createId("reqCmdPost"), {
                     icon: "sap-icon://accept",
                     text: "Post",
@@ -149,6 +180,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             UtilGen.setControlValue(this.types, "103", "103", true);
 
     },
+
     openDN: function (dn) {
         var that = this;
         var frm = that.pgDN;
@@ -156,6 +188,19 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var ocAdd = {};
         if (!that.validateDNSelection(ocAdd))
             return;
+        that.openForm(frmName, frm, ocAdd)
+
+    },
+    openSOSP: function () {
+        var that = this;
+        var frm = that.pgSO;
+        var frmName = "bin.forms.lg.SO";
+        var ocAdd = {};
+        if (!that.validateSOSPSelection(ocAdd)) {
+            that.openPO(111);
+            return;
+        }
+
         that.openForm(frmName, frm, ocAdd)
 
     },
@@ -193,13 +238,16 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var typ = UtilGen.getControlValue(this.types);
         var sq = "select ord_no,ord_ref,ord_refnm,ord_amt," +
             "decode(ord_flag,'2','sap-icon://accept','sap-icon://less') ord_flag ,posted_date," +
-            " (select max(invoice_no) from pur1  where keyfld=order1.pur_keyfld) invoice_no ,ord_code,ord_flag flgx " +
+            " (select max(invoice_no) from pur1  where keyfld=order1.pur_keyfld) invoice_no ,ord_code,ord_flag flgx," +
+            "(select max(no) from acvoucher1 where keyfld=order1.saleinv) PROFORMA " +
             "    from order1 where ord_reference=" + Util.quoted(this.qryStr) + " and ord_code=" + Util.quoted(typ);
 
         var dt = Util.execSQL(sq);
         if (dt.ret = "SUCCESS") {
             that.qv.setJsonStrMetaData("{" + dt.data + "}");
             UtilGen.applyCols("C6LGREQ.MAIN", that.qv);
+            if (typ != 141)
+                that.qv.mLctb.getColByName("PROFORMA").mHideCol = true;
             that.qv.mLctb.parse("{" + dt.data + "}", true);
             //that.qv.setJsonStr("{" + dt.data + "}");
             that.qv.loadData();
@@ -223,6 +271,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 qryStr: this.qryStr,
                 qryStrPO: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
                 selectedReq: arPo,
+                ordRef: that.ordRef,
+                ordRefNm: that.ordRefNm,
                 getView:
                     function () {
                         return that.view;
@@ -277,6 +327,12 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                             " where ord_code=152 and ord_no=" + on + ";" +
                             "x_cn_and_srv(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=152 and ord_no=" + on + ";";
                         break;
+                    case 141:
+                        sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
+                            " where ord_code=141 and ord_no=" + on + ";" +
+                            "x_lg_sp(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=141 and ord_no=" + on + ";";
+                        break;
+
                     default:
                         break;
                 }
@@ -324,6 +380,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             oC = {
                 qryStr: this.qryStr,
                 qryStrPO: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
+                ordRef: that.ordRef,
+                ordRefNm: that.ordRefNm,
                 qryStrSO: "",
                 selectedReq: arPo,
                 getView:
@@ -335,6 +393,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             oC = {
                 qryStr: this.qryStr,
                 qryStrPO: "",
+                ordRef: that.ordRef,
+                ordRefNm: that.ordRefNm,
                 qryStrSO: (Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO")),
                 selectedReq: [],
                 getView:
@@ -343,6 +403,52 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                     }
             };
         }
+        for (var i in oC)
+            ocAdd[i] = oC[i];
+        return true;
+    },
+    // validate to open proforma generate invoice
+    validateSOSPSelection: function (ocAdd) {
+        var that = this;
+        var oC = {};
+        var slices = this.qv.getControl().getSelectedIndices();
+        if (slices.length <= 0) {
+            sap.m.MessageToast.show("Must select POSTED PROFORMA to create new...");
+            return false;
+        }
+
+        var oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE"); // ord code to check type
+        if (oc != 141) {
+            sap.m.MessageToast.show("Must select POSTED PROFORMA to create new...");
+            return false;
+        }
+
+
+        if (oc == 141 && slices.length > 1) {
+            sap.m.MessageToast.show("Must select only SINGLE POSTED PROFORMA to create new...");
+            return false;
+        }
+
+        var flg = this.qv.mLctb.getFieldValue(slices[0], "FLGX"); // ord code to check type
+
+        if (oc == 141 && flg != 2) {
+            sap.m.MessageToast.show("Must be POSTED !");
+            return false;
+        }
+        oC = {
+            qryStr: this.qryStr,
+            qryStrPO: "",
+            qryStrSP: (Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO")),
+            ordRef: that.ordRef,
+            ordRefNm: that.ordRefNm,
+            qryStrSO: "",
+            selectedReq: [],
+            getView:
+                function () {
+                    return that.view;
+                }
+        };
+
         for (var i in oC)
             ocAdd[i] = oC[i];
         return true;

@@ -78,6 +78,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
     createViewJOControls: function (addForm, pg) {
         var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
         if (this.frmJO != undefined) {
             this.frmJO.removeAllContent();
             this.frmJO.destroyContent();

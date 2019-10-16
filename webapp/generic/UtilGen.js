@@ -321,9 +321,13 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
             createControl: function (component, view, id, setting, fldtype, fldFormat, fnChange, sqlStr) {
 
                 var s = this.nvl(setting, {});
-
-                (view.byId(id) != undefined ? view.byId(id).destroy() : null);
-                var c = new component(view.createId(id), s).addStyleClass("sapUiSizeCondensed");
+                if (Util.nvl(id, "") != "")
+                    (view.byId(id) != undefined ? view.byId(id).destroy() : null);
+                var c;
+                if (Util.nvl(id, "") != "")
+                    c = new component(view.createId(id), s).addStyleClass("sapUiSizeCondensed");
+                else
+                    c = new component(s).addStyleClass("sapUiSizeCondensed");
                 if (fldtype != undefined)
                     c.field_type = fldtype;
                 if (fnChange != undefined)
@@ -484,13 +488,13 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
             //---------------------------------------------------------------------------------------------------------
             // all value labelspan , emptyspan == small, medium , large, xlarge-----------------
             //---------------------------------------------------------------------------------------------------------
-            formCreate: function (title, editable, content, labelSpan, emptySpan, columns) {
+            formCreate: function (title, editable, content, labelSpan, emptySpan, columns, spanForLabel) {
                 var ls = labelSpan;
                 var es = emptySpan;
                 var cs = columns;
                 var ed = false;
                 var cnt = [];
-
+                var prev_span = Util.nvl(spanForLabel, "");
                 if (editable)
                     ed = true;
                 if (labelSpan == undefined || labelSpan.length == 0)
@@ -504,18 +508,27 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         console.log("form element " + i + " is undefined !");
                         continue;
                     }
-                    if (typeof content[i] === "string" && !content[i].startsWith("@") && !content[i].startsWith("#"))
-                        cnt.push(new sap.m.Label({text: content[i]}));
-                    else if (typeof content[i] === "string" && content[i].startsWith("@"))
-                        cnt.push(new sap.m.Text({
-                                text: content[i].substr(1),
-                                textAlign: sap.ui.core.TextAlign.Center
-                            }
-                        ));
+                    if (typeof content[i] === "string" && !content[i].startsWith("@") &&
+                        !content[i].startsWith("#")) {
+                        var setx = {text: content[i]};
+                        if (prev_span != "")
+                            setx["layoutData"] = new sap.ui.layout.GridData({span: prev_span});
+
+                        cnt.push(new sap.m.Label(setx));
+                    }
+                    else if (typeof content[i] === "string" && content[i].startsWith("@")) {
+                        var setx = {text: content[i].substr(1), textAlign: sap.ui.core.TextAlign.Right};
+                        if (prev_span != "")
+                            setx["layoutData"] = new sap.ui.layout.GridData({span: prev_span});
+                        cnt.push(new sap.m.Text(setx));
+                    }
                     else if (typeof content[i] === "string" && content[i].startsWith("#"))
                         cnt.push(new sap.ui.core.Title({text: content[i].substr(1)}));
                     else
                         cnt.push(content[i]);
+                    // if (cnt[cnt.length - 1].getLayoutData() != undefined)
+                    //     prev_span = cnt[cnt.length - 1].getLayoutData().getSpan();
+                    // else prev_span = "";
                 }
                 return new sap.ui.layout.form.SimpleForm({
 
@@ -706,7 +719,9 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     "DATEFIELD": "sap.m.DatePicker",
                     "COMBOBOX": "SelectText",
                     "CHECKBOX": "sap.m.CheckBox",
-                    "SEARCHFIELD": "SearchText"
+                    "SEARCHFIELD": "SearchText",
+                    "LABLE": "sap.m.Label",
+                    "ICON": "sap.ui.core.Icon"
                 };
                 var aligns = {
                     "ALIGN_LEFT": "left",
@@ -728,6 +743,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                             cx.mHideCol = false;
                             visibleCol.push(cx);
                         }
+                        cx.mEnabled = dtx[col].DISPLAY_TYPE == "DISABLED" ? false : true;
                         cx.mColClass = Util.nvl(cls[dtx[col].EDITOR_CLASS], "sap.m.Text");
                         cx.mUIHelper.display_align = Util.nvl(aligns[dtx[col].ALIGN], "center");
                         cx.mUIHelper.display_format = Util.nvl(dtx[col].USE_FORMAT, "");
@@ -743,39 +759,44 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
                         }
 
-                        if (cx.mSearchSQL.length > 0) {
-                            if (cx.eOther != undefined && cx.eOther.length > 0) {
-                                cx.eValidateColumn = function (evtx) {
-                                    var row = evtx.getSource().getParent();
-                                    var column_no = evtx.getSource().getParent().indexOfCell(evtx.getSource());
-                                    var columns = evtx.getSource().getParent().getParent().getColumns();
-                                    var table = evtx.getSource().getParent().getParent(); // get table control.
-                                    var oModel = table.getModel();
-                                    var rowStart = table.getFirstVisibleRow(); //starting Row index
-                                    var currentRowoIndexContext = table.getContextByIndex(rowStart + table.indexOfRow(row));
-                                    var newValue = evtx.getParameter("value");
+                        if (cx.eOther != undefined && cx.eOther.length > 0) {
+                            cx.eValidateColumn = function (evtx) {
+                                var sett = sap.ui.getCore().getModel("settings").getData();
+                                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+                                var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+                                var qf = new DecimalFormat(sett["FORMAT_QTY_1"]);
+                                var row = evtx.getSource().getParent();
+                                var column_no = evtx.getSource().getParent().indexOfCell(evtx.getSource());
+                                var columns = evtx.getSource().getParent().getParent().getColumns();
+                                var table = evtx.getSource().getParent().getParent(); // get table control.
+                                var oModel = table.getModel();
+                                var rowStart = table.getFirstVisibleRow(); //starting Row index
+                                var currentRowoIndexContext = table.getContextByIndex(rowStart + table.indexOfRow(row));
+                                var newValue = evtx.getParameter("value");
 
-                                    var tm = -1;
-                                    var clx = -1;
-                                    for (clx in columns) {
-                                        if (columns[clx].getVisible()) tm++;
-                                        if (tm == column_no) {
-                                            break;
-                                        }
+                                var tm = -1;
+                                var clx = -1;
+                                for (clx in columns) {
+                                    if (columns[clx].getVisible()) tm++;
+                                    if (tm == column_no) {
+                                        break;
                                     }
-                                    if (clx < 0) return;
-                                    var cx = columns[clx].tableCol;
-                                    var evl = cx.eOther.replace(/:newValue/g, "\"'" + newValue + "'\"");
-                                    if (!eval(evl))
-                                        this.requestFocus();
-
-
                                 }
+                                if (clx < 0) return;
+                                var cx = columns[clx].tableCol;
+                                var evl = cx.eOther.replace(/:newValue/g, "\"'" + newValue + "'\"");
+                                evl = evl.replace(/:nwValue/g, "\"" + newValue + "\"");
+                                if (!eval(evl))
+                                    this.requestFocus();
+
+
                             }
+                        }
+                        if (cx.mSearchSQL.length > 0) {
                             cx.eOnSearch = function (evtx) {
 
                                 var tbl = evtx.getSource().getParent().getParent(); // get table control.
-
+                                var input = evtx.getSource();
                                 if (evtx.getParameters().clearButtonPressed || evtx.getParameters().refreshButtonPressed) {
                                     return;
                                 }
@@ -810,10 +831,12 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                                     var currentRowoIndexContext = tbl.getContextByIndex(rowStart + tbl.indexOfRow(row));
                                     for (var i in rt) {
                                         var rts = rt[i].split("=");
-                                        oModel.setProperty(currentRowoIndexContext.sPath + "/" + rts[0], data[rts[1]]);
+                                        oModel.setProperty(currentRowoIndexContext.sPath + "/" + rts[0], data[rts[1]], undefined, true);
+                                        if (cx.mColName == rts[0])
+                                            input.fireChange({value: data[rts[1]]});
                                     }
                                     return true;
-                                }, "100%", "100%", 10);
+                                }, "100%", "100%", 10, false);
                             };
                         }
                     } //for (var col in dtx)
@@ -835,7 +858,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
             }
             ,
-            getInsertRowString: function (mLctb, tblName, rowno, excludeCols) {
+            getInsertRowString: function (mLctb, tblName, rowno, excludeCols, colValues, onlyVisibleCol) {
+                var ov = Util.nvl(onlyVisibleCol, false);
                 var sett = sap.ui.getCore().getModel("settings").getData();
                 var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
 
@@ -843,16 +867,37 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var sq2 = "";
                 var sq3 = "";
                 for (var c in mLctb.cols) {
+                    // only add to insert which is visible but even if hidden but added in colValues then add it.
+                    if (ov && mLctb.cols[c].mHideCol && !Util.nvl(colValues, []).hasOwnProperty(mLctb.cols[c].mColName))
+                        continue;
                     var val = Util.nvl(mLctb.getFieldValue(rowno, mLctb.cols[c].mColName), "");
+                    // if any value to be override by colValues object
+                    if (colValues != undefined && colValues.hasOwnProperty(mLctb.cols[c].mColName))
+                        val = colValues[mLctb.cols[c].mColName];
+
                     if (excludeCols != undefined && excludeCols.indexOf(mLctb.cols[c].mColName) <= -1)
                         sq2 += (sq2.length > 0 ? "," : "") + mLctb.cols[c].mColName;
-                    if (mLctb.cols[c].getMUIHelper().display_format == "SHORT_DATE_FORMAT")
+                    if (mLctb.cols[c].getMUIHelper().display_format == "SHORT_DATE_FORMAT") // if date then to_date() in sql
                         val = Util.toOraDateString(val);
                     else if (mLctb.cols[c].getMUIHelper().data_type == "DATE" && mLctb.cols[c].getMUIHelper().display_format != "SHORT_DATE_FORMAT")
                         val = (val != "" ? Util.toOraDateTimeString(new Date(val)) : "");
                     else {
                         val = "'" + val + "'";
                     }
+                    // if number then val variable should have number value to store in database.
+                    if (mLctb.cols[c].getMUIHelper().data_type == "NUMBER") {
+                        var dfs = Util.nvl(mLctb.cols[c].getMUIHelper().display_format, "NONE");
+                        var df;
+                        if (Util.nvl(mLctb.cols[c].getMUIHelper().display_format, "NONE") == "QTY_FORMAT")
+                            dfs = sett["FORMAT_QTY_1"];
+                        if (Util.nvl(mLctb.cols[c].getMUIHelper().display_format, "NONE") == "MONEY_FORMAT")
+                            dfs = sett["FORMAT_MONEY_1"];
+                        if (dfs != "NONE") {
+                            df = new DecimalFormat(dfs);
+                            val = parseFloat(df.formatBack(val.replace(/'/g, '')))
+                        }
+                    }
+                    // exclude col
                     if (excludeCols != undefined && excludeCols.indexOf(mLctb.cols[c].mColName) <= -1)
                         sq3 += (sq3.length > 0 ? "," : "") + Util.nvl(val, 'null');
                 }

@@ -631,7 +631,7 @@ public class utils {
 		int n = 0;
 		for (int i = 0; i < s.length(); i++) {
 			tmp = "";
-			if (s.charAt(i) == ':' && !s.substring(i, i + 2).equals(":=")) {
+			if (s.charAt(i) == ':' && !s.substring(i, i + 2).equals(":=") && !s.substring(i, i + 2).equals(":/")) {
 				n++;
 				i++;
 				while (i < s.length() && s.charAt(i) != '\n' && s.charAt(i) != ' ' && s.charAt(i) != '='
@@ -658,7 +658,7 @@ public class utils {
 		String nexts = r;
 		for (int i = 0; i < s.length(); i++) {
 			nexts = String.valueOf(s.charAt(i));
-			if (s.charAt(i) == ':' && !s.substring(i, i + 2).equals(":=")) {
+			if (s.charAt(i) == ':' && !s.substring(i, i + 2).equals(":=") && !s.substring(i, i + 2).equals(":/")) {
 				nexts = r + " ";
 				while (i < s.length() && s.charAt(i) != '\n' && s.charAt(i) != '\r' && s.charAt(i) != ' ') {
 					i++;

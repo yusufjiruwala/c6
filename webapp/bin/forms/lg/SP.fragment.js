@@ -14,8 +14,8 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
-            ord_code: 152,
-            pur_keyfld: -1,
+            ord_code: 141,
+            saleinv: -1,
             pur_and_srv: 'N',
             pur_inv_no: -1
         };
@@ -144,10 +144,13 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
 
                 }
             }, "string");
+        this.o1.ord_prof_ac = this.addControl(fe, "Proforma A/c", sap.m.SearchField, "dnprofAc",
+            {enabled: false}
+            , "string");
         this.o1.payterm = this.addControl(fe, "Remarks", sap.m.Input, "dnRemarks",
             {enabled: true}, "string");
-        this.o1.so_reference = this.addControl(fe, "@SO Ref #", sap.m.Input, "dnSoRefer",
-            {enabled: false}, "string");
+        this.o1.so_reference = this.addControl(fe, "@Inv Ref #", sap.m.Input, "dnSoRefer",
+            {enabled: true}, "string");
 
         return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
 
@@ -156,9 +159,9 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
     loadData: function () {
         var that = this;
         var view = this.view;
-
+        var sett = sap.ui.getCore().getModel("settings").getData();
         this.vars.pur_and_srv = 'N';
-        this.vars.pur_keyfld = -1;
+        this.vars.saleinv = -1;
         this.vars.pur_inv_no = -1;
 
         UtilGen.setControlValue(this.o1.oname, "FR", "FR", true);
@@ -166,12 +169,12 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
         this.view.byId("poCmdSave").setEnabled(true);
         this.view.byId("poCmdDel").setEnabled(true);
         this.o1.ord_ref.setEnabled(false);
+
         if (this.qryStrPO == "" && this.qryStrSO == "") {
             sap.m.MessageToast.show("Must select SO while creating Debit Note !");
             that.pgDN.backFunction();
 
         }
-
 
         if (this.qryStrPO == "") {
             this.showFRDE();
@@ -188,6 +191,16 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
             }
 
+            var pr = Util.nvl(Util.getSQLValue("select repair.get_prof_ac(" + Util.quoted(dtx[0].ORD_REF) + ") from dual")
+                , sett["PROFORMA_AC"]);
+            var prAc = Util.getSQLValue("select name from acaccount where childcount=0 and accno=" + Util.quoted(pr));
+            if (Util.nvl(prAc, "") == "") {
+                sap.m.MessageToast.show(pr + " is not valid for proforma a/c !");
+                that.pgDN.backFunction();
+                return;
+            }
+            UtilGen.setControlValue(that.o1.ord_prof_ac, pr + "-" + prAc, pr, true);
+
         } else {
             var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + Util.quoted(this.qryStrPO));
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
@@ -197,15 +210,17 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
                 this.qryStrSO = dtx[0].SO_REFERENCE;
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
-                this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
+                this.vars.saleinv = dtx[0].SALEINV;
 
+                var prAc = Util.getSQLValue("select name from acaccount where accno=" + Util.quoted(dtx[0].ORD_PROF_AC));
+                UtilGen.setControlValue(that.o1.ord_prof_ac, dtx[0].ORD_PROF_AC + "-" + prAc, dtx[0].ORD_PROF_AC, true);
             }
         }
         this.loadData_details();
 
-        if (Util.nvl(this.vars.pur_keyfld, -1) != -1 && this.vars.pur_keyfld != 0) {
-            this.vars.pur_inv_no = Util.getSQLValue("select invoice_no from pur1 where keyfld=" + this.vars.pur_keyfld);
-            this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no);
+        if (Util.nvl(this.vars.saleinv, -1) != -1 && this.vars.saleinv != 0) {
+            this.vars.pur_inv_no = Util.getSQLValue("select no from acvoucher1 where keyfld=" + this.vars.saleinv);
+            this.view.byId("poMsgInv").setText("JV # " + this.vars.pur_inv_no);
             this.qv.getControl().setEditable(false);
             this.frm.setEditable(false);
             this.view.byId("poCmdSave").setEnabled(false);
@@ -228,7 +243,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
-                UtilGen.applyCols("C6LGREQ.CN1", that.qv);
+                UtilGen.applyCols("C6LGREQ.SP1", that.qv);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
@@ -280,24 +295,6 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 sap.m.MessageToast.show("Must have Unique value for Receipt # " + rn);
                 return false;
             }
-            // check if recipt already sold and have not in qty in hand..
-            var rcp = Util.getSQLValue("select (ord_allqty+saleret_qty)-(issued_qty+purret_qty) from joined_order where ord_code=103 " +
-                " and ord_reference=" + that.qryStr +
-                " and ord_rcptno=" + Util.quoted(rn));
-            if (rcp > 0) {
-                sap.m.MessageToast.show("Receipt # " + rn + " , NOT sold..");
-                return false;
-            }
-            // check if any unposted RCPT NO sold in this JO
-
-            var rcp = Util.getSQLValue("select (ord_allqty) from joined_order where ord_code in(" + that.vars.ord_code + ",111) " +
-                " and ord_reference=" + that.qryStr + " and ord_no!=" + Util.quoted(Util.nvl(that.qryStrPO, "-.1")) +
-                " and ord_flag=1 and ord_rcptno=" + Util.quoted(rn));
-            if (rcp > 0) {
-                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold/Dr.Note in UN-POSTED....");
-                return false;
-            }
-
 
         }
         return true;
@@ -470,7 +467,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                     }
                     var sq = "begin " +
                         "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
-                        "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
+                        "delete from order2 where ord_code=:ord_code and ord_no=:ord_no; " +
                         "end;";
 
                     sq = sq.replace(/:ord_code/g, that.vars.ord_code);
@@ -579,22 +576,13 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
 
         var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0102" : "0101");
 
-        var sql = "select distinct items.reference cost_item,items.descr cost_item_descr,"
-            + " items.descr selling_descr,o2.ORD_RCPTNO RCPT_NO,"
-            + " (o2.ord_price*o2.ord_fc_rate) cost, o1.ord_ref,o1.ord_refnm,o1.ord_no,o1.ord_reference,"
-            + " ord_price,o2.ORD_FC_RATE, o2.ord_fc_descr,o2.payment_reference,"
-            + " (ord_allqty+saleret_qty)-(issued_qty+purret_qty) Qty_in_Hand  from "
-            + " items ,order2 o2,order1 o1 "
-            + " where "
-            + " o2.ord_rcptno is not null  "
-            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) =0 "
-            + " and o2.ord_code=103 and o1.ord_code=103 and o1.ord_no=o2.ord_no "
-            + " and o1.ord_reference="
-            + Util.quoted(this.qryStr)
-            + " and ord_refer||'-'||ord_rcptno in (select ord_refer||'-'||ord_rcptno from order2 where ord_code=111 and ord_no=" + that.qryStrSO + ")"
-            + " and descr2 like (select descr2||'%' from items where reference="
-            + Util.quoted(cod) + ") " + "" +
-            " order by o1.ord_no,cost_item";
+        var sql = "select cost_item,items.descr cost_item_descr,"
+            + " selling_descr,fc_price,fc_rate,fc_descr,lg_custitems.keyfld from "
+            + "lg_custitems,items where items.reference=cost_item and "
+            + " code="
+            + Util.quoted(UtilGen.getControlValue(that.o1.ord_ref))
+            + " and descr2 like (select descr2||'%' from items where reference='"
+            + cod + "') order by cost_item";
 
         // on selection of record function to pass show_list
         var fnOnSelect = function (data) {
@@ -605,8 +593,8 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             var itms = []; // selected items in list and remove if not avaialble.
             // put all item and rcpt in one array
             for (var i in data) {
-                itms.push(data[i].COST_ITEM + "-" + data[i].RCPT_NO);
-                var fnd_r = ld.findInJoin(["ORD_REFER", "ORD_RCPTNO"], data[i].COST_ITEM + "" + data[i].RCPT_NO);
+                itms.push(data[i].COST_ITEM + "-" + data[i].SELLING_DESCR);
+                var fnd_r = ld.findInJoin(["ORD_REFER", "DESCR"], data[i].COST_ITEM + data[i].SELLING_DESCR);
                 if (fnd_r > -1)
                     continue;
                 var idx = ld.rows.length - 1;
@@ -616,14 +604,13 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 ld.setFieldValue(idx, "ORD_REFER", data[i].COST_ITEM);
                 ld.setFieldValue(idx, "DESCR", data[i].SELLING_DESCR);
                 ld.setFieldValue(idx, "ORD_RCPTNO", data[i].RCPT_NO);
-                ld.setFieldValue(idx, "PO_SR_NO", data[i].ORD_NO);
-                ld.setFieldValue(idx, "ORD_PRICE", data[i].ORD_PRICE);
-                ld.setFieldValue(idx, "ORD_FC_RATE", data[i].ORD_FC_RATE);
-                ld.setFieldValue(idx, "ORD_FC_DESCR", data[i].ORD_FC_DESCR);
+                ld.setFieldValue(idx, "ORD_PRICE", data[i].FC_PRICE);
+                ld.setFieldValue(idx, "ORD_FC_RATE", data[i].FC_RATE);
+                ld.setFieldValue(idx, "ORD_FC_DESCR", data[i].FC_DESCR);
             }
             var ritms = []; // removable rows
             for (var i = ld.rows.length - 1; i > -1; i--) {
-                var tmp = ld.getFieldValue(i, "ORD_REFER") + "-" + ld.getFieldValue(i, "ORD_RCPTNO");
+                var tmp = ld.getFieldValue(i, "ORD_REFER") + "-" + ld.getFieldValue(i, "DESCR");
                 if (itms.indexOf(tmp) == -1)
                     ritms.push(i);
             }
@@ -643,13 +630,12 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             var ld1 = that.qv.mLctb;
             var rfrs = [];
             for (var j = 0; j < ld1.rows.length; j++)
-                rfrs.push(ld1.getFieldValue(j, "ORD_REFER") + "-" + ld1.getFieldValue(j, "ORD_RCPTNO"));
+                rfrs.push(ld1.getFieldValue(j, "ORD_REFER") + "-" + ld1.getFieldValue(j, "DESCR"));
 
             var ld = qv.mLctb;
             qv.getControl().clearSelection();
-            var sl = qv.getControl().getSelectedIndices();
             for (var i = 0; i < ld.rows.length; i++)
-                if (rfrs.indexOf(ld.getFieldValue(i, "COST_ITEM") + "-" + ld.getFieldValue(i, "RCPT_NO")) > -1)
+                if (rfrs.indexOf(ld.getFieldValue(i, "COST_ITEM") + "-" + ld.getFieldValue(i, "SELLING_DESCR")) > -1)
                     qv.getControl().addSelectionInterval(i, i);
         };
 

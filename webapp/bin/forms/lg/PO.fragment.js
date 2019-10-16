@@ -7,6 +7,9 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.view = oController.getView();
         this.qryStr = oController.qryStr;
         this.qryStrPO = oController.qryStrPO;
+        this.ordRef = this.oController.ordRef;
+        this.ordRefNm = this.oController.ordRefNm;
+
         this.pgPO = new sap.m.Page({
             showHeader: false
         });
@@ -244,22 +247,23 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         }
         for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
             var rn = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_RCPTNO"), "");
+            var rfr = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_REFER"), "");
 
-            if (rn == "") {
+            if (rn == "" || rfr == "") {
                 sap.m.MessageToast.show("Must  Receipt No have value .. !");
                 return false;
             }
-            cnts[rn] = Util.nvl(cnts[rn], 0) + 1;
-            if (cnts[rn] > 1) {
+            cnts[rn + "-" + rfr] = Util.nvl(cnts[rn + "-" + rfr], 0) + 1;
+            if (cnts[rn + "-" + rfr] > 1) {
                 sap.m.MessageToast.show("Must have Unique value for Receipt # " + rn);
                 return false;
             }
             var rcp = Util.getSQLValue("select nvl(max(ord_no),'-1') from joined_order where ord_code=" +
                 that.vars.ord_code + " and ord_reference=" + that.qryStr +
                 " and ord_no!=" + Util.quoted(Util.nvl(that.qryStrPO, "-1")) +
-                " and ord_rcptno=" + Util.quoted(rn));
+                " and ord_rcptno=" + Util.quoted(rn) + " and ord_refer=" + Util.quoted(rfr));
             if (rcp != -1) {
-                sap.m.MessageToast.show("Exist Receipt # " + rn + " in PO # " + rcp);
+                sap.m.MessageToast.show("Exist Receipt # " + rn + " ,Item # " + rfr + " in PO # " + rcp);
                 return false;
             }
 
@@ -410,7 +414,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                     }
                     var sq = "begin " +
                         "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
-                        "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
+                        "delete from order2 where ord_code=:ord_code and ord_no=:ord_no; " +
                         "end;";
                     sq = sq.replace(/:ord_code/g, that.vars.ord_code);
                     sq = sq.replace(/:ord_no/g, UtilGen.getControlValue(that.o1.ord_no));
@@ -499,14 +503,20 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
     },
     setItemSql: function () {
         var that = this;
-        var sql_fr = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0101'";
-        var sql_de = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0102'";
+        // var sql_fr = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0101'";
+        // var sql_de = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0102'";
 
-        if (UtilGen.getControlValue(this.o1.oname) == "DE")
-            that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql_de;
-        else
-            that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql_fr;
+        var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0102" : "0101");
 
+        var sql = "select distinct cost_item REFERENCE,items.descr DESCR"
+            + "  from "
+            + "lg_custitems,items where items.reference=cost_item and "
+            + " code="
+            + Util.quoted(that.ordRef)
+            + " and descr2 like (select descr2||'%' from items where reference='"
+            + cod + "') order by cost_item";
+
+        that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
     }
 })
 ;

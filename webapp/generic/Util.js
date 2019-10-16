@@ -296,13 +296,13 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             getAlignTable: function (cc) {
                 var al = sap.ui.core.TextAlign.Begin;
-                if (cc == "left")
+                if (cc == "left" || cc == "ALIGN_LEFT")
                     al = sap.ui.core.TextAlign.Left;
-                if (cc == "right")
+                if (cc == "right" || cc == "ALIGN_RIGHT")
                     al = sap.ui.core.TextAlign.Right;
-                if (cc == "center")
+                if (cc == "center" || cc == "ALIGN_CENTER")
                     al = sap.ui.core.TextAlign.Center;
-                if (cc == "end")
+                if (cc == "end" || cc == "ALIGN_END")
                     al = sap.ui.core.TextAlign.End;
                 return al;
             },
@@ -657,10 +657,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var sett = sap.ui.getCore().getModel("settings").getData();
 
                 if (typeof dt == "string") {
-                    return "to_date('" + dt + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA"], "DD/MM/RRRR HH24:MI") + "')";
+                    return "to_date('" + dt + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA"], "DD/MM/RRRR HH24.MI") + "')";
                 } else if (dt instanceof Date) {
-                    var sf = new simpleDateFormat(Util.nvl(sett["ENGLISH_DATE_FORMAT_LONG"], 'dd/MM/yyyy k:m'));
-                    return "to_date('" + sf.format(dt) + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA_LONG"], "DD/MM/RRRR HH24:MI") + "')";
+                    var sf = new simpleDateFormat(Util.nvl(sett["ENGLISH_DATE_FORMAT_LONG"], 'dd/MM/yyyy k.m'));
+                    return "to_date('" + sf.format(dt) + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA_LONG"], "DD/MM/RRRR HH24.MI") + "')";
                 }
             },
             createGrid2Obj: function (grid, layoutData1, layoutData2, lblStr, inputObjClass) {
@@ -830,10 +830,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return (s == "AR" ? this.nvl(otStr, enStr) : enStr);
 
             },
-            showSearchTable: function (sql, container, flcol, fnOnselect) {
+            showSearchTable: function (sql, container, flcol, fnOnselect, multiSelect) {
 
                 container.removeAllItems();
-                var qv = new QueryView();
+                var qv = new QueryView("searchTbl");
+                qv.getControl().setFixedBottomRowCount(0);
                 qv.getControl().addStyleClass("sapUiSizeCondensed");
 
                 var searchField = new sap.m.SearchField({
@@ -866,7 +867,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     qv.setJsonStr("{" + dat.data + "}");
                     qv.loadData();
                     container.addItem(qv.getControl());
-                    qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
+                    if (!Util.nvl(multiSelect, false))
+                        qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
                     qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
                     return qv;
                 }
@@ -956,7 +958,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 }
                 return "";
             },
-            show_list: function (sql, cols, retCols, fnSel, width, height, visibleRowCount) {
+            show_list: function (sql, cols, retCols, fnSel, width, height, visibleRowCount, multiSelect, fnShowSel) {
                 var vbox = new sap.m.VBox({width: "100%"});
                 var dlg = new sap.m.Dialog({
                     content: [vbox],
@@ -964,23 +966,36 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     contentWidth: this.nvl(width, "400px")
                 });
 
-                var qv = this.showSearchTable(sql, vbox, cols);
+                var qv = this.showSearchTable(sql, vbox, cols, undefined, Util.nvl(multiSelect, false));
                 qv.getControl().addStyleClass("noColumnBorder");
                 if (visibleRowCount != undefined) {
                     qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
                     qv.getControl().setVisibleRowCount(this.nvl(visibleRowCount, 6));
                 }
 
-                if (qv == null) return;
+                if (qv == null) return
+
+                if (fnShowSel != undefined)
+                    fnShowSel(qv);
+
                 dlg.addButton(new sap.m.Button({
                     text: "Select", press: function () {
                         var sl = qv.getControl().getSelectedIndices();
-                        if (sl.length <= 0) {
+                        if (sl.length <= 0 && !Util.nvl(multiSelect, false)) {
                             sap.m.MessageToast.show("Must select !");
                             return;
                         }
-                        var odata = qv.getControl().getContextByIndex(sl[0]);
-                        var data = odata.getProperty(odata.getPath());
+                        var data = [];
+                        if (Util.nvl(multiSelect, false))
+                            for (var i = 0; i < sl.length; i++) {
+                                var odata = qv.getControl().getContextByIndex(sl[i]);
+                                data.push(odata.getProperty(odata.getPath()))
+                            }
+                        else {
+                            var odata = qv.getControl().getContextByIndex(sl[0]);
+                            data = (odata.getProperty(odata.getPath()))
+                        }
+
                         if (fnSel(data))
                             dlg.close();
                     }
@@ -993,6 +1008,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var cv = oModel.getProperty("/" + rowno + "/" + colname);
                 return cv;
             },
+            setCellColValue: function (tbl, rowno, colname, value) {
+                var oModel = tbl.getModel();
+                oModel.setProperty("/" + rowno + "/" + colname, value);
+            },
             getCurrentCellColValue: function (tbl, colname) {
                 if (tbl.getSelectedIndices().length == 0)
                     return undefined;
@@ -1004,8 +1023,6 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return cv;
             }
         };
-
-
         return Util;
     });
 

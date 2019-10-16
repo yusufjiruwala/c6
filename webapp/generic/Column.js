@@ -34,9 +34,11 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.eOther;
         this.eOnSearch;
         this.mSearchSQL;
+        this.mSearchSQLMultiSelect = "N";
         this.mLookUpCols;
         this.mRetValues;
         this.mDefaultValue;
+        this.mEnabled = true;
     }
 
     Column.prototype = {

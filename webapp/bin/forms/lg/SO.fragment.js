@@ -7,6 +7,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         this.view = oController.getView();
         this.qryStr = oController.qryStr;
         this.qryStrPO = oController.qryStrPO;
+        this.qryStrSP = Util.nvl(oController.qryStrSP, "");
         this.pgPO = new sap.m.Page({
             showHeader: false
         });
@@ -122,6 +123,15 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         var fe = [];
         this.o1.oname = this.addControl(fe, "Type", sap.m.Input, "pofrde",
             {enabled: false}, "string");
+        // showing proforma invoice if selected ....
+        if (Util.nvl(this.qryStrSP, "") != "") {
+            this.o1.prof_ord_no = this.addControl(fe, "@Proforma # ", sap.m.Input, "poproforma",
+                {editable: false}, "string");
+            setTimeout(function () {
+                that.o1.prof_ord_no.$("inner").addClass("redText");
+            }, 1000);
+        }
+
         this.o1.ord_no = this.addControl(fe, "Order No", sap.m.Input, "poOrdNo",
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "number")
         this.o1.ord_date = this.addControl(fe, "@Date", sap.m.DatePicker, "poOrdDate",
@@ -154,7 +164,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
     },
     loadData: function () {
         var view = this.view;
-
+        var that = this;
         this.vars.pur_and_srv = 'N';
         this.vars.pur_keyfld = -1;
         this.vars.pur_inv_no = -1;
@@ -165,6 +175,11 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         this.view.byId("poCmdDel").setEnabled(true);
         this.o1.ord_ref.setEnabled(false);
 
+        if (Util.nvl(this.qryStrSP, "") != "") {
+            this.loadDataSP();
+            return;
+
+        }
         if (this.qryStrPO == "") {
             this.showFRDE();
             var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
@@ -178,28 +193,38 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
             }
 
-        } else {
+        }
+        else {
             var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + Util.quoted(this.qryStrPO));
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
                 var dtx = JSON.parse("{" + dt.data + "}").data;
+                this.qryStrSP = "";
+                if (dtx[0].PROF_ORD_NO != 0 || dtx[0].PROF_ORD_NO != "") {
+                    this.qryStrSP = dtx[0].PROF_ORD_NO;
+                    that.loadDataSP();
+                }
                 UtilGen.loadDataFromJson(this.o1, dtx[0], true);
                 this.o1.ord_no.setEnabled(false);
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
 
+
             }
         }
-        this.loadData_details();
+        if (Util.nvl(this.qryStrSP, "") == "") {
+            this.loadData_details();
 
-        if (Util.nvl(this.vars.pur_keyfld, -1) != -1 && this.vars.pur_keyfld != 0) {
-            this.vars.pur_inv_no = Util.getSQLValue("select invoice_no from pur1 where keyfld=" + this.vars.pur_keyfld);
-            this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no);
-            this.qv.getControl().setEditable(false);
-            this.frm.setEditable(false);
-            this.view.byId("poCmdSave").setEnabled(false);
-            this.view.byId("poCmdDel").setEnabled(false);
+            if (Util.nvl(this.vars.pur_keyfld, -1) != -1 && this.vars.pur_keyfld != 0) {
+                this.vars.pur_inv_no = Util.getSQLValue("select invoice_no from pur1 where keyfld=" + this.vars.pur_keyfld);
+                this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no);
+                this.qv.getControl().setEditable(false);
+                this.frm.setEditable(false);
+                this.view.byId("poCmdSave").setEnabled(false);
+                this.view.byId("poCmdDel").setEnabled(false);
 
+
+            }
         }
 
     }
@@ -228,6 +253,78 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             }
         });
     },
+    loadDataSP: function () {
+        var that = this;
+        if (Util.nvl(this.qryStrSP, "") == "")
+            return;
+        var sq = "";
+        if (that.qryStrPO == "") {
+            UtilGen.setControlValue(this.o1.prof_ord_no, this.qryStrSP);
+            UtilGen.setControlValue(this.o1.ord_no, this.qryStrSP);
+            var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
+            UtilGen.setControlValue(this.o1.ord_no, on);
+            UtilGen.setControlValue(this.o1.ord_date, new Date());
+            UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
+            this.o1.ord_no.setEnabled(true);
+            var dt = Util.execSQL("select ord_ref,ord_refnm from order1 where ord_code=106 and ord_no=" + Util.quoted(this.qryStr));
+            if (dt.ret == "SUCCESS") {
+                var dtx = JSON.parse("{" + dt.data + "}").data;
+                UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
+            }
+
+            var ty = Util.getSQLValue("select oname from order1 where ord_code=141 and ord_no=" + this.qryStrSP);
+            UtilGen.setControlValue(this.o1.oname, ty, ty, true);
+
+            sq = "select order2.*,'' descr2, 0 discp,((ORD_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY amount," +
+                "(((ORD_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount" +
+                " from order2 where ord_no="
+                + Util.quoted(this.qryStrSP)
+                + " and ord_code="
+                + 141
+                + " order by ord_pos";
+
+        } else {
+            var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + Util.quoted(this.qryStrPO));
+            if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+                var dtx = JSON.parse("{" + dt.data + "}").data;
+                UtilGen.loadDataFromJson(this.o1, dtx[0], true);
+                this.o1.ord_no.setEnabled(false);
+                UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
+                this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
+                this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
+                this.view.byId("poMsgInv").setText("Proforma # " + this.qryStrSP);
+                var sq = "select order2.*,'' descr2, 0 discp,((ORD_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY amount," +
+                    "(((ORD_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount" +
+                    " from order2 where ord_no="
+                    + Util.quoted(this.qryStrPO)
+                    + " and ord_code="
+                    + this.vars.ord_code
+                    + " order by ord_pos";
+            }
+        }
+
+        var data = Util.execSQL(sq);
+        if (data.ret == "SUCCESS") {
+            that.qv.setJsonStrMetaData("{" + data.data + "}");
+            UtilGen.applyCols("C6LGREQ.SO2", that.qv);
+            that.qv.mLctb.parse("{" + data.data + "}", true);
+            that.qv.loadData();
+            that.do_summary(true);
+            that.updatePoSrNo();
+        }
+        if (Util.nvl(this.vars.pur_keyfld, -1) != -1 && this.vars.pur_keyfld != 0) {
+            this.vars.pur_inv_no = Util.getSQLValue("select invoice_no from pur1 where keyfld=" + this.vars.pur_keyfld);
+            var txt = this.view.byId("poMsgInv").getText() + ",";
+            this.view.byId("poMsgInv").setText(txt + " Invoiced # " + this.vars.pur_inv_no);
+            this.qv.getControl().setEditable(false);
+            this.frm.setEditable(false);
+            this.view.byId("poCmdSave").setEnabled(false);
+            this.view.byId("poCmdDel").setEnabled(false);
+
+        }
+
+    }
+    ,
     addControl(ar, lbl, cntClass, id, sett, dataType, fldFormat) {
         var setx = sett;
         var idx = id;
@@ -239,7 +336,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             ar.push(lbl);
         ar.push(cnt);
         return cnt;
-    },
+    }
+    ,
     validateSave: function () {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -259,38 +357,40 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         }
         for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
             var rn = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_RCPTNO"), "");
+            var rfr = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_REFER"), "");
 
             if (rn == "") {
                 sap.m.MessageToast.show("Must  Receipt No have value .. !");
                 return false;
             }
-            cnts[rn] = Util.nvl(cnts[rn], 0) + 1;
-            if (cnts[rn] > 1) {
-                sap.m.MessageToast.show("Must have Unique value for Receipt # " + rn);
+            cnts[rn + "-" + rfr] = Util.nvl(cnts[rn + "-" + rfr], 0) + 1;
+            if (cnts[rn + "-" + rfr] > 1) {
+                sap.m.MessageToast.show("Must have Unique value for Receipt # " + rn + " , item # " + rfr);
                 return false;
             }
             // check if recipt already sold and have not in qty in hand..
             var rcp = Util.getSQLValue("select (ord_allqty+saleret_qty)-(issued_qty+purret_qty) from joined_order where ord_code=103 " +
                 " and ord_reference=" + that.qryStr +
-                " and ord_rcptno=" + Util.quoted(rn));
+                " and ord_rcptno=" + Util.quoted(rn) + " and ord_refer=" + Util.quoted(rfr));
             if (rcp <= 0) {
-                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold..");
+                sap.m.MessageToast.show("Receipt # " + rn + " ,Either not purchased or sold already !!!");
                 return false;
             }
             // check if any unposted RCPT NO sold in this JO
 
             var rcp = Util.getSQLValue("select (ord_allqty) from joined_order where ord_code=" + that.vars.ord_code +
                 " and ord_reference=" + that.qryStr + " and ord_no!=" + Util.quoted(Util.nvl(that.qryStrPO, "-.1")) +
-                " and ord_flag=1 and ord_rcptno=" + Util.quoted(rn));
+                " and ord_flag=1 and ord_rcptno=" + Util.quoted(rn) + " and ord_refer=" + Util.quoted(rfr));
             if (rcp > 0) {
-                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold in UN-POSTED....");
+                sap.m.MessageToast.show("Receipt # " + rn + " , Already sold in UN-POSTED....!");
                 return false;
             }
 
 
         }
-        return true;
-    },
+        return that.updatePoSrNo();
+    }
+    ,
     save_data: function () {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -321,7 +421,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             var vl = that.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
             that.qv.mLctb.setFieldValue(i, "ORD_ALLQTY", vl);
         }
-
+        var pa = Util.getSQLValue("select ord_prof_ac from order1 where ord_no=" + Util.quoted(Util.nvl(this.qryStrSP), "-1") + " and ord_code=141");
         if (this.qryStrPO == "") {
             k = UtilGen.getSQLInsertString(this.o1, {
                 "ord_code": this.vars.ord_code,
@@ -332,7 +432,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
                 "CREATED_DATE": "sysdate",
-                "STRA": sett["DEFAULT_STORE"]
+                "STRA": sett["DEFAULT_STORE"],
+                "ORD_PROF_AC": pa
             });
             k = "insert into order1 " + k + ";";
             var s1 = "";
@@ -407,8 +508,9 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             that.pgPO.backFunction();
         });
 
-    },
-    // summary of the table, generally called from database VALIDATE_EVENT triggers on table.
+    }
+    ,
+// summary of the table, generally called from database VALIDATE_EVENT triggers on table.
     do_summary: function (reAmt) {
         var that = this;
         reamt = Util.nvl(reAmt, false); // re calculate amount if require.
@@ -459,7 +561,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                     }
                     var sq = "begin " +
                         "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
-                        "delete from order1 where ord_code=:ord_code and ord_no=:ord_no; " +
+                        "delete from order2 where ord_code=:ord_code and ord_no=:ord_no; " +
                         "end;";
                     sq = sq.replace(/:ord_code/g, that.vars.ord_code);
                     sq = sq.replace(/:ord_no/g, UtilGen.getControlValue(that.o1.ord_no));
@@ -474,7 +576,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             initialFocus: null,                                  // default
             textDirection: sap.ui.core.TextDirection.Inherit     // default
         });
-    },
+    }
+    ,
     createScrollCmds: function (tb) {
         var that = this;
         var view = this.view;
@@ -510,7 +613,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                     }
                 }));
         }
-    },
+    }
+    ,
     showFRDE: function () {
         var that = this;
         var view = this.view;
@@ -545,7 +649,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             content: [flx]
         });
         dlg.open();
-    },
+    }
+    ,
     setItemSql: function () {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -560,7 +665,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             + ") order by cost_item,type_of_frieght";
 
         that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
-    },
+    }
+    ,
     add_items: function () {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -587,6 +693,10 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         // on selection of record function to pass show_list
         var fnOnSelect = function (data) {
             console.log(data);
+            if (Util.nvl(that.qryStrSP, "") != "") {
+                sap.m.MessageToast.show("Proforma invoice can not change details !");
+                return;
+            }
             that.qv.updateDataToTable();
             var ld = that.qv.mLctb;
 
@@ -642,6 +752,27 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
         Util.show_list(sql, undefined, undefined, fnOnSelect, "100%", "100%", 10, true, fnOnDisplay);
 
+    },
+    updatePoSrNo: function () {
+        var that = this;
+        var ld = that.qv.mLctb;
+        var on;
+        for (var i = 0; i < ld.rows.length; i++) {
+            var rfr = ld.getFieldValue(i, "ORD_REFER");
+            var rc = ld.getFieldValue(i, "ORD_RCPTNO");
+
+            on = Util.getSQLValue("select ord_no from order2 " +
+                "where ord_code=103 and " +
+                " ord_refer=" + Util.quoted(rfr) + " and " +
+                " ord_rcptno=" + Util.quoted(rc));
+            if (Util.nvl(on, "") == "") {
+                sap.m.MessageToast.show("No purchase found for Item # " + rfr + " , Recipt # " + rc);
+                return false;
+            }
+
+            ld.setFieldValue(i, "PO_SR_NO", on);
+        }
+        return true;
     }
 })
 ;

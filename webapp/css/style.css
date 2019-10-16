@@ -245,7 +245,7 @@
 
 /* Top left text */
 .top-left {
-    position: absolute;
+    position: relative;
     top: 8px;
     left: 16px;
 }
@@ -398,7 +398,8 @@
         width: 100%;
     }
 }
-.multiLabel1{
+
+.multiLabel1 {
     font-style: italic;
     font-weight: bold;
     border-bottom: lightgray;
@@ -409,7 +410,7 @@
 .graphTable {
     font-family: arial, sans-serif;
     background-color: white;
-    font-size:12px;
+    font-size: 12px;
     border-collapse: collapse;
     padding-top: 40px !important;
     display: block;
@@ -422,7 +423,6 @@
     text-align: left;
     padding: 8px;
 }
-
 
 .simplePage {
     vertical-align: middle;
@@ -465,13 +465,13 @@
 .qtFirstLevel {
     font-weight: bold !important;
     font-size: 14px !important;
-    background-color: rgba(216,201,201,1);
+    background-color: rgba(216, 201, 201, 1);
 }
 
 .qtSecondLevel {
     font-weight: bold !important;
     font-size: 14px !important;
-    background-color: rgba(239,227,227,1);
+    background-color: rgba(239, 227, 227, 1);
 }
 
 .menuicon:after {
@@ -479,9 +479,11 @@
     font-size: 30px;
     padding: 10px;
 }
-.menuPageO{
+
+.menuPageO {
     background-color: lavender;
 }
+
 .mytile {
     padding: 20px;
 }
@@ -517,22 +519,41 @@
 
 }
 
-
 .noColumnBorder .sapUiTableRowHdr {
     border: 0 !important;
 }
 
 .blueSelect {
-    background-color:rgba(187,222,255,0.5) !important;
+    background-color: rgba(187, 222, 255, 0.5) !important;
 }
 
-.sapUiFormResGrid.sapUiFormToolbar>div:first-child {
-    background-color: lightblue!important;
+.sapUiFormResGrid.sapUiFormToolbar > div:first-child {
+    background-color: lightblue !important;
+}
+
+.sapUiFormResGrid.sapUiFormToolbar.greyTB > div:first-child {
+    background-color: lightgray !important;
+}
+
+.sapUiFormResGrid.sapUiFormToolbar.yellowTB > div:first-child {
+    background-color: yellow !important;
+}
+
+.sapUiFormResGrid.sapUiFormToolbar.orangeTB > div:first-child {
+    background-color: orange !important;
+}
+
+.sapUiFormResGrid.sapUiFormToolbar.oliveTB > div:first-child {
+    background-color: lightseagreen !important;
 }
 
 .whiteText {
     color: white !important;
 
+}
+
+.redText {
+    color: red !important;
 }
 
 .blinking {

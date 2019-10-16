@@ -224,6 +224,15 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             for (var i = 0; i < this.rows.length; i++)
                 this.rows[i].cells = [];
             this.rows = [];
+            this.masterRows = [];
+        };
+
+        LocalTableData.prototype.removeAllRows = function () {
+            for (var i = 0; i < this.rows.length; i++)
+                this.rows[i].cells = [];
+            this.rows = [];
+            this.masterRows = [];
+
         };
 
         LocalTableData.prototype.find = function (fld, val) {
@@ -232,6 +241,17 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
                 if (this.getFieldValue(i, fld) == val)
                     return i;
 
+            return -1;
+        };
+
+        LocalTableData.prototype.findInJoin = function (flds, val) {
+            for (var i = 0; i < this.rows.length; i++) {
+                var vl = "";
+                for (var j = 0; j < flds.length; j++)
+                    vl += this.getFieldValue(i, flds[j]);
+                if (vl == val)
+                    return i;
+            }
             return -1;
         };
 
@@ -255,7 +275,10 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             for (var i = 0; i < this.rows.length; i++)
                 this.rows[i].cells.splice(col, 1);
         };
-
+        LocalTableData.prototype.deleteRow = function (row) {
+            this.rows.splice(row, 1);
+            this.masterRows = this.rows.slice(0);
+        };
         LocalTableData.prototype.sortCol = function (pColNo, updateMR) {
             this.rows.sort(function (a, b) {
                 var vl1 = a.cells[pColNo].getValue();
@@ -339,6 +362,9 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             tmpstr += "{" + rstr + "}";
 
             return JSON.parse(tmpstr);
+        };
+        LocalTableData.prototype.getSummaryOf = function (colName, sumType) {
+            var cp = this.getColPos(fieldName);
         };
         return LocalTableData;
 

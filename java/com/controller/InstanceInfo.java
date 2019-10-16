@@ -233,6 +233,8 @@ public class InstanceInfo {
 		getMmapVar().put("COMPANY_SPECSA", rst.getString("NAME"));
 		getMmapVar().put("COMPANY_LOGO", rst.getString("FILENAME"));
 		getMmapVar().put("PROFILENO", getmLoginUserPN());
+		getMmapVar().put("LOGON_USER", mLoginUser);
+		getMmapVar().put("LOGON_PASSWORD", mLoginPassword);
 		rst.close();
 		// ---------------------------------------profile-names
 		getmMapProfiles().clear();
