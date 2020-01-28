@@ -76,7 +76,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 expanded: true,
                 // width: "200px",
                 content: [
-                    new sap.m.Text({text: "Approval/Post"}).addStyleClass("whiteText")
+                    new sap.m.Text({text: "Management"}).addStyleClass("whiteText")
                 ]
             }).addStyleClass("mytile");
         var pnl4 = new sap.m.Panel(
@@ -94,7 +94,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 pnl1,
                 pnl2,
                 pnl3,
-                pnl31,
+                (Util.nvl(sett["LG_SHOW_MANAGEMENT"], "INVISIBLE") == "INVISIBLE") ? new sap.m.Text() : pnl31,
                 pnl4
             ]
         });
@@ -113,13 +113,18 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             that.openForm("bin.forms.lg.contracts", that.pgCnt);
         });
         pnl3.attachBrowserEvent("click", function (e) {
+            var idx = that.qv.getControl().getSelectedIndex();
+            if (idx < 0) {
+                sap.m.MessageToast.show("Must select JO !");
+                return;
+            }
             that.openForm("bin.forms.lg.Req", that.pgReq);
         });
         pnl31.attachBrowserEvent("click", function (e) {
-            that.addSession();
+            that.openForm("bin.forms.lg.MG", that.pgCnt);
         });
         pnl4.attachBrowserEvent("click", function (e) {
-            that.showPayment();
+            that.openForm("bin.forms.lg.CloseJO", that.pgReq);
         });
 
 
@@ -137,23 +142,9 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
 
         this.searchField = new sap.m.SearchField({
             liveChange: function (event) {
-                UtilGen.doFilterLiveTable(event, that.qv, ["ATHLET_NAME", "ATHLET_CODE"]);
+                UtilGen.doFilterLiveTable(event, that.qv, ["ORD_REF", "ORD_REFNM", "ORD_NO", "FULL_ORD_NO"]);
             }
         });
-        this.locations = UtilGen.createControl(sap.m.ComboBox, this.view, "location", {
-            customData: [{key: ""}],
-            items: {
-                path: "/",
-                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
-                templateShareable: true
-            },
-            selectionChange: function (event) {
-                that.load_data();
-            }
-        }, "string", undefined, undefined, "select code,name from locations order by 1");
-        var sqlQry = "select -1 code,'ALL' name from dual union all " +
-            " select 10 code, 'Expiry 10 days' name from dual union all " +
-            " select 0 code, 'All Expired' name from dual";
 
         this.query_type = UtilGen.createControl(sap.m.ComboBox, this.view, "query_type", {
             customData: [{key: ""}],
@@ -165,7 +156,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             selectionChange: function (event) {
                 that.load_data();
             }
-        }, "string", undefined, undefined, sqlQry);
+        }, "string", undefined, undefined, "@-1/All,30/Last 1 Month,90/Last 3 Months,180/Last 6 months,0/Closed");
 
         this.qv.getControl().attachRowSelectionChange(null, function (evt) {
             var idx = that.qv.getControl().getSelectedIndex()
@@ -182,7 +173,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             }
         });
 
-        UtilGen.setControlValue(this.locations, sett["DEFAULT_LOCATION"]);
+        //UtilGen.setControlValue(this.locations, sett["DEFAULT_LOCATION"]);
         UtilGen.setControlValue(this.query_type, -1);
 
         var bt = new sap.m.Button({
@@ -214,13 +205,33 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
     },
     load_data: function (period) {
         var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
         // var loc = UtilGen.getControlValue(that.locations);
         // var qt = UtilGen.getControlValue(that.query_type);
-        var sql = "select *from v_lg_jo where " + " ord_flag=2  ORDER BY ORD_DATE desc";
+        var typ = Util.nvl(UtilGen.getControlValue(this.query_type), -1);
+
+        var sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
+            "ORD_REFNM,  ORD_DATE, ORD_SHIP, " +
+            "REFERENCE, ORD_FLAG, NO_OF_SO," +
+            " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE, COST_IN_HAND " +
+            "from v_lg_jo where ord_flag=2 " +
+            "and (:TYP=-1 OR ORD_DATE<=SYSDATE - :TYP )" +
+            "  ORDER BY ORD_DATE desc";
+        sql = sql.replace(/:TYP/g, typ);
+
+        if (typ == "0" || typ == 0) {
+            sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
+                "ORD_REFNM,  ORD_DATE, ORD_SHIP, " +
+                "REFERENCE, ORD_FLAG, NO_OF_SO," +
+                " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE, COST_IN_HAND " +
+                "from v_lg_jo where ord_flag=1 " +
+                "  ORDER BY ORD_DATE desc";
+        }
 
         var dat = Util.execSQL(sql);
         if (dat.ret == "SUCCESS") {
             that.qv.setJsonStr("{" + dat.data + "}");
+
             // var cc = that.qv.mLctb.getColByName("BALANCE");
             // cc.getMUIHelper().display_format = "MONEY_FORMAT";
             // var cc = that.qv.mLctb.getColByName("ATHLET_CODE");
@@ -234,6 +245,12 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 var c = that.qv.mLctb.getColPos("ORD_DATE");
                 that.qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
                 that.qv.mLctb.cols[c].getMUIHelper().data_type = "DATE";
+
+                var c = that.qv.mLctb.getColPos("ORD_NO");
+                that.qv.mLctb.cols[c].getMUIHelper().data_type = "NUMBER";
+
+                if (sett["LG_MAIN_QUERY_SHOW_ORD_NO"] != "TRUE")
+                    that.qv.mLctb.cols[c].getMUIHelper().display_width = 0;
 
                 // that.qv.mLctb.cols[c].mCfOperator = ":EXPIRY_IN <= 0 && :EXPIRY_IN != 0 ";
                 // that.qv.mLctb.cols[c].mCfTrue = "font-weight: bold;color:red!important;";
@@ -249,6 +266,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                     that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
                     that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
                 }
+                sap.m.MessageToast.show("Found # " + that.qv.mLctb.rows.length + " Records");
             }
 
         }
@@ -259,10 +277,15 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         this.lastFirstRow = that.qv.getControl().getFirstVisibleRow();
         this.lastIndexSelected = that.qv.getControl().getSelectedIndex();
 
+        var indic = that.qv.getControl().getSelectedIndices();
+        var arPo = [];
+        for (var i = 0; i < indic.length; i++)
+            arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), indic[i], "ORD_NO"), ""));
         var oC = {
             qryStr: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
             ordRef: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_REF"), ""),
             ordRefNm: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_REFNM"), ""),
+            ordNos: arPo,
             getView:
                 function () {
                     return that.view;

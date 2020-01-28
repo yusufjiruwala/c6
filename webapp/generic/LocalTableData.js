@@ -132,7 +132,6 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
 
         };
         LocalTableData.prototype.parse = function (strData, onlyDetails) {
-
             if (!Util.nvl(onlyDetails, false))
                 this.parseCol(strData);
             else {

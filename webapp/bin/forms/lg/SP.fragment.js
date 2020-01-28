@@ -127,8 +127,14 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "number")
         this.o1.ord_date = this.addControl(fe, "@Date", sap.m.DatePicker, "dnOrdDate",
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "date");
-        this.o1.ord_reference = this.addControl(fe, "@JO No", sap.m.Input, "dnJOOrdNo",
-            {layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}), enabled: false}, "number");
+        // this.o1.ord_reference = this.addControl(fe, "@JO No", sap.m.Input, "dnJOOrdNo",
+        //     {layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}), enabled: false}, "number");
+        this.o1._jo_complete = this.addControl(fe, "@JO No", sap.m.Input, "dnOrdComNo",
+            {
+                layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}),
+                enabled: false,
+            }, "string");
+
         this.o1.ord_ref = this.addControl(fe, "Supplier", sap.m.SearchField, "dnSupplier",
             {
                 enabled: true, search: function (e) {
@@ -181,7 +187,8 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
             UtilGen.setControlValue(this.o1.ord_no, on);
             UtilGen.setControlValue(this.o1.ord_date, new Date());
-            UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
+            // UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
+            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
             UtilGen.setControlValue(this.o1.so_reference, this.qryStrSO, false);
 
             this.o1.ord_no.setEnabled(true);
@@ -212,15 +219,18 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.saleinv = dtx[0].SALEINV;
 
+                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+
                 var prAc = Util.getSQLValue("select name from acaccount where accno=" + Util.quoted(dtx[0].ORD_PROF_AC));
                 UtilGen.setControlValue(that.o1.ord_prof_ac, dtx[0].ORD_PROF_AC + "-" + prAc, dtx[0].ORD_PROF_AC, true);
             }
         }
+        this.view.byId("poMsgInv").setText(" JO # " + UtilGen.getControlValue(this.o1._jo_complete));
         this.loadData_details();
 
         if (Util.nvl(this.vars.saleinv, -1) != -1 && this.vars.saleinv != 0) {
             this.vars.pur_inv_no = Util.getSQLValue("select no from acvoucher1 where keyfld=" + this.vars.saleinv);
-            this.view.byId("poMsgInv").setText("JV # " + this.vars.pur_inv_no);
+            this.view.byId("poMsgInv").setText("JV # " + this.vars.pur_inv_no + " JO # " + UtilGen.getControlValue(this.o1._jo_complete));
             this.qv.getControl().setEditable(false);
             this.frm.setEditable(false);
             this.view.byId("poCmdSave").setEnabled(false);
@@ -243,7 +253,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
-                UtilGen.applyCols("C6LGREQ.SP1", that.qv);
+                UtilGen.applyCols("C6LGREQ.SP1", that.qv, that);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
@@ -313,13 +323,11 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             "ORD_FLAG": 1,
             "ORD_DATE": UtilGen.getControlValue(this.o1.ord_date),
             "ORD_ITMAVER": 0,
-            "ORD_QTY": 0,
             "YEAR": "2000",
             "DELIVEREDQTY": 0,
-            "ORDERDQTY": 0,
+            "ORDEREDQTY": 0,
             "LOCATION_CODE": sett["DEFAULT_LOCATION"],
-            "ORD_COST_PRICE": "cst",
-            "STRA": sett["DEFAULT_STORE"]
+            "ORD_COST_PRICE": "cst"
 
         };
 
@@ -340,13 +348,14 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
                 "CREATED_DATE": "sysdate",
-                "STRA": sett["DEFAULT_STORE"]
+                "STRA": sett["DEFAULT_STORE"],
+                "ORD_REFERENCE": Util.quoted(this.qryStr)
             });
             k = "insert into order1 " + k + ";";
             var s1 = "";
             // sqls for insert string in order2 table.
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
-                var sqt = "select nvl(max(ord_price*ORD_FC_rate),0) into cst "
+                var sqt = "select nvl(max(ord_price),0) into cst "
                     + " from joined_order where ord_refer= :RFR and ord_rcptno= :RNO and ord_reference= :ON and ord_code=103;";
                 //          " select nvl(sum(ord_allqty),0) into qnt from joined_order where ord_code=:COD "
                 // " and ord_reference=:ON " +
@@ -358,6 +367,11 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 sqt = sqt.replace(/:COD/g, Util.quoted(that.vars.ord_code));
                 sqt = sqt.replace(/:ON/g, that.qryStr);
 
+                var pr = (this.qv.mLctb.getFieldValue(i, "FC_PRICE")).replace(/[^\d\.-]/g, '').replace(/,/g, '');
+                var rate = this.qv.mLctb.getFieldValue(i, "ORD_FC_RATE");
+                var vp = pr * rate;
+
+                defaultValues["ORD_PRICE"] = vp;
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 defaultValues["PO_SR_NO"] = this.qv.mLctb.getFieldValue(i, "PO_SR_NO");
 
@@ -372,14 +386,15 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                     "ORD_REFNM": Util.quoted(custName),
                     "MODIFIED_BY": Util.quoted(sett["LOGON_USER"]),
                     "MODIFIED_DATE": "sysdate",
-                    "STRA": sett["DEFAULT_STORE"]
+                    "STRA": sett["DEFAULT_STORE"],
+                    "ORD_REFERENCE": Util.quoted(this.qryStr)
 
                 },
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStrPO)) + ";";
 
             var s1 = "delete from order2 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStrPO + ";";  // sqls for insert string in order2 table.
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
-                var sqt = "select nvl(max(ord_price*ORD_FC_rate),0) into cst "
+                var sqt = "select nvl(max(ord_price),0) into cst "
                     + " from joined_order where ord_refer= :RFR and ord_rcptno= :RNO and ord_reference= :ON and ord_code=103;";
 
                 sqt = sqt.replace(/:RFR/g, Util.quoted(that.qv.mLctb.getFieldValue(i, "ORD_REFER")));
@@ -387,6 +402,11 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 sqt = sqt.replace(/:COD/g, Util.quoted(that.vars.ord_code));
                 sqt = sqt.replace(/:ON/g, that.qryStr);
 
+                var pr = (this.qv.mLctb.getFieldValue(i, "FC_PRICE")).replace(/[^\d\.-]/g, '').replace(/,/g, '');
+                var rate = this.qv.mLctb.getFieldValue(i, "ORD_FC_RATE");
+                var vp = pr * rate;
+
+                defaultValues["ORD_PRICE"] = vp;
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 defaultValues["PO_SR_NO"] = this.qv.mLctb.getFieldValue(i, "PO_SR_NO");
 
@@ -425,7 +445,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
         var tbl = that.qv.getControl();
         if (reamt)
             for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
-                var pr = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PRICE').replace(/[^\d\.]/g, ''));
+                var pr = parseFloat(Util.getCellColValue(tbl, i, 'FC_PRICE').replace(/[^\d\.]/g, ''));
                 var qt = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PKQTY').replace(/[^\d\.]/g, ''));
                 var pk = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PACK'));
                 var rate = parseFloat(Util.getCellColValue(tbl, i, 'ORD_FC_RATE'));
@@ -559,7 +579,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
 
-        var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0101" : "0102");
+        var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0102" : "0101");
 
         var sql = "select cost_item,replace(selling_descr,chr(9),'') descr,items.descr cost_item_descr,"
             + " fc_price,fc_rate,fc_descr,lg_custitems.keyfld from "
@@ -569,6 +589,10 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             + ") order by cost_item,type_of_frieght";
 
         that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
+        var sq = that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL;
+        this.originFCDescrSql = Util.nvl(this.originFCDescrSql, sq);
+        that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL = sq.replace(/:ord_date/g, Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
+
     },
     add_items: function () {
         var that = this;
@@ -604,7 +628,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 ld.setFieldValue(idx, "ORD_REFER", data[i].COST_ITEM);
                 ld.setFieldValue(idx, "DESCR", data[i].SELLING_DESCR);
                 ld.setFieldValue(idx, "ORD_RCPTNO", data[i].RCPT_NO);
-                ld.setFieldValue(idx, "ORD_PRICE", data[i].FC_PRICE);
+                ld.setFieldValue(idx, "FC_PRICE", data[i].FC_PRICE);
                 ld.setFieldValue(idx, "ORD_FC_RATE", data[i].FC_RATE);
                 ld.setFieldValue(idx, "ORD_FC_DESCR", data[i].FC_DESCR);
             }

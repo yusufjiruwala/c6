@@ -127,8 +127,14 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "number")
         this.o1.ord_date = this.addControl(fe, "@Date", sap.m.DatePicker, "dnOrdDate",
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "date");
-        this.o1.ord_reference = this.addControl(fe, "@JO No", sap.m.Input, "dnJOOrdNo",
-            {layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}), enabled: false}, "number");
+        // this.o1.ord_reference = this.addControl(fe, "@JO No", sap.m.Input, "dnJOOrdNo",
+        //     {layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}), enabled: false}, "number");
+        this.o1._jo_complete = this.addControl(fe, "@JO No", sap.m.Input, "dnOrdComNo",
+            {
+                layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}),
+                enabled: false,
+            }, "string");
+
         this.o1.ord_ref = this.addControl(fe, "Supplier", sap.m.SearchField, "dnSupplier",
             {
                 enabled: true, search: function (e) {
@@ -178,7 +184,9 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
             var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
             UtilGen.setControlValue(this.o1.ord_no, on);
             UtilGen.setControlValue(this.o1.ord_date, new Date());
-            UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
+            // UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
+            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+
             UtilGen.setControlValue(this.o1.so_reference, this.qryStrSO, false);
 
             this.o1.ord_no.setEnabled(true);
@@ -197,14 +205,18 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
+                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+
 
             }
         }
+        this.view.byId("poMsgInv").setText(" JO # " + UtilGen.getControlValue(this.o1._jo_complete));
+
         this.loadData_details();
 
         if (Util.nvl(this.vars.pur_keyfld, -1) != -1 && this.vars.pur_keyfld != 0) {
             this.vars.pur_inv_no = Util.getSQLValue("select invoice_no from pur1 where keyfld=" + this.vars.pur_keyfld);
-            this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no);
+            this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no + " JO # " + UtilGen.getControlValue(this.o1._jo_complete));
             this.qv.getControl().setEditable(false);
             this.frm.setEditable(false);
             this.view.byId("poCmdSave").setEnabled(false);
@@ -315,13 +327,12 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
             "ORD_FLAG": 1,
             "ORD_DATE": UtilGen.getControlValue(this.o1.ord_date),
             "ORD_ITMAVER": 0,
-            "ORD_QTY": 0,
             "YEAR": "2000",
             "DELIVEREDQTY": 0,
-            "ORDERDQTY": 0,
+            "ORDEREDQTY": 0,
             "LOCATION_CODE": sett["DEFAULT_LOCATION"],
-            "ORD_COST_PRICE": "cst",
-            "STRA": sett["DEFAULT_STORE"]
+            "ORD_COST_PRICE": "cst"
+//            "STRA": sett["DEFAULT_STORE"]
 
         };
 
@@ -342,7 +353,8 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
                 "CREATED_DATE": "sysdate",
-                "STRA": sett["DEFAULT_STORE"]
+                "STRA": sett["DEFAULT_STORE"],
+                "ORD_REFERENCE": Util.quoted(this.qryStr)
             });
             k = "insert into order1 " + k + ";";
             var s1 = "";
@@ -374,7 +386,8 @@ sap.ui.jsfragment("bin.forms.lg.DN", {
                     "ORD_REFNM": Util.quoted(custName),
                     "MODIFIED_BY": Util.quoted(sett["LOGON_USER"]),
                     "MODIFIED_DATE": "sysdate",
-                    "STRA": sett["DEFAULT_STORE"]
+                    "STRA": sett["DEFAULT_STORE"],
+                    "ORD_REFERENCE": Util.quoted(this.qryStr)
 
                 },
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStrPO)) + ";";

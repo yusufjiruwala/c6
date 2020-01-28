@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSo_details" language="groovy" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="701d3252-6fa6-4451-b632-0ea850c00238">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
+	<style name="Row" style="frameDetails" forecolor="#FFFFFF" backcolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FFFFFF" backcolor="#E6DAC3"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="P_ORD" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="CURRENCY_FORMAT" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CURRENCY" class="java.lang.String" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[select ORDER2.* , INITCAP(TRIM(ORDER2.DESCR)) DESCR_I,ORD_ALLQTY*(ORD_PRICE/ORD_PACK) AMT from order2
+where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
+	</queryString>
+	<field name="PERIODCODE" class="java.lang.String"/>
+	<field name="ORD_NO" class="java.math.BigDecimal"/>
+	<field name="ORD_CODE" class="java.math.BigDecimal"/>
+	<field name="ORD_POS" class="java.math.BigDecimal"/>
+	<field name="ORD_DATE" class="java.sql.Timestamp"/>
+	<field name="ORD_REFER" class="java.lang.String"/>
+	<field name="ORD_PRICE" class="java.math.BigDecimal"/>
+	<field name="ORD_ITMAVER" class="java.math.BigDecimal"/>
+	<field name="ORD_PKQTY" class="java.math.BigDecimal"/>
+	<field name="ORD_UNQTY" class="java.math.BigDecimal"/>
+	<field name="ORD_ALLQTY" class="java.math.BigDecimal"/>
+	<field name="ORD_PACK" class="java.math.BigDecimal"/>
+	<field name="ORD_PACKD" class="java.lang.String"/>
+	<field name="ORD_UNITD" class="java.lang.String"/>
+	<field name="ORD_DISCAMT" class="java.math.BigDecimal"/>
+	<field name="ORD_FLAG" class="java.math.BigDecimal"/>
+	<field name="YEAR" class="java.lang.String"/>
+	<field name="DESCR" class="java.lang.String"/>
+	<field name="KEYFLD" class="java.math.BigDecimal"/>
+	<field name="DELIVEREDQTY" class="java.math.BigDecimal"/>
+	<field name="SALEINV" class="java.math.BigDecimal"/>
+	<field name="ORD_REQ_DATE" class="java.sql.Timestamp"/>
+	<field name="LOCATION_CODE" class="java.lang.String"/>
+	<field name="COSTCENT" class="java.lang.String"/>
+	<field name="ORDEREDQTY" class="java.math.BigDecimal"/>
+	<field name="RECIPT_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="PUR_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="LCNO" class="java.lang.String"/>
+	<field name="ORD_FREEQTY" class="java.math.BigDecimal"/>
+	<field name="ORD_FREEPKQTY" class="java.math.BigDecimal"/>
+	<field name="ORD_FREEALLQTY" class="java.math.BigDecimal"/>
+	<field name="DELIVERED_FREEQTY" class="java.math.BigDecimal"/>
+	<field name="ORD_TYPE" class="java.math.BigDecimal"/>
+	<field name="ORD_COST_PRICE" class="java.math.BigDecimal"/>
+	<field name="ISSUE_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="DIV_CODE" class="java.lang.String"/>
+	<field name="DIV_RATE" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_RATE" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_DESCR" class="java.lang.String"/>
+	<field name="ORD_RCPTNO" class="java.lang.String"/>
+	<field name="DESCR_I" class="java.lang.String"/>
+	<field name="AMT" class="java.math.BigDecimal"/>
+	<pageHeader>
+		<band height="13"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="24">
+			<frame>
+				<reportElement uuid="c42ca9c9-d311-4bf3-96ae-a1f89475342a" style="headerColored" mode="Opaque" x="2" y="0" width="553" height="23" backcolor="#FFFFCC"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+			</frame>
+			<staticText>
+				<reportElement uuid="29be1085-c530-422b-ad73-592af237d71e" x="392" y="0" width="60" height="24"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Qty]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="4d01b7d9-cac1-4faa-8e28-8362d9d7bf56" x="25" y="0" width="67" height="24"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Code]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="cafb8956-200d-46b0-9225-8a00481b1799" x="2" y="0" width="23" height="24"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[POS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="e7384a99-da15-4686-a263-5d91c823fbbb" x="92" y="0" width="238" height="24"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Description]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="1a4b2cd6-fd7d-4d64-889e-f86e5bccdefd" x="452" y="0" width="103" height="24"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Total Charges]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4" x="330" y="0" width="62" height="24"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Price]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<frame>
+				<reportElement uuid="f54499da-6f17-450d-91dc-899e83eab9fb" stretchType="RelativeToBandHeight" x="1" y="0" width="554" height="20"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5" lineColor="#000000"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textField>
+					<reportElement uuid="fc898ee5-e59b-409e-a053-94907b8766f2" style="numQtyCenter" stretchType="RelativeToBandHeight" x="0" y="0" width="24" height="20"/>
+					<box>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression><![CDATA[$F{ORD_POS}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement uuid="9a81afeb-d169-4236-91a0-c1027b7a97ad" style="strDetails" stretchType="RelativeToBandHeight" x="24" y="0" width="67" height="20"/>
+					<box>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression><![CDATA[$F{ORD_REFER}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="927a6454-d3b8-44fd-81a3-eea2d4965281" style="numQtyCenter" stretchType="RelativeToBandHeight" x="391" y="0" width="60" height="20"/>
+					<box>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression><![CDATA[($F{ORD_ALLQTY}.floatValue() / $F{ORD_PACK}.floatValue())]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="04733140-a991-467d-a862-16d72be5a819" style="numMoney" stretchType="RelativeToBandHeight" x="451" y="0" width="103" height="20"/>
+					<box rightPadding="4">
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Right">
+						<paragraph spacingAfter="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{AMT}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="e3eab240-8555-406f-aac0-da4ef12bfd20" style="numMoney" stretchType="RelativeToBandHeight" x="329" y="0" width="62" height="20"/>
+					<box rightPadding="5">
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression><![CDATA[$F{ORD_PRICE}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement uuid="d4232a84-187f-4290-99a8-6ce4814bca0d" style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="238" height="20"/>
+					<box leftPadding="2">
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement>
+						<font fontName="DejaVu Sans" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{DESCR_I} +
+($F{ORD_RCPTNO}==null ||
+ $F{ORD_RCPTNO}.length()==0?""
+ :" - Rcpt No : "+$F{ORD_RCPTNO})]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+</jasperReport>

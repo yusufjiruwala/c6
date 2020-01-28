@@ -13,7 +13,6 @@ sap.ui.jsview('bin.Logon', {
      * Since the Controller is given to this method, its event handlers can be attached right away.
      * @memberOf bin.Logon **/
     createContent: function (oController) {
-
         setTimeout(function () {
             //alert('a');
             // // jQuery.sap.require("sap.viz.library");
@@ -75,10 +74,12 @@ sap.ui.jsview('bin.Logon', {
                                     new sap.m.Text({
                                         width: "7em",
                                         text: "{i18n>login_pwd} :"
+
                                     }).addStyleClass("blackwhiteText sapUiSmallMargin"),
                                     new sap.m.Input(this.createId("txtPassword"), {
                                         width: "9em",
-                                        text: ""
+                                        text: "",
+                                        type: sap.m.InputType.Password
                                     }).addStyleClass("sapUiTinyMargin blackwhiteText")
 
                                 ]

@@ -2,9 +2,10 @@ sap.ui.jsfragment("bin.forms.lg.contracts", {
 
     createContent: function (oController) {
         var that = this;
-        this.QRYSTR = "";
+        this.QRYSTR = Util.nvl(oController.ordRef, "");
         this.QRYSTR_ITEM = "";
         var view = oController.getView();
+        this.txt = new sap.m.Text({text: ""}).addStyleClass("blinking redText");
         (view.byId("addItem") != undefined ? view.byId("addItem").destroy() : null);
         var tb = new sap.m.Toolbar({
             content: [
@@ -36,8 +37,9 @@ sap.ui.jsfragment("bin.forms.lg.contracts", {
                         that.show_item_add();
 
                     }
-                })
-
+                }),
+                new sap.m.ToolbarSpacer(),
+                this.txt
             ]
         });
         this.mainPage = new sap.m.Page({
@@ -46,6 +48,7 @@ sap.ui.jsfragment("bin.forms.lg.contracts", {
             ]
         });
         this.createView();
+        this.loadData();
         return this.mainPage;
     },
     createView: function () {
@@ -91,6 +94,9 @@ sap.ui.jsfragment("bin.forms.lg.contracts", {
     ,
     loadData: function () {
         var that = this;
+        var view = this.oController.getView();
+        view.byId("addItem").setEnabled(false);
+        this.txt.setText("");
         var sq = "select distinct cost_item,descr cost_item_descr from items,lg_custitems " +
             "where cost_item=reference and code=" + Util.quoted(this.QRYSTR) + " order by cost_item";
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
@@ -98,6 +104,11 @@ sap.ui.jsfragment("bin.forms.lg.contracts", {
                 that.qv.setJsonStr("{" + data.data + "}");
                 that.qv.loadData();
                 that.loadDataSelling();
+
+                if (that.qryStr != "") {
+                    that.txt.setText(that.QRYSTR + "-" + Util.getSQLValue("select name from c_ycust where code=" + Util.quoted(that.QRYSTR)));
+                    view.byId("addItem").setEnabled(true);
+                }
             }
         });
     }

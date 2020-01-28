@@ -60,11 +60,12 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.loadData();
                 that.lastSel = UtilGen.getControlValue(that.types);
             }
-        }, "string", undefined, undefined, "@103/Purchases,111/Sales,151/Debit Notes,152/Credit Notes,141/Sales Proforma");
-
-        var tb = new sap.m.Toolbar({
+        }, "string", undefined, undefined, "@103/Purchases - 103,111/Sales - 111,151/Debit Notes - 151,152/Credit Notes - 152,141/Sales Proforma - 141");
+        (this.view.byId("tbCreate") != undefined ? this.view.byId("tbCreate").destroy() : null);
+        (this.view.byId("cmdReqBack") != undefined ? this.view.byId("cmdReqBack").destroy() : null);
+        var tb = new sap.m.Toolbar(view.createId("tbCreate"), {
             content: [
-                new sap.m.Button({
+                new sap.m.Button(view.createId("cmdReqBack"), {
                     icon: "sap-icon://nav-back", text: "", press: function () {
                         that.joApp.backFunction();
                     }
@@ -84,7 +85,6 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                             that.openSOSP();
                             return;
                         }
-
                         that.qv.getControl().setSelectedIndex(-1);
                         that.lastSel = "111";
                         that.openPO(111);
@@ -92,24 +92,28 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 }),
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "Dr.Note", press: function () {
+                        //that.qv.getControl().setSelectedIndex(-1);
                         that.lastSel = "111";
                         that.openDN(151);
                     }
                 }),
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "Cr.Note", press: function () {
+                        //that.qv.getControl().setSelectedIndex(-1);
                         that.lastSel = "111";
                         that.openDN(152);
                     }
                 }),
                 new sap.m.Button({
                     icon: "sap-icon://add", text: "Proforma", press: function () {
+                        that.qv.getControl().setSelectedIndex(-1);
                         that.lastSel = "141";
                         that.openPO(141);
                     }
                 })
             ]
         });
+
         var tb1 = new sap.m.Toolbar({
             content: [
                 that.types,
@@ -143,7 +147,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 //Print//
                 new sap.m.Button({
                     icon: "sap-icon://print", text: "", press: function () {
-                        that.openPO();
+                        that.printSel();
                     }
                 }),
                 new sap.m.Title({text: "JO # " + that.qryStr}),
@@ -256,7 +260,28 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.qv.getControl().setFirstVisibleRow(0);
             }
         }
+        this.enableDisableCmds();
+    },
+    enableDisableCmds: function () {
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var typ = UtilGen.getControlValue(this.types);
+        var view = this.view;
+        var flg = Util.getSQLValue("select ord_flag from order1 where ord_code=106 and ord_no=" + this.qryStr);
+        var tb = view.byId("tbCreate");
+        if (flg == 1 || flg == "1")
+            for (var i in tb.getContent()) {
+                tb.getContent()[i].setEnabled(false);
+            }
+        view.byId("cmdReqBack").setEnabled(true);
+
+        view.byId("reqCmdPost").setEnabled(true);
+
+        if (sett["LG_POST_" + typ] == "DISABLED" || Util.nvl(sett["LG_POST_ALL"], "DISABLED") == "DISABLED")
+            view.byId("reqCmdPost").setEnabled(false);
+
+
     }
+
     ,
     openForm: function (frag, frm, ocAdd) {
         var that = this;
@@ -452,9 +477,43 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         for (var i in oC)
             ocAdd[i] = oC[i];
         return true;
+    },
+    printSel: function () {
+        var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var slices = this.qv.getControl().getSelectedIndices();
+        if (slices.length <= 0) {
+            sap.m.MessageToast.show("Must select to PRINT..");
+            return false;
+        }
+        var plsql = "";
+        var oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE");
+        for (var i in slices) {
+            var on = this.qv.mLctb.getFieldValue(slices[i], "ORD_NO");
+            var sq = "insert into temporary(usernm,idno ,field1) values (:usernm,:idno,:field1);";
+            sq = sq.replace(":usernm", Util.quoted(sett["SESSION_ID"]));
+            sq = sq.replace(":idno", oc);
+            sq = sq.replace(":field1", on);
+            plsql += sq;
+        }
+        plsql = " begin delete from temporary where idno=" + oc + " and usernm=" + Util.quoted(sett["SESSION_ID"]) + ";" + plsql + " end;";
+        var dt = Util.execSQL(plsql);
+        if (dt.ret = "SUCCESS")
+            Util.doXhr("report?reportfile=rptVou" + oc, true, function (e) {
+                if (this.status == 200) {
+                    var blob = new Blob([this.response], {type: "application/pdf"});
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.target = "_blank";
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+                    link.download = "rptVou" + new Date() + ".pdf";
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            })
     }
-})
-;
+});
 
 
 

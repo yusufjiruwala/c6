@@ -41,6 +41,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         var fe = [];
         this.frm = this.createViewHeader();
         this.qv = new QueryView("tblPODetails");
+
         that.qv.getControl().view = this;
         this.qv.getControl().addStyleClass("sapUiSizeCondensed");
         this.qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
@@ -48,6 +49,12 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
         this.qv.getControl().setVisibleRowCount(7);
 
+        this.qv.onAddRow = function (idx, ld) {
+            var fc_main_rate = UtilGen.getControlValue(that.o1.ord_fc_main_rate);
+            var fc_main_descr = UtilGen.getControlValue(that.o1.ord_fc_main_descr);
+            ld.setFieldValue(idx, "FC_MAIN_DESCR", fc_main_descr);
+            ld.setFieldValue(idx, "FC_MAIN_RATE", fc_main_rate);
+        };
 
         this.frm.getToolbar().addContent(this.bk);
         (this.view.byId("poCmdSave") != undefined ? this.view.byId("poCmdSave").destroy() : null);
@@ -104,7 +111,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             {
                 editable: false,
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
-            }, "number", sett["FORMAT_MONEY_1"])
+            }, "number", sett["FORMAT_MONEY_1"]);
 
         var frm = UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
         frm.setToolbar(undefined);
@@ -119,12 +126,23 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         this.o1.ord_no = this.addControl(fe, "Order No", sap.m.Input, "poOrdNo",
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "number")
         this.o1.ord_date = this.addControl(fe, "@Date", sap.m.DatePicker, "poOrdDate",
-            {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "date");
-        this.o1.ord_reference = this.addControl(fe, "@JO No", sap.m.Input, "poJOOrdNo",
-            {layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}), enabled: false}, "number");
+            {
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
+                change: function () {
+                    that.changeCurrency();
+                }
+            }, "date");
+        // this.o1.ord_reference = this.addControl(fe, "@JO No", sap.m.Input, "poJOOrdNo",
+        //     {layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}), enabled: false}, "number");
+        this.o1._jo_complete = this.addControl(fe, "@JO No", sap.m.Input, "dnOrdComNo",
+            {
+                layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}),
+                enabled: false,
+            }, "string");
         this.o1.ord_ref = this.addControl(fe, "Supplier", sap.m.SearchField, "poSupplier",
             {
-                enabled: true, search: function (e) {
+                enabled: true,
+                search: function (e) {
                     if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed) {
                         UtilGen.setControlValue(that.jo.ord_ref, "", "", true);
                         return;
@@ -133,17 +151,22 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                     var sq = "select code,name title from c_ycust where (isbankcash='Y' or issupp='Y') and childcount=0 order by code";
                     Util.showSearchList(sq, "TITLE", "CODE", function (valx, val) {
                         UtilGen.setControlValue(that.o1.ord_ref, val, valx, true);
+                        var r = Util.getSQLValue("select MAIN_CURRENCY from c_ycust where code=" + Util.quoted(valx));
+                        UtilGen.setControlValue(that.o1.ord_fc_main_descr, r);
+                        that.changeCurrency();
                     });
-
-                }
+                },
             }, "string");
         this.o1.payterm = this.addControl(fe, "Remarks", sap.m.Input, "poRemarks",
             {enabled: true}, "string");
         this.o1.attn = this.addControl(fe, "@Inv Ref #", sap.m.Input, "poinvref",
             {enabled: true}, "string");
+        this.o1.ord_fc_main_descr = this.addControl(fe, "Main Currency", sap.m.Input, "pocurrency",
+            {editable: false}, "string");
+        this.o1.ord_fc_main_rate = this.addControl(fe, "@Rate", sap.m.Input, "pocurrRate",
+            {editable: false}, "number");
 
         return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
-
 
     },
     loadData: function () {
@@ -163,9 +186,10 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
             UtilGen.setControlValue(this.o1.ord_no, on);
             UtilGen.setControlValue(this.o1.ord_date, new Date());
-            UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
+//            UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
             this.o1.ord_no.setEnabled(true);
-
+            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+            this.view.byId("poMsgInv").setText(" JO # " + UtilGen.getControlValue(this.o1._jo_complete));
         } else {
             var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + Util.quoted(this.qryStrPO));
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
@@ -175,14 +199,15 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                 UtilGen.setControlValue(this.o1.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
-
+                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+                this.view.byId("poMsgInv").setText(" JO # " + UtilGen.getControlValue(this.o1._jo_complete));
             }
         }
         this.loadData_details();
 
         if (Util.nvl(this.vars.pur_keyfld, -1) != -1 && this.vars.pur_keyfld != 0) {
             this.vars.pur_inv_no = Util.getSQLValue("select invoice_no from pur1 where keyfld=" + this.vars.pur_keyfld);
-            this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no);
+            this.view.byId("poMsgInv").setText("Invoiced # " + this.vars.pur_inv_no + " JO # " + UtilGen.getControlValue(this.o1._jo_complete));
             this.qv.getControl().setEditable(false);
             this.frm.setEditable(false);
             this.view.byId("poCmdSave").setEnabled(false);
@@ -194,8 +219,8 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
     ,
     loadData_details: function () {
         var that = this;
-        var sq = "select order2.*,'' descr2, 0 discp,((ORD_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY amount," +
-            "(((ORD_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount" +
+        var sq = "select order2.*,'' descr2, 0 discp,((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY amount," +
+            "(((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount " +
             " from order2 where ord_no="
             + Util.quoted(this.qryStrPO)
             + " and ord_code="
@@ -205,13 +230,14 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
-                UtilGen.applyCols("C6LGREQ.PO1", that.qv);
+                UtilGen.applyCols("C6LGREQ.PO1", that.qv, that);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
                 that.qv.loadData();
                 that.do_summary(true);
                 that.setItemSql();
+
 
             }
         });
@@ -231,7 +257,8 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
     validateSave: function () {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
-        var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"])
+        var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+        this.do_summary(true);
         this.qv.updateDataToTable();
         var cnts = {};
         var dt = Util.getSQLValue("select to_char(ord_date,'rrrr-mm-dd') from order1 where ord_code=106 and ord_no=" + this.qryStr);
@@ -284,10 +311,9 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             "ORD_FLAG": 1,
             "ORD_DATE": UtilGen.getControlValue(this.o1.ord_date),
             "ORD_ITMAVER": 0,
-            "ORD_QTY": 0,
             "YEAR": "2000",
             "DELIVEREDQTY": 0,
-            "ORDERDQTY": 0,
+            "ORDEREDQTY": 0,
             "LOCATION_CODE": sett["DEFAULT_LOCATION"]
         };
 
@@ -297,8 +323,10 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             var vl = that.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
             that.qv.mLctb.setFieldValue(i, "ORD_ALLQTY", vl);
         }
-        var avg = UtilGen.getControlValue(this.o2.ord_amt_lc) / UtilGen.getControlValue(this.o2.ord_amt);
 
+        var avg = 1;
+        if (UtilGen.getControlValue(this.o2.ord_amt) > 0)
+            avg = UtilGen.getControlValue(this.o2.ord_amt_lc) / UtilGen.getControlValue(this.o2.ord_amt);
         // check if insert or update.
         if (this.qryStrPO == "") {
             k = UtilGen.getSQLInsertString(this.o1, {
@@ -310,19 +338,24 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
                 "CREATED_DATE": "sysdate",
-                "ORD_FC_RATE": avg
+                "ORD_FC_RATE": avg,
+                "ORD_REFERENCE": Util.quoted(this.qryStr)
+
             });
             k = "insert into order1 " + k + ";";
             var s1 = "";
             // sqls for insert string in order2 table.
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                var pr = this.qv.mLctb.getFieldValue(i, "FC_PRICE").replace(/[^\d\.-],/g, '').replace(/,/g, '');
+                var rate = this.qv.mLctb.getFieldValue(i, "ORD_FC_RATE");
+                var vp = pr * rate;
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
+                defaultValues["ORD_PRICE"] = vp;
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
             }
             k = "begin " + k + s1 + " end; ";
 
         } else {
-
             k = UtilGen.getSQLUpdateString(this.o1, "order1",
                 {
                     "ORD_AMT": UtilGen.getControlValue(this.o2.ord_amt),
@@ -336,6 +369,10 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
 
             var s1 = "delete from order2 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStrPO + ";";  // sqls for insert string in order2 table.
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                var pr = this.qv.mLctb.getFieldValue(i, "FC_PRICE").replace(/[^\d\.-],/g, '').replace(/,/g, '');
+                var rate = this.qv.mLctb.getFieldValue(i, "ORD_FC_RATE");
+                var vp = pr * rate;
+                defaultValues["ORD_PRICE"] = vp;
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
             }
@@ -370,20 +407,29 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var tbl = that.qv.getControl();
+        var fc_main_rate = UtilGen.getControlValue(that.o1.ord_fc_main_rate);
+        var fc_main_descr = UtilGen.getControlValue(that.o1.ord_fc_main_descr);
+
         if (reamt)
             for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
-                var pr = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PRICE').replace(/[^\d\.]/g, ''));
-                var qt = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PKQTY').replace(/[^\d\.]/g, ''));
+                var pr = parseFloat(Util.getCellColValue(tbl, i, 'FC_PRICE').replace(/[^\d\.],/g, '').replace(/,/g, ''));
+                var qt = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PKQTY').replace(/[^\d\.]/g, '').replace(/,/g, ''));
                 var pk = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PACK'));
                 var rate = parseFloat(Util.getCellColValue(tbl, i, 'ORD_FC_RATE'));
+                var vp = pr * rate;
                 var amt = pr * qt;
                 Util.setCellColValue(tbl, i, "AMOUNT", df.format(amt));
                 Util.setCellColValue(tbl, i, "LC_AMOUNT", df.format(amt * rate));
+                //     that.qv.mLctb.setFieldValue(i, "FC_MAIN_DESCR", fc_main_descr);
+                //     that.qv.mLctb.setFieldValue(i, "FC_MAIN_RATE", fc_main_rate);
+                //     that.qv.mLctb.setFieldValue(i, "ORD_PRICE", vp);
+                //
             }
         this.qv.updateDataToTable();
         var cl = that.qv.mLctb.getColByName("AMOUNT");
         var sum = 0, sumc = 0;
-        for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
+        var ld = that.qv.mLctb;
+        for (var i = 0; i < ld.rows.length; i++) {
             var val = that.qv.mLctb.getFieldValue(i, "AMOUNT");
             var valc = that.qv.mLctb.getFieldValue(i, "LC_AMOUNT");
             df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
@@ -391,7 +437,13 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             sum += val;
             valc = parseFloat(df.formatBack(valc));
             sumc += valc;
+            var pr = ld.getFieldValue(i, "FC_PRICE");
+            var rate = ld.getFieldValue(i, "ORD_FC_RATE");
+            var vp = pr * rate;
 
+            that.qv.mLctb.setFieldValue(i, "FC_MAIN_DESCR", fc_main_descr);
+            that.qv.mLctb.setFieldValue(i, "FC_MAIN_RATE", fc_main_rate);
+            that.qv.mLctb.setFieldValue(i, "ORD_PRICE", vp);
         }
         UtilGen.setControlValue(that.o2.ord_amt_lc, sum, sum, true);
         UtilGen.setControlValue(that.o2.ord_amt, sumc, sumc, true);
@@ -429,7 +481,8 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             initialFocus: null,                                  // default
             textDirection: sap.ui.core.TextDirection.Inherit     // default
         });
-    },
+    }
+    ,
     createScrollCmds: function (tb) {
         var that = this;
         var view = this.view;
@@ -465,7 +518,8 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                     }
                 }));
         }
-    },
+    }
+    ,
     showFRDE: function () {
         var that = this;
         var view = this.view;
@@ -493,6 +547,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
         }));
 
         (this.view.byId("poDlgFrDe") != undefined ? this.view.byId("poDlgFrDe").destroy() : null);
+
         var dlg = new sap.m.Dialog(view.createId("poDlgFrDe"), {
             title: "Select the kind of PO",
             contentWidth: "300px",
@@ -500,7 +555,8 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             content: [flx]
         });
         dlg.open();
-    },
+    }
+    ,
     setItemSql: function () {
         var that = this;
         // var sql_fr = "select REFERENCE,DESCR FROM ITEMS WHERE FLAG=1 AND CHILDCOUNTS=0 AND PARENTITEM='0101'";
@@ -517,6 +573,42 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
             + cod + "') order by cost_item";
 
         that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
+        var sq = that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL;
+        this.originFCDescrSql = Util.nvl(this.originFCDescrSql, sq);
+        that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL = sq.replace(/:ord_date/g, Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
+    }
+    ,
+    changeCurrency: function () {
+        var that = this;
+        this.qv.updateDataToTable();
+        var ld = that.qv.mLctb;
+        var sq = "select GET_CURRENT_RATE(:RFR , :DT ) FROM DUAL";
+
+        //UtilGen.setControlValue(that.o1.ord_fc_main_descr, Util.getSettings("DEFAULT_CURRENCY"));
+        if (UtilGen.getControlValue(that.o1.ord_date) != null) {
+            var sql = sq.replace(/:RFR/g, Util.quoted(UtilGen.getControlValue(that.o1.ord_fc_main_descr)));
+            sql = sql.replace(/:DT/g, Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
+            var vl = Util.getSQLValue(sql);
+            UtilGen.setControlValue(that.o1.ord_fc_main_rate, vl);
+
+        }
+        var fc_main_rate = UtilGen.getControlValue(that.o1.ord_fc_main_rate);
+        var fc_main_descr = UtilGen.getControlValue(that.o1.ord_fc_main_descr);
+
+        for (var i = 0; i < ld.rows.length; i++) {
+            ld.setFieldValue(i, "FC_MAIN_DESCR", fc_main_descr);
+            ld.setFieldValue(i, "FC_MAIN_RATE", fc_main_rate);
+            if (ld.getFieldValue(i, "ORD_REFER") == "") continue;
+            var sql = sq.replace(/:RFR/g, Util.quoted(ld.getFieldValue(i, "ORD_FC_DESCR")));
+            sql = sql.replace(/:DT/g, Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
+            var vl = Util.getSQLValue(sql);
+            ld.setFieldValue(i, "ORD_FC_RATE", vl);
+        }
+        this.qv.updateDataToControl();
+        that.do_summary(true);
+        if (that.qv.mLctb.cols.length > 0)
+            that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL = this.originFCDescrSql.replace(/:ord_date/g,
+                Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
     }
 })
 ;

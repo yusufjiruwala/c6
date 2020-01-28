@@ -453,7 +453,7 @@
 }
 
 .yellow {
-    background-color: yellow;
+    background-color: yellow!important;
 }
 
 .qrGroup {
@@ -564,4 +564,8 @@
     50% {
         opacity: 0;
     }
+}
+
+.noSimpleFormTitle .sapUiFormTitle {
+    display: none
 }

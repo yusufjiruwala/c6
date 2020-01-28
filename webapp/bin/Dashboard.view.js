@@ -44,8 +44,8 @@ sap.ui.jsview('bin.Dashboard', {
                 sap.ui.getCore().setModel(oModel, "screens");
                 that.screen = dt[0].CODE;
                 that.screen_name = dt[0].DESCR;
-                if (that.sLangu=="AR")
-                    that.screen_name = UtilGen.nvl(dt[0].DESCR_A,dt[0].DESCR);
+                if (that.sLangu == "AR")
+                    that.screen_name = UtilGen.nvl(dt[0].DESCR_A, dt[0].DESCR);
 
                 var j = -1;
                 for (var i in  dt)
@@ -56,8 +56,8 @@ sap.ui.jsview('bin.Dashboard', {
                 if (j >= 0) {
                     that.screen = dt[j].CODE;
                     that.screen_name = dt[j].DESCR;
-                    if (that.sLangu=="AR")
-                        that.screen_name= UtilGen.nvl(dt[j].DESCR_A,dt[j].DESCR);
+                    if (that.sLangu == "AR")
+                        that.screen_name = UtilGen.nvl(dt[j].DESCR_A, dt[j].DESCR);
                     that.screen_type = dt[j].GROUPNAME;
                 }
             }
@@ -103,9 +103,9 @@ sap.ui.jsview('bin.Dashboard', {
             for (var c in that.rows[i]) {
                 var rep = that.rows[i][c];
                 var graph = that.getGraphCell(rep);
-                var tit=rep.REP_TITLE;
-                if (that.sLangu=="AR")
-                    tit=UtilGen.nvl(rep.REP_TITLE_ARB,tit);
+                var tit = rep.REP_TITLE;
+                if (that.sLangu == "AR")
+                    tit = UtilGen.nvl(rep.REP_TITLE_ARB, tit);
 
                 br.addContent(new sap.ui.layout.BlockLayoutCell({
                     title: tit,
@@ -206,8 +206,7 @@ sap.ui.jsview('bin.Dashboard', {
 
     }
     ,
-    _distinctive_rownos()
-    {
+    _distinctive_rownos() {
         // build unique rows array from all sub reports fetched...
         var rn = [];
         for (var i in this.reps) {
@@ -359,8 +358,8 @@ sap.ui.jsview('bin.Dashboard', {
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
         var ps = /*"_para_fromdate=@" + df.format((that.byId("fromdate").getDateValue())) +*/
-                "_para_todate=@" + df.format((that.byId("todate").getDateValue()))
-            ;
+            "_para_todate=@" + df.format((that.byId("todate").getDateValue()))
+        ;
         Util.doAjaxGet("gaugedata2?" + ps, "&_keyfld='" + rep.SQL + "'", false).done(function (data) {
             rep.gjData = JSON.parse(data).data[0];
             var gg;
@@ -545,19 +544,19 @@ sap.ui.jsview('bin.Dashboard', {
 
         var menuBar = new sap.m.Bar({
             contentLeft: [new sap.m.Button({
-                icon: "sap-icon://home",
-                text: "",
+                icon: "sap-icon://log",
+                text: "" + sett["LOGON_USER"] + "@" + sett["MASTER_USER"],
+                tooltip: "Log off",
                 press: function () {
 
-                    document.location.href = "/?clearCookies=true";
+                    document.location.href = "../?clearCookies=true";
                     //Util.cookiesClear();
                 }
             }),
                 new sap.m.Button({
-                    icon: "sap-icon://product",
-                    text: "",
+                    text: "Change Password ",
                     press: function () {
-                        that.showApps();
+                        that.changeMyPassword();
                     }
                 }),
             ],
@@ -576,7 +575,58 @@ sap.ui.jsview('bin.Dashboard', {
         });
         menuBar.addStyleClass("sapContrast sapMIBar");
         return menuBar;
+    },
+    changeMyPassword: function () {
+        var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var op = new sap.m.Input({type: sap.m.InputType.Password}); // Old Password
+        var np = new sap.m.Input({type: sap.m.InputType.Password}); // New Password
+        var cp = new sap.m.Input({type: sap.m.InputType.Password});// Confirm password..
+        var vb = new sap.m.VBox({
+            items: [
+                new sap.m.Text({text: "Old Password "}),
+                op,
+                new sap.m.Text({text: "New Password "}),
+                np,
+                new sap.m.Text({text: "Confirm Password "}),
+                cp,
+            ]
+        }).addStyleClass("sapUiMediumMargin");
+        var dlg = new sap.m.Dialog({
+            title: "Changing Password",
+            buttons: [
+                new sap.m.Button({
+                    text: "Cancel", press: function () {
+                        dlg.close();
+                    }
+                }),
+                new sap.m.Button({
+                    text: "Change", press: function () {
+                        var usr = sett["LOGON_USER"];
+                        var sop = UtilGen.getControlValue(op);
+                        var snp = UtilGen.getControlValue(np);
+                        var scp = UtilGen.getControlValue(cp);
+                        if (snp != scp) {
+                            sap.m.MessageToast.show("new password not matched with confirm password !");
+                            return;
+                        }
+                        var dop = Util.getSQLValue("select password from cp_users where username=" + Util.quoted(usr));
+                        if (dop != sop) {
+                            sap.m.MessageToast.show("Invalid Password !");
+                            return;
+                        }
 
+                        var dt = Util.execSQL("update cp_users set password=" + Util.quoted(snp) + " where username=" + Util.quoted(usr));
+                        if (dt.ret == "SUCCESS") {
+                            sap.m.MessageToast.show("Password changed successfully !");
+                            dlg.close();
+                        }
+                    }
+                })
+            ],
+            content: [vb]
+        });
+        dlg.open();
     }
 
 })

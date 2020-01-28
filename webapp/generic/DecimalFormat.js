@@ -3,6 +3,7 @@
  * @constructor
  * @param {String} formatStr
  * @author Oskan Savli
+ * https://gist.github.com/oskansavli/822382
  */
 
 function DecimalFormat(formatStr)

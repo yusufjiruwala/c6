@@ -189,7 +189,7 @@ public class InstanceInfo {
 		buildProfiles();
 		setMlogonSuccessed(true);
 		ret = " \"login_state\":\"success\"";
-		ret = "{" + ret + "," + utils.getJSONMap(getMmapVar()) + "}";
+		ret = "{" + ret + "," + utils.getJSONMap(getMmapVar()) + "}";		
 		return ret;
 	}
 
@@ -228,13 +228,14 @@ public class InstanceInfo {
 				"select name,namea,SPECIFICATION,SPECIFICATIONA,FILENAME from company where crnt='X'",
 				getmDbc().getDbConnection());
 		getMmapVar().put("COMPANY_NAME", rst.getString("NAME"));
-		getMmapVar().put("COMPANY_NAMEA", rst.getString("NAME"));
-		getMmapVar().put("COMPANY_SPECS", rst.getString("NAME"));
-		getMmapVar().put("COMPANY_SPECSA", rst.getString("NAME"));
+		getMmapVar().put("COMPANY_NAMEA", rst.getString("NAMEA"));
+		getMmapVar().put("COMPANY_SPECS", rst.getString("SPECIFICATION"));
+		getMmapVar().put("COMPANY_SPECSA", rst.getString("SPECIFICATIONA"));
 		getMmapVar().put("COMPANY_LOGO", rst.getString("FILENAME"));
 		getMmapVar().put("PROFILENO", getmLoginUserPN());
 		getMmapVar().put("LOGON_USER", mLoginUser);
 		getMmapVar().put("LOGON_PASSWORD", mLoginPassword);
+		getMmapVar().put("SESSION_ID", this.sessionId);
 		rst.close();
 		// ---------------------------------------profile-names
 		getmMapProfiles().clear();
@@ -262,6 +263,7 @@ public class InstanceInfo {
 		String fl = servletContext.getRealPath("") + "reports/";
 		fl = fl.replace("\\", "/");
 		map.put("SESSION_ID", this.getmLoginUser() + "_" + this.sessionId);
+		map.forEach((key, value) -> System.out.println(key + ":" + value));			
 		b = JasperRunManager.runReportToPdf(fl + filename + ".jasper", map, con);
 		String pdffile = servletContext.getRealPath("") + "reports/" + filename + ".pdf";
 		if (useTimestamp) {

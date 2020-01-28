@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouPurCost_expenses" language="groovy" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="45f577a8-6154-4c18-9919-7927353c3ed2">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<style name="Row" style="frameDetails" forecolor="#FFFFFF" backcolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FFFFFF" backcolor="#E7FFDF"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="INVOICE_KEYFLD" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="CURRENCY_FORMAT" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select lcs_expenses.*,nvl(c_ycust.name,c_ycust.namea) acname from lcs_expenses,c_ycust
+ WHERE lcs_expenses.KEYFLD=$P{INVOICE_KEYFLD} and lcs_expenses.pur_credit_refer=c_ycust.code]]>
+	</queryString>
+	<field name="KEYFLD" class="java.math.BigDecimal"/>
+	<field name="LC_POSITION" class="java.math.BigDecimal"/>
+	<field name="LC_CODE" class="java.lang.String"/>
+	<field name="LC_EXP_TYPE" class="java.lang.String"/>
+	<field name="LC_DEBIT_AC" class="java.lang.String"/>
+	<field name="LC_CREDIT_AC" class="java.lang.String"/>
+	<field name="JVKEYFLD" class="java.math.BigDecimal"/>
+	<field name="LC_EXP_AMT" class="java.math.BigDecimal"/>
+	<field name="LC_DESCR" class="java.lang.String"/>
+	<field name="LC_DATE" class="java.sql.Timestamp"/>
+	<field name="LC_RATE" class="java.math.BigDecimal"/>
+	<field name="PUR_DEBIT_ACC" class="java.lang.String"/>
+	<field name="PUR_CREDIT_REFER" class="java.lang.String"/>
+	<field name="PUR_CREDIT_ACC" class="java.lang.String"/>
+	<field name="ACNAME" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="26" splitType="Stretch">
+			<frame>
+				<reportElement uuid="c694a285-90d5-4104-8409-b2635cafc3cd" style="headerColored" mode="Opaque" x="0" y="0" width="555" height="23"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+				</box>
+			</frame>
+			<staticText>
+				<reportElement uuid="c848c719-2f7a-43ab-b23c-c14cde1638a9" x="0" y="2" width="24" height="24"/>
+				<textElement/>
+				<text><![CDATA[POS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="cd121a7e-350a-446e-a67d-ff6aa94f5791" x="26" y="2" width="84" height="24"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Expense Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="36c8c681-bd7f-46d3-ab8a-db52d6cc7e73" x="110" y="2" width="130" height="24"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Credit Acc]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="1a2c2114-1d2a-48b9-8e8c-96e651a5065b" x="240" y="2" width="68" height="24"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="4e45133d-dc53-403a-8bea-cd2c4c08fba1" x="308" y="2" width="61" height="24"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Rate]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="66e4b9cd-f676-4122-8cf1-7353c40f0fa7" x="369" y="2" width="108" height="24"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Description]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="12444e16-a561-407c-a5f1-1bcd795bb1a2" x="477" y="2" width="78" height="24"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[KD Amount]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<frame>
+				<reportElement uuid="2765834c-94d4-4535-87a3-a6ead44990ea" x="0" y="0" width="555" height="20"/>
+				<box>
+					<bottomPen lineWidth="0.5" lineColor="#000000"/>
+				</box>
+			</frame>
+			<textField>
+				<reportElement uuid="05858f36-0f7a-4623-bddf-c9c40cec19dd" style="numQtyCenter" x="0" y="0" width="24" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{LC_POSITION}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="99a287ae-93bd-400a-85ac-536c3c162549" style="strDetails" x="26" y="0" width="84" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{LC_EXP_TYPE}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="86f4fb14-4932-4900-888b-6b3d110391d7" style="strDetails" x="110" y="1" width="130" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{ACNAME}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="0e5ad038-0812-4b1d-93eb-9b6310448d85" style="numMoney" x="240" y="1" width="68" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{LC_EXP_AMT}]]></textFieldExpression>
+				<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="f2002136-f359-4ce6-9882-83e541bf2d5f" style="strDetails" x="308" y="1" width="61" height="20"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{LC_RATE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="f659a4a1-0e6b-4607-91a5-ff31d3865d86" style="strDetails" x="369" y="1" width="108" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{LC_DESCR}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="cfcfb54c-a115-4083-a469-d8fa4d393601" style="numMoney" x="477" y="1" width="78" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{LC_EXP_AMT}.floatValue()*$F{LC_RATE}.floatValue()]]></textFieldExpression>
+				<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

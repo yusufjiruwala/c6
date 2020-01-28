@@ -653,6 +653,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             quoted: function (qt) {
                 return "'" + this.nvl(qt, "") + "'";
             },
+            getSettings: function (qt) {
+                var sett = sap.ui.getCore().getModel("settings").getData();
+                return sett[qt];
+            },
             toOraDateTimeString: function (dt) {
                 var sett = sap.ui.getCore().getModel("settings").getData();
 
@@ -944,6 +948,16 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         throw dtx.ret;
                     else
                         throw "Unexpected error in executing sql";
+                }
+                return dtx;
+            },
+            execSQLWithData: function (sql, errMsg) {
+                var dt = this.execSQL(sql);
+                var dtx = undefined;
+                if (dt.ret == "SUCCESS" && dt.data.length > 0) {
+                    var dtx = JSON.parse("{" + dt.data + "}").data;
+                } else {
+                    sap.m.MessageToast.show(errMsg);
                 }
                 return dtx;
             }

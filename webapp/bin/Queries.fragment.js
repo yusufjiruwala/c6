@@ -1639,7 +1639,6 @@ sap.ui.jsfragment("bin.Queries", {
         var view = this.view;
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
-
         var oVizFrame = view.byId("gp");
         if (oVizFrame == undefined) return;
         var tblHtml = (view.byId("htmlGraphTable") != undefined ? view.byId("htmlGraphTable").$().outerHTML() : "");

@@ -12,6 +12,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.lastSelIndex = -1;
             this.lastSelectedCode = "";
             this.onselect = undefined;
+            this.onAddRow = undefined;
             this.parent = undefined;
             this.queryType = 'table';
 
@@ -305,6 +306,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
         };
         QueryView.prototype.updateDataToTable = function () {
+            if (this.getControl().getModel() == undefined) return false;
             var dt = JSON.stringify(this.getControl().getModel().getData());
             dt = "{\"data\":" + dt + "}";
             this.mLctb.parse(dt, true);
@@ -324,12 +326,16 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 this.updateDataToTable();
 
             var idx = this.mLctb.addRow();
+            if (this.onAddRow != undefined)
+                this.onAddRow(idx, this.mLctb);
+
             if (Util.nvl(dontReload, false) == false) {
-                var dt = this.buildJsonData();
-                var oModel = new sap.ui.model.json.JSONModel();
-                oModel.setData(dt);
-                this.getControl().setModel(oModel);
-                this.getControl().bindRows("/");
+                this.updateDataToControl();
+                // var dt = this.buildJsonData();
+                // var oModel = new sap.ui.model.json.JSONModel();
+                // oModel.setData(dt);
+                // this.getControl().setModel(oModel);
+                // this.getControl().bindRows("/");
             }
             return idx;
         };
@@ -338,12 +344,15 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             if (this.mLctb.rows.length > 0)
                 this.updateDataToTable();
             var idx = this.mLctb.insertRow(idx);
+            if (this.onAddRow != undefined)
+                this.onAddRow(idx, this.mLctb);
             if (Util.nvl(dontReload, false) == false) {
-                var dt = this.buildJsonData();
-                var oModel = new sap.ui.model.json.JSONModel();
-                oModel.setData(dt);
-                this.getControl().setModel(oModel);
-                this.getControl().bindRows("/");
+                this.updateDataToControl();
+                // var dt = this.buildJsonData();
+                // var oModel = new sap.ui.model.json.JSONModel();
+                // oModel.setData(dt);
+                // this.getControl().setModel(oModel);
+                // this.getControl().bindRows("/");
             }
             return idx;
 
@@ -929,7 +938,11 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             var rowCount = this.getControl().getVisibleRowCount(); //number of visible rows
             var rowStart = this.getControl().getFirstVisibleRow(); //starting Row index
             var cellAdd = 0;
-            if (this.mLctb.cols[0].mGrouped) cellAdd = 1;
+            var groupedAdd = 0;
+            if (this.mLctb.cols[0].mGrouped) {
+                cellAdd = 1;
+                groupedAdd = 1;
+            }
             var cellsCount = this.mLctb.cols.length;
 
             if (oModel.getData() == undefined)
@@ -1025,8 +1038,9 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
                 if (cellValue != undefined && (cellValue + "").startsWith(String.fromCharCode(4095))) {
                     for (var k = 0 + cellAdd; k < cellsCount; k++) {
-                        var cv = oModel.getProperty(this.mLctb.cols[k].mColName, currentRowContext);
-                        if (cv != undefined && (cv + "").trim().length > 0 &&
+                        var cv = oModel.getProperty(this.mLctb.cols[(k - cellAdd) + groupedAdd].mColName, currentRowContext);
+                        if (!(cv + "").startsWith(String.fromCharCode(4095)) &&
+                            cv != undefined && (cv + "").trim().length > 0 &&
                             this.getControl().getRows()[i].getCells()[k - cellAdd] != undefined)
                             this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass("yellow");
 

@@ -246,9 +246,11 @@ public class UserRoute {
 		try {
 			if (!params.containsKey("user") || !params.containsKey("password") || !params.containsKey("file"))
 				throw new Exception("require parameters .user , password , file");
-			ret = instanceInfo.loginUser(params);
 			sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
 			instanceInfo.sessionId = sessionId;
+			ret = instanceInfo.loginUser(params);
+			// sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+			//instanceInfo.sessionId = sessionId;
 			QueryExe.execute("begin c6_session.delete_cache('" + instanceInfo.getmLoginUser() + "');end;",
 					instanceInfo.getmDbc().getDbConnection());
 
@@ -272,7 +274,7 @@ public class UserRoute {
 
 		return ret;
 	}
-	
+
 	@RequestMapping(value = "/sqldata", method = RequestMethod.POST)
 	public ResponseEntity<SQLJson> test(@RequestBody SQLJson sql) {
 		sql.setRet("ok");
@@ -925,7 +927,8 @@ public class UserRoute {
 		mp.put("COMPANY_SPECS", instanceInfo.getMmapVar().get("COMPANY_SPECS"));
 		mp.put("COMPANY_SPECSA", instanceInfo.getMmapVar().get("COMPANY_SPECSA"));
 		mp.put("COMPANY_LOGO", instanceInfo.getMmapVar().get("COMPANY_LOGO"));
-
+		mp.put("SES_ID", instanceInfo.getMmapVar().get("SESSION_ID"));
+		//mp.forEach((key, value) -> System.out.println(key + ":" + value));		
 		byte[] pdfFile = instanceInfo.storeReport(reportfile, mp, false);
 		return pdfFile;
 
