@@ -9,7 +9,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
-            ord_code: 106
+            ord_code: 106,
+            onm: ""
         };
         this.pgDetail = new sap.m.Page({showHeader: false});
 
@@ -79,7 +80,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 UtilGen.loadDataFromJson(this.jo, dtx[0], true);
                 this.jo.ord_no.setEnabled(false);
                 UtilGen.setControlValue(this.jo.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
-                var cnt = Util.getSQLValue("select nvl(count(*),0) from order1 where ord_reference=" + dtx[0].ORD_NO);
+                var cnt = Util.getSQLValue("select nvl(count(*),0) from order1 where ord_code!=103 and ord_reference=" + dtx[0].ORD_NO);
                 if (cnt > 0) {
                     this.jo.ord_ref.setEnabled(false);
                     this.jo.ord_date.setEditable(false);
@@ -138,7 +139,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             selectionChange: function (event) {
                 that.generate_jo_no();
             }
-        }, "string", undefined, undefined, "@1/Air,2/Land,3/Marine");
+        }, "string", undefined, undefined, "@1/Land,2/Sea,3/Air");
 
         //Transport Type, ORDACC
         this.jo.ordacc = UtilGen.createControl(sap.m.ComboBox, this.view, "ORDACC", {
@@ -232,6 +233,13 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             displayFormat: sett["ENGLISH_DATE_FORMAT"],
             enabled: false
         }, "date");
+        this.jo.attn = UtilGen.createControl(sap.m.Input, this.view, "joAttn", {
+            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+        }, "string");
+        this.jo.payterm = UtilGen.createControl(sap.m.Input, this.view, "jopayterm", {
+            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+        }, "string");
+
         if (Util.nvl(addForm, true) == true) {
             this.frmJO = UtilGen.formCreate("", true,
                 ["Location / File", this.jo.location_code,
@@ -246,6 +254,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     "Customer", this.jo.ord_ref,
                     "Cust. Ref# ", this.jo.ord_ship,
                     "Cust Inv NO", this.jo.adjust_descr,
+                    "Origin", this.jo.attn,
+                    "Destination", this.jo.payterm,
                     // "# ",
                     // "Start Date", this.jo.startdate,
                     // "End Date", this.jo.enddate,
@@ -298,17 +308,25 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         }
 
         var type = UtilGen.getControlValue(this.jo.ord_type);
+        var ord = UtilGen.getControlValue(this.jo.ord_no);
         var t_type = UtilGen.getControlValue(this.jo.ordacc);
         var od = sdf.format(UtilGen.getControlValue(this.jo.ord_date)).replace(new RegExp("/", 'g'), "");
 
-        var fnd = true;
-        var on = Math.floor(Math.random() * 100) + 1; //UtilGen.getControlValue(this.jo.ord_no);
-        while (!fnd) {
-            on = Math.floor(Math.random() * 100) + 1;
-            fnd = (Util.getSQLValue("select nvl(max(oname),'-1') from order1 where ord_code=" + this.vars.ord_code + " and oname=" + Util.quoted(on)) == "-1" ? false : true);
+        // var fnd = true;
+        // var on = Math.floor(Math.random() * 9999) + 1; //UtilGen.getControlValue(this.jo.ord_no);
+        // while (!fnd) {
+        //     on = Math.floor(Math.random() * 9999) + 1;
+        //     fnd = (Util.getSQLValue("select nvl(max(onm),'-1') from order1 where ord_code=" + this.vars.ord_code + " and onm=" + Util.quoted(on)) == "-1" ? false : true);
+        // }
+        // on = ("00" + on).slice(-4);
+        var on = Util.getSQLValue("select rnd_no from lgrnd where jo=" + ord);
+        if (Util.nvl(on, "") == "") {
+            sap.m.MessageToast.show("#" + ord + " may not defined in random list..");
+            UtilGen.setControlValue(this.jo.oname, "");
+            return;
         }
-        on = ("00" + on).slice(-3);
         UtilGen.setControlValue(this.jo.oname, type + "/" + t_type + "/" + od + "/" + on, undefined, true);
+        this.vars.onm = on;
     }
     ,
     showDetailPage: function () {
@@ -325,12 +343,14 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         var dt = Util.execSQL("select *from lg_info where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStr);
         if (dt.ret == "SUCCESS" && dt.data.length > 0) {
             var dtx = JSON.parse("{" + dt.data + "}").data;
-            UtilGen.loadDataFromJson(this.joDet1, dtx[0], true);
+            if (dtx.length > 0)
+                UtilGen.loadDataFromJson(this.joDet1, dtx[0], true);
         }
     }
     ,
     createViewDetail: function () {
         var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
         this.joDet1 = {}; // basic information for jo details
         // job order selected
         var selectedJob = UtilGen.getControlValue(that.jo.ord_no);
@@ -423,6 +443,25 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             this.joDet1.lg_consignee = this.addControl(frmElements, "Consignee", sap.m.Input, "detConsignee", {selected: false}, "string");
             //
         }
+        frmElements.push(new sap.ui.core.Title({text: "Other info"}));
+        this.joDet1.lg_description = this.addControl(frmElements, "Descr", sap.m.Input, "detDescr", {selected: false}, "string");
+        this.joDet1.lg_notes = this.addControl(frmElements, "Remarks", sap.m.Input, "detRemarks", {selected: false}, "string");
+        this.joDet1.lg_l_arrival_date = this.addControl(frmElements, "Arrival date", sap.m.DatePicker, "detArrival", {
+            valueFormat: sett["ENGLISH_DATE_FORMAT"],
+            displayFormat: sett["ENGLISH_DATE_FORMAT"]
+        }, "date");
+        this.joDet1.lg_l_delivery_date = this.addControl(frmElements, "Delivery date", sap.m.DatePicker, "detDelvDate", {
+            valueFormat: sett["ENGLISH_DATE_FORMAT"],
+            displayFormat: sett["ENGLISH_DATE_FORMAT"]
+        }, "date");
+        this.joDet1.lg_l_clearance_date = this.addControl(frmElements, "Clearance date", sap.m.DatePicker, "detClearDate", {
+            valueFormat: sett["ENGLISH_DATE_FORMAT"],
+            displayFormat: sett["ENGLISH_DATE_FORMAT"]
+        }, "date");
+
+
+        // end element for scrolling...
+        frmElements.push(new sap.ui.core.Title({text: ""}));
 
         this.pgDetail.addContent(tb);
         frmBasic = UtilGen.formCreate("", true, frmElements);
@@ -506,11 +545,13 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         // inserting or updating order1 and lg_info tables.
         var custName = Util.getSQLValue("select name from c_ycust where code=" + Util.quoted(UtilGen.getControlValue(that.jo.ord_ref)));
         if (this.qryStr == "") {
+            this.generate_jo_no();
             k = UtilGen.getSQLInsertString(this.jo, {
                 "ord_code": this.vars.ord_code,
                 "ord_flag": 2,
                 "ORD_REFNM": Util.quoted(custName),
-                "periodcode": Util.quoted(sett["CURRENT_PERIOD"])
+                "periodcode": Util.quoted(sett["CURRENT_PERIOD"]),
+                "onm": this.vars.onm
             });
             k = "insert into order1 " + k;
             // if jo details defined then insert records in LG_INFO
@@ -527,8 +568,13 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStr), ["ONAME", "ORD_NO"]);
             // if jo details defined then update records in LG_INFO
             if (this.joDet1 != undefined && Util.objToStr(this.joDet1).length > 0) {
-                k += ";" + UtilGen.getSQLUpdateString(this.joDet1, "lg_info", {}, " ord_code=" + Util.quoted(this.vars.ord_code)
-                    + " and ord_no=" + Util.quoted(this.qryStr)) + ";";
+                // k += ";" + UtilGen.getSQLUpdateString(this.joDet1, "lg_info", {}, " ord_code=" + Util.quoted(this.vars.ord_code)
+                //     + " and ord_no=" + Util.quoted(this.qryStr)) + ";";
+                k += "; delete from lg_info where ord_no=" + UtilGen.getControlValue(this.jo.ord_no) + " and ord_code=" + this.vars.ord_code;
+                k += "; insert into lg_info " + UtilGen.getSQLInsertString(this.joDet1, {
+                    "ord_no": UtilGen.getControlValue(this.jo.ord_no),
+                    "ord_code": this.vars.ord_code
+                }) + ";";
             } else k += ";";
             k = "begin " + k + " end;";
         }

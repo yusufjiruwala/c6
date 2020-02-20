@@ -453,7 +453,7 @@
 }
 
 .yellow {
-    background-color: yellow!important;
+    background-color: yellow !important;
 }
 
 .qrGroup {
@@ -545,6 +545,10 @@
 
 .sapUiFormResGrid.sapUiFormToolbar.oliveTB > div:first-child {
     background-color: lightseagreen !important;
+}
+
+.sapUiFormResGrid.sapUiFormToolbar.goldenTB > div:first-child {
+    background-color: lightgoldenrodyellow !important;
 }
 
 .whiteText {

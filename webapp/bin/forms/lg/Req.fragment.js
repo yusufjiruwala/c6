@@ -1,6 +1,7 @@
 sap.ui.jsfragment("bin.forms.lg.Req", {
 
     createContent: function (oController) {
+        jQuery.sap.require("sap.m.MessageBox");
         var that = this;
         this.oController = oController;
         this.lastSel = undefined;
@@ -8,6 +9,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.qryStr = this.oController.qryStr;
         this.ordRef = this.oController.ordRef;
         this.ordRefNm = this.oController.ordRefNm;
+        this.ordType = this.oController.ordType;
+        this.ordNo = this.oController.ordNo;
 
         this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
 
@@ -36,6 +39,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.joApp.addDetailPage(this.pgPI);
         this.joApp.addDetailPage(this.pgDN);
         this.joApp.to(this.mainPage, "show");
+        this.showOnstartup();
         return this.joApp;
 
     },
@@ -45,6 +49,12 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var that = this;
         var view = this.view;
         var sett = sap.ui.getCore().getModel("settings").getData();
+
+        this.cmdPrDr = new sap.m.Button({
+            icon: "sap-icon://print", text: "DR Note", press: function () {
+                that.printDRNote();
+            }
+        });
 
         (this.view.byId("reqCmdPost") != undefined ? this.view.byId("reqCmdPost").destroy() : null);
 
@@ -60,7 +70,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.loadData();
                 that.lastSel = UtilGen.getControlValue(that.types);
             }
-        }, "string", undefined, undefined, "@103/Purchases - 103,111/Sales - 111,151/Debit Notes - 151,152/Credit Notes - 152,141/Sales Proforma - 141");
+        }, "string", undefined, undefined, "@103/Purchases - 103,131/P.Return,111/Sales - 111,151/Debit Notes - 151,152/Credit Notes - 152,141/Sales Proforma - 141");
         (this.view.byId("tbCreate") != undefined ? this.view.byId("tbCreate").destroy() : null);
         (this.view.byId("cmdReqBack") != undefined ? this.view.byId("cmdReqBack").destroy() : null);
         var tb = new sap.m.Toolbar(view.createId("tbCreate"), {
@@ -105,6 +115,13 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                     }
                 }),
                 new sap.m.Button({
+                    icon: "sap-icon://add", text: "P. Return", press: function () {
+                        //that.qv.getControl().setSelectedIndex(-1);
+                        that.lastSel = "131";
+                        that.openPR(131);
+                    }
+                }),
+                new sap.m.Button({
                     icon: "sap-icon://add", text: "Proforma", press: function () {
                         that.qv.getControl().setSelectedIndex(-1);
                         that.lastSel = "141";
@@ -113,8 +130,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 })
             ]
         });
-
-        var tb1 = new sap.m.Toolbar({
+        (this.view.byId("tbCreate2") != undefined ? this.view.byId("tbCreate2").destroy() : null);
+        var tb1 = new sap.m.Toolbar(view.createId("tbCreate2"), {
             content: [
                 that.types,
                 // next type by pressing quick button.
@@ -156,8 +173,17 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                     icon: "sap-icon://accept",
                     text: "Post",
                     press: function () {
-                        var ty = UtilGen.getControlValue(that.types);
-                        that.post_po();
+                        sap.m.MessageBox.confirm("Are you sure, to POST on today date ?  ", {
+                            title: "Confirm",                                    // default
+                            onClose: function (oAction) {
+                                if (oAction == sap.m.MessageBox.Action.OK) {
+                                    that.post_po();
+                                }
+                            },                                       // default
+                            styleClass: "",                                      // default
+                            initialFocus: null,                                  // default
+                            textDirection: sap.ui.core.TextDirection.Inherit     // default
+                        });
                     }
                 })
             ]
@@ -192,6 +218,17 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var ocAdd = {};
         if (!that.validateDNSelection(ocAdd))
             return;
+        that.openForm(frmName, frm, ocAdd)
+
+    },
+    openPR: function (dn) {
+        var that = this;
+        var frm = that.pgDN;
+        var frmName = "bin.forms.lg.PR";
+        var ocAdd = {};
+        if (!that.validatePRSelection(ocAdd))
+            return;
+
         that.openForm(frmName, frm, ocAdd)
 
     },
@@ -231,6 +268,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 frm = this.pgSO;
                 frmName = "bin.forms.lg.SP";
                 break;
+            case 131:
+                frm = this.pgSO;
+                frmName = "bin.forms.lg.PR";
+                break;
             default:
                 break;
         }
@@ -268,6 +309,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var view = this.view;
         var flg = Util.getSQLValue("select ord_flag from order1 where ord_code=106 and ord_no=" + this.qryStr);
         var tb = view.byId("tbCreate");
+        var tb2 = view.byId("tbCreate2");
         if (flg == 1 || flg == "1")
             for (var i in tb.getContent()) {
                 tb.getContent()[i].setEnabled(false);
@@ -279,7 +321,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         if (sett["LG_POST_" + typ] == "DISABLED" || Util.nvl(sett["LG_POST_ALL"], "DISABLED") == "DISABLED")
             view.byId("reqCmdPost").setEnabled(false);
 
-
+        if (typ == 111)
+            tb2.addContent(this.cmdPrDr);
+        else
+            tb2.removeContent(this.cmdPrDr);
     }
 
     ,
@@ -336,6 +381,11 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                         sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
                             " where ord_code=103 and ord_no=" + on + ";" +
                             " x_pur_and_srv(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=103 and ord_no=" + on + ";";
+                        break;
+                    case 131:
+                        sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
+                            " where ord_code=131 and ord_no=" + on + ";" +
+                            " x_pr_and_iss(" + on + "); update order1 set approved_by='" + usr + "' where ord_code=131 and ord_no=" + on + ";";
                         break;
                     case 111:
                         sql = "update order1 set posted_date=to_date(to_char(sysdate,'dd/mm/rrrr'),'dd/mm/rrrr') " +
@@ -478,7 +528,49 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             ocAdd[i] = oC[i];
         return true;
     },
-    printSel: function () {
+    validatePRSelection: function (ocAdd) {
+        var that = this;
+        var oC = {};
+        var slices = this.qv.getControl().getSelectedIndices();
+        if (slices.length <= 0) {
+            sap.m.MessageToast.show("Must select POSTED PURCHASE  create new...");
+            return false;
+        }
+        var oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE"); // ord code to check type
+        if (oc != 103) {
+            sap.m.MessageToast.show("Must select POSTED PURCHASE to create new...");
+            return false;
+        }
+        if (oc == 103 && slices.length > 1) {
+            sap.m.MessageToast.show("Must select only SINGLE POSTED PROFORMA to create new...");
+            return false;
+        }
+
+        var flg = this.qv.mLctb.getFieldValue(slices[0], "FLGX"); // ord code to check type
+
+        if (oc == 103 && flg != 2) {
+            sap.m.MessageToast.show("Must be POSTED !");
+            return false;
+        }
+        oC = {
+            qryStr: this.qryStr,
+            qryStrSO: (Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO")),
+            qryStrPO: "",
+            ordRef: that.ordRef,
+            ordRefNm: that.ordRefNm,
+            selectedReq: [],
+            getView:
+                function () {
+                    return that.view;
+                }
+        };
+
+        for (var i in oC)
+            ocAdd[i] = oC[i];
+        return true;
+
+    },
+    printSel: function (preFileName) {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
         var slices = this.qv.getControl().getSelectedIndices();
@@ -487,7 +579,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             return false;
         }
         var plsql = "";
+
         var oc = this.qv.mLctb.getFieldValue(slices[0], "ORD_CODE");
+        var fn = Util.nvl(preFileName, "");
         for (var i in slices) {
             var on = this.qv.mLctb.getFieldValue(slices[i], "ORD_NO");
             var sq = "insert into temporary(usernm,idno ,field1) values (:usernm,:idno,:field1);";
@@ -499,7 +593,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         plsql = " begin delete from temporary where idno=" + oc + " and usernm=" + Util.quoted(sett["SESSION_ID"]) + ";" + plsql + " end;";
         var dt = Util.execSQL(plsql);
         if (dt.ret = "SUCCESS")
-            Util.doXhr("report?reportfile=rptVou" + oc, true, function (e) {
+            Util.doXhr("report?reportfile=rptVou" + fn + oc, true, function (e) {
                 if (this.status == 200) {
                     var blob = new Blob([this.response], {type: "application/pdf"});
                     var link = document.createElement('a');
@@ -512,6 +606,64 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                     document.body.removeChild(link);
                 }
             })
+    },
+    printDRNote: function () {
+        this.printSel("DR")
+    },
+    showOnstartup: function () {
+        var that = this;
+        if (this.ordType == undefined)
+            return;
+        var frm = this.pgPO;
+        var frmName = "";
+        switch (this.ordType) {
+            case 103:
+                frm = this.pgPO;
+                frmName = "bin.forms.lg.PO";
+                break;
+            case 111:
+                frm = this.pgSO;
+                frmName = "bin.forms.lg.SO";
+                break;
+            case 141:
+                frm = this.pgSO;
+                frmName = "bin.forms.lg.SP";
+                break;
+            case 131:
+                frm = this.pgSO;
+                frmName = "bin.forms.lg.PR";
+                break;
+            default:
+                break;
+        }
+        var oC;
+        var ocAdd;
+        if (ocAdd == undefined)
+            oC = {
+                qryStr: this.qryStr,
+                qryStrPO: this.ordNo,
+                selectedReq: [this.ordNo],
+                ordRef: that.ordRef,
+                ordRefNm: that.ordRefNm,
+                getView:
+                    function () {
+                        return that.view;
+                    }
+            };
+        else
+            oC = ocAdd;
+
+        var sp = sap.ui.jsfragment(frmName, oC);
+        sp.backFunction = function () {
+            that.joApp.to(that.mainPage, "show");
+            that.createView();
+            that.loadData();
+        };
+        sp.app = this.joApp;
+        UtilGen.clearPage(frm);
+        frm.addContent(sp);
+        this.joApp.to(frm, "slide");
+
     }
 });
 

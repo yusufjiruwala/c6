@@ -121,7 +121,12 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             that.openForm("bin.forms.lg.Req", that.pgReq);
         });
         pnl31.attachBrowserEvent("click", function (e) {
-            that.openForm("bin.forms.lg.MG", that.pgCnt);
+            //that.openForm("bin.forms.lg.MG", that.pgCnt);
+            that.openForm("bin.Queries", that.pgCnt, {
+                setProfile: "8800", backFunction: function () {
+
+                }
+            });
         });
         pnl4.attachBrowserEvent("click", function (e) {
             that.openForm("bin.forms.lg.CloseJO", that.pgReq);
@@ -179,6 +184,10 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         var bt = new sap.m.Button({
             icon: "sap-icon://print",
             press: function () {
+                that.view.colData = {};
+                that.view.reportsData = {
+                    report_info: {report_name: "JO Lists"}
+                };
                 that.qv.printHtml(that.view, "para");
             }
         });
@@ -252,6 +261,15 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 if (sett["LG_MAIN_QUERY_SHOW_ORD_NO"] != "TRUE")
                     that.qv.mLctb.cols[c].getMUIHelper().display_width = 0;
 
+                c = that.qv.mLctb.getColPos("TOTAL_PURCHASE");
+                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
+
+                c = that.qv.mLctb.getColPos("TOTAL_SALES");
+                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
+
+                c = that.qv.mLctb.getColPos("COST_IN_HAND");
+                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
+
                 // that.qv.mLctb.cols[c].mCfOperator = ":EXPIRY_IN <= 0 && :EXPIRY_IN != 0 ";
                 // that.qv.mLctb.cols[c].mCfTrue = "font-weight: bold;color:red!important;";
 
@@ -272,36 +290,48 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         }
     },
 
-    openForm: function (frag, frm) {
+    openForm: function (frag, frm, ocAdd) {
         var that = this;
         this.lastFirstRow = that.qv.getControl().getFirstVisibleRow();
         this.lastIndexSelected = that.qv.getControl().getSelectedIndex();
 
+        var indicOF = that.qv.getControl().getBinding("rows").aIndices;
         var indic = that.qv.getControl().getSelectedIndices();
         var arPo = [];
+
         for (var i = 0; i < indic.length; i++)
-            arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), indic[i], "ORD_NO"), ""));
+            arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), indicOF[indic[i]], "ORD_NO"), ""));
         var oC = {
             qryStr: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), ""),
             ordRef: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_REF"), ""),
             ordRefNm: Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_REFNM"), ""),
+            ordType: undefined,
+            ordNo: undefined,
             ordNos: arPo,
             getView:
                 function () {
                     return that.view;
                 }
         };
+        if (ocAdd != undefined)
+            for (var xx in ocAdd)
+                oC[xx] = ocAdd[xx];
+
         var sp = sap.ui.jsfragment(frag, oC);
         sp.backFunction = function () {
-            that.app.to(that.mainPage, "show");
-            that.createView();
-            that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
-            that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
+            that.doBack();
         };
         sp.app = this.app;
         UtilGen.clearPage(frm);
         frm.addContent(sp);
         this.app.to(frm, "slide");
+    },
+    doBack: function () {
+        var that = this;
+        that.app.to(that.mainPage, "show");
+        that.createView();
+        that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
+        that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
     }
 });
 

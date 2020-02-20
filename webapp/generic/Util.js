@@ -840,7 +840,11 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var qv = new QueryView("searchTbl");
                 qv.getControl().setFixedBottomRowCount(0);
                 qv.getControl().addStyleClass("sapUiSizeCondensed");
-
+                if (fnOnselect != undefined) {
+                    qv.getControl().attachRowSelectionChange(undefined, function () {
+                        fnOnselect();
+                    });
+                }
                 var searchField = new sap.m.SearchField({
                     liveChange: function (event) {
                         var flts = [];
@@ -871,8 +875,9 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     qv.setJsonStr("{" + dat.data + "}");
                     qv.loadData();
                     container.addItem(qv.getControl());
-                    if (!Util.nvl(multiSelect, false))
+                    if (!Util.nvl(multiSelect, false)) {
                         qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
+                    }
                     qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
                     return qv;
                 }
@@ -979,20 +984,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     contentHeight: this.nvl(height, "500px"),
                     contentWidth: this.nvl(width, "400px")
                 });
-
-                var qv = this.showSearchTable(sql, vbox, cols, undefined, Util.nvl(multiSelect, false));
-                qv.getControl().addStyleClass("noColumnBorder");
-                if (visibleRowCount != undefined) {
-                    qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
-                    qv.getControl().setVisibleRowCount(this.nvl(visibleRowCount, 6));
-                }
-
-                if (qv == null) return
-
-                if (fnShowSel != undefined)
-                    fnShowSel(qv);
-
-                dlg.addButton(new sap.m.Button({
+                var btn = new sap.m.Button({
                     text: "Select", press: function () {
                         var sl = qv.getControl().getSelectedIndices();
                         if (sl.length <= 0 && !Util.nvl(multiSelect, false)) {
@@ -1013,7 +1005,27 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         if (fnSel(data))
                             dlg.close();
                     }
-                }));
+                });
+
+                var qv = this.showSearchTable(sql, vbox, cols, function () {
+                    if (Util.nvl(multiSelect, false) == false) {
+                        sap.m.MessageToast.show("selected !");
+                        btn.firePress();
+                    }
+                }, Util.nvl(multiSelect, false));
+
+                qv.getControl().addStyleClass("noColumnBorder");
+                if (visibleRowCount != undefined) {
+                    qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
+                    qv.getControl().setVisibleRowCount(this.nvl(visibleRowCount, 6));
+                }
+
+                if (qv == null) return
+
+                if (fnShowSel != undefined)
+                    fnShowSel(qv);
+
+                dlg.addButton(btn);
                 dlg.open();
             },
 

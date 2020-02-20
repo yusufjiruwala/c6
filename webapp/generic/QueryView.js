@@ -1095,7 +1095,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             // purpose  :  header will show parameters, report title, etc..
             h = ""
             cnt == 0;
-            var rep = view.byId("txtSubGroup").getValue();
+            var rep = (view.byId("txtSubGroup") != undefined ? view.byId("txtSubGroup").getValue() : "");
             var company = "<div class='company'>" + sett["COMPANY_NAME"] + "</div> " +
                 "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
                 " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>";

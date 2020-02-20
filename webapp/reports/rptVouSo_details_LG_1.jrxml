@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSo_details" language="groovy" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="701d3252-6fa6-4451-b632-0ea850c00238">
-	<property name="ireport.zoom" value="1.0"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSo_details" language="groovy" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="701d3252-6fa6-4451-b632-0ea850c00238">
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
@@ -72,13 +72,10 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 	<field name="FC_MAIN_DESCR" class="java.lang.String"/>
 	<field name="DESCR_I" class="java.lang.String"/>
 	<field name="AMT" class="java.math.BigDecimal"/>
-	<pageHeader>
-		<band height="13"/>
-	</pageHeader>
 	<columnHeader>
-		<band height="24">
+		<band height="16">
 			<frame>
-				<reportElement style="headerColored" mode="Opaque" x="2" y="0" width="553" height="23" backcolor="#FFFFCC" uuid="c42ca9c9-d311-4bf3-96ae-a1f89475342a"/>
+				<reportElement style="headerColored" mode="Opaque" x="2" y="0" width="553" height="16" backcolor="#FFFFCC" uuid="c42ca9c9-d311-4bf3-96ae-a1f89475342a"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="0.5"/>
@@ -87,7 +84,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				</box>
 			</frame>
 			<staticText>
-				<reportElement x="392" y="0" width="60" height="24" uuid="29be1085-c530-422b-ad73-592af237d71e"/>
+				<reportElement x="392" y="1" width="60" height="15" uuid="29be1085-c530-422b-ad73-592af237d71e"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -96,7 +93,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[Qty]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="25" y="0" width="67" height="24" uuid="4d01b7d9-cac1-4faa-8e28-8362d9d7bf56"/>
+				<reportElement x="25" y="1" width="67" height="15" uuid="4d01b7d9-cac1-4faa-8e28-8362d9d7bf56"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -105,7 +102,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[Code]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="2" y="0" width="23" height="24" uuid="cafb8956-200d-46b0-9225-8a00481b1799"/>
+				<reportElement x="2" y="1" width="23" height="15" uuid="cafb8956-200d-46b0-9225-8a00481b1799"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -113,7 +110,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[POS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="92" y="0" width="238" height="24" uuid="e7384a99-da15-4686-a263-5d91c823fbbb"/>
+				<reportElement x="92" y="1" width="238" height="15" uuid="e7384a99-da15-4686-a263-5d91c823fbbb"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -122,7 +119,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[Description]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="452" y="0" width="103" height="24" uuid="1a4b2cd6-fd7d-4d64-889e-f86e5bccdefd"/>
+				<reportElement x="452" y="1" width="103" height="15" uuid="1a4b2cd6-fd7d-4d64-889e-f86e5bccdefd"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -131,7 +128,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[Total Charges]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="330" y="0" width="62" height="24" uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4"/>
+				<reportElement x="330" y="1" width="62" height="15" uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -142,7 +139,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="21" splitType="Stretch">
+		<band height="20" splitType="Stretch">
 			<frame>
 				<reportElement stretchType="RelativeToBandHeight" x="1" y="0" width="554" height="20" uuid="f54499da-6f17-450d-91dc-899e83eab9fb"/>
 				<box>
@@ -152,7 +149,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textField>
-					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="0" y="0" width="24" height="20" uuid="fc898ee5-e59b-409e-a053-94907b8766f2"/>
+					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="0" y="0" width="24" height="15" uuid="fc898ee5-e59b-409e-a053-94907b8766f2"/>
 					<box>
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -161,7 +158,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<textFieldExpression><![CDATA[$F{ORD_POS}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="24" y="0" width="67" height="20" uuid="9a81afeb-d169-4236-91a0-c1027b7a97ad"/>
+					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="24" y="0" width="67" height="15" uuid="9a81afeb-d169-4236-91a0-c1027b7a97ad"/>
 					<box>
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -170,7 +167,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<textFieldExpression><![CDATA[$F{ORD_REFER}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="391" y="0" width="60" height="20" uuid="927a6454-d3b8-44fd-81a3-eea2d4965281"/>
+					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="391" y="0" width="60" height="15" uuid="927a6454-d3b8-44fd-81a3-eea2d4965281"/>
 					<box>
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -179,7 +176,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<textFieldExpression><![CDATA[($F{ORD_ALLQTY}.floatValue() / $F{ORD_PACK}.floatValue())]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="451" y="0" width="103" height="20" uuid="04733140-a991-467d-a862-16d72be5a819"/>
+					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="451" y="0" width="103" height="15" uuid="04733140-a991-467d-a862-16d72be5a819"/>
 					<box rightPadding="4">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -191,7 +188,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<textField>
-					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="329" y="0" width="62" height="20" uuid="e3eab240-8555-406f-aac0-da4ef12bfd20"/>
+					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="329" y="0" width="62" height="15" uuid="e3eab240-8555-406f-aac0-da4ef12bfd20"/>
 					<box rightPadding="5">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -201,7 +198,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="238" height="20" uuid="d4232a84-187f-4290-99a8-6ce4814bca0d"/>
+					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="238" height="15" uuid="d4232a84-187f-4290-99a8-6ce4814bca0d"/>
 					<box leftPadding="2">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -217,7 +214,4 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 			</frame>
 		</band>
 	</detail>
-	<columnFooter>
-		<band/>
-	</columnFooter>
 </jasperReport>

@@ -39,6 +39,7 @@ sap.ui.define(["./DataCell"], function (DataCell) {
         this.mRetValues;
         this.mDefaultValue;
         this.mEnabled = true;
+        this.beforeSearchEvent = undefined;
     }
 
     Column.prototype = {

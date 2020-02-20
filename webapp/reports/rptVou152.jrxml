@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVou152" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="64"/>
+	<property name="ireport.y" value="0"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -31,6 +31,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[select decode((select ord_type from order1 o where o.ord_code=106 and o.ord_no=order1.ord_reference),2,lg_info.lg_s_mbl,3,lg_info.LG_A_MAWB) bl,     order1.* ,lg_info.*,f_words_2(order1.ord_amt-order1.ord_discamt,ORDER1.ORD_FC_DESCR) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
+(select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
 (select max(payterm) from order1 o where ord_code=106 and ord_no=order1.ord_reference) payterm_1,
 (select max(attn) from order1 o where ord_code=106 and ord_no=order1.ord_reference) attn_1,
@@ -112,6 +113,7 @@ order by order1.ord_no]]>
 	<field name="ORD_FC_DISC" class="java.math.BigDecimal"/>
 	<field name="ORD_FC_MAIN_RATE" class="java.math.BigDecimal"/>
 	<field name="ORD_FC_MAIN_DESCR" class="java.lang.String"/>
+	<field name="ONM" class="java.math.BigDecimal"/>
 	<field name="LG_KIND" class="java.lang.String"/>
 	<field name="LG_PERMANENT_EXEMPTION" class="java.lang.String"/>
 	<field name="LG_TEMPORARY_IMPORT" class="java.lang.String"/>
@@ -149,6 +151,7 @@ order by order1.ord_no]]>
 	<field name="LG_L_ARRIVAL_DATE" class="java.sql.Timestamp"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
+	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
 	<field name="PARENT_NAME" class="java.lang.String"/>
 	<field name="PAYTERM_1" class="java.lang.String"/>
@@ -214,7 +217,7 @@ order by order1.ord_no]]>
 				<textField>
 					<reportElement style="strHeader" x="350" y="129" width="204" height="20" uuid="db2fead9-9b7a-4046-b12d-ac809cbf1ca8"/>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression><![CDATA[$F{ORD_NO} +" - "+ $F{ONAME}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{JOB_ONAME} +" - "+ $F{ONAME}]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd/MM/yyyy">
 					<reportElement style="strHeader" x="335" y="162" width="218" height="20" uuid="2c3130a6-9e18-4e57-8896-467e45b8b434"/>

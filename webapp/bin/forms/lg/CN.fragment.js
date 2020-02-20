@@ -127,8 +127,18 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
     createViewHeader: function () {
         var that = this;
         var fe = [];
-        this.o1.oname = this.addControl(fe, "Type", sap.m.Input, "dnfrde",
+        this.o1.oname = this.addControl(fe, "Items Type", sap.m.Input, "dnfrde",
             {enabled: false}, "string");
+        this.o1.ord_type = this.addControl(fe, "@Req Type", sap.m.ComboBox, "dnord_type",
+            {
+                items: {
+                    path: "/",
+                    template: new sap.ui.core.ListItem({text: "{CODE} - {NAME}", key: "{CODE}"}),
+                    templateShareable: true
+                },
+                enabled: false
+            }, "string", undefined, "@1/Sales return,2/Sales Discount");
+
         this.o1.ord_no = this.addControl(fe, "Order No", sap.m.Input, "dnOrdNo",
             {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "number"),
             this.o1.ord_date = this.addControl(fe, "@Date", sap.m.DatePicker, "dnOrdDate",
@@ -190,6 +200,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
         this.vars.pur_inv_no = -1;
 
         UtilGen.setControlValue(this.o1.oname, "FR", "FR", true);
+        UtilGen.setControlValue(this.o1.ord_type, 1);
         this.view.byId("poMsgInv").setText("");
         this.view.byId("poCmdSave").setEnabled(true);
         this.view.byId("poCmdDel").setEnabled(true);
@@ -274,13 +285,13 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
             }
         });
     },
-    addControl(ar, lbl, cntClass, id, sett, dataType, fldFormat) {
+    addControl(ar, lbl, cntClass, id, sett, dataType, fldFormat, plist) {
         var setx = sett;
         var idx = id;
         if (Util.nvl(id, "") == "")
             idx = lbl.replace(/ ||,||./g, "");
 //        setx["layoutData"] = new sap.ui.layout.GridData({span: "XL4 L4 M4 S12"});
-        var cnt = UtilGen.createControl(cntClass, this.view, idx, setx, dataType, fldFormat);
+        var cnt = UtilGen.createControl(cntClass, this.view, idx, setx, dataType, fldFormat, undefined, plist);
         if (lbl.length != 0)
             ar.push(lbl);
         ar.push(cnt);
@@ -589,6 +600,11 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
         var that = this;
         var view = this.view;
         var flx = new sap.m.VBox({alignItems: sap.m.FlexAlignItems.Center, height: "100%"});
+        var chkDisc = new sap.m.CheckBox({
+            text: "Sales Discount",
+            selected: false
+        });
+
         flx.addItem(new sap.m.Title({text: "Kind of Invoice FR De "}).addStyleClass("sapUiMediumMargin"));
         flx.addItem(new sap.m.HBox({
             items:
@@ -596,6 +612,8 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
                     new sap.m.Button({
                         text: "FR", press: function () {
                             UtilGen.setControlValue(that.o1.oname, "FR", "FR", true);
+                            if (chkDisc.getSelected())
+                                UtilGen.setControlValue(that.o1.ord_type, "2");
                             that.setItemSql();
                             view.byId("poDlgFrDe").close();
 
@@ -604,18 +622,27 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
                     new sap.m.Button({
                         text: "DE", press: function () {
                             UtilGen.setControlValue(that.o1.oname, "DE", "DE", true);
+                            if (chkDisc.getSelected())
+                                UtilGen.setControlValue(that.o1.ord_type, "2");
+
                             that.setItemSql();
+
                             view.byId("poDlgFrDe").close();
                         }
                     }).addStyleClass("sapUiMediumMarginBegin sapUiMediumMarginEnd")
                 ]
+        }));
+        flx.addItem(new sap.m.HBox({
+            items: [
+                chkDisc
+            ]
         }));
 
         (this.view.byId("poDlgFrDe") != undefined ? this.view.byId("poDlgFrDe").destroy() : null);
         var dlg = new sap.m.Dialog(view.createId("poDlgFrDe"), {
             title: "Select the kind of PO",
             contentWidth: "300px",
-            contentHeight: "150px",
+            contentHeight: "200px",
             content: [flx]
         });
         dlg.open();
@@ -633,10 +660,26 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
             + "' and descr2 like (select descr2||'%' from items where reference=" + Util.quoted(cod)
             + ") order by cost_item,type_of_frieght";
 
+        if (UtilGen.getControlValue(that.o1.ord_type) == "2") {
+            sql = "select cost_item,replace(selling_descr,chr(9),'') descr,items.descr cost_item_descr,"
+                + " fc_price,fc_rate,fc_descr,lg_custitems.keyfld from "
+                + "lg_custitems,items where items.reference=cost_item and"
+                + " code='" + UtilGen.getControlValue(this.o1.ord_ref)
+                + "' and descr2 like (select descr2||'%' from items where reference=" + Util.quoted(cod)
+                + ") order by cost_item,type_of_frieght";
+            that.qv.mLctb.getColByName("ORD_REFER").mEnabled = true;
+            that.qv.mLctb.getColByName("ORD_RCPTNO").mEnabled = true;
+            that.qv.loadData();
+        }
+
         that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
     },
     add_items: function () {
         var that = this;
+        if (UtilGen.getControlValue(that.o1.ord_type) == "2") {
+            sap.m.MessageToast.show("On sales discount not allowed !");
+            return;
+        }
         var sett = sap.ui.getCore().getModel("settings").getData();
 
         var cod = (UtilGen.getControlValue(this.o1.oname) == "DE" ? "0102" : "0101");
@@ -649,7 +692,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
             + " items ,order2 o2,order1 o1 "
             + " where "
             + " o2.ord_flag=2 and o2.ord_rcptno is not null  "
-            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) =0 "
+            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) = 0 "
             + " and o2.ord_code=103 and o1.ord_code=103 and o1.ord_no=o2.ord_no "
             + " and o1.ord_reference="
             + Util.quoted(this.qryStr)

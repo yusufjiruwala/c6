@@ -835,6 +835,12 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                                 var sq = cx.mSearchSQL;
                                 var lk = Util.nvl(cx.mLookUpCols, "").split(",");
                                 var rt = Util.nvl(cx.mRetValues, "").split(",");
+                                if (cx.beforeSearchEvent != undefined) {
+                                    var oModel = tbl.getModel();
+                                    var rowStart = tbl.getFirstVisibleRow();
+                                    var currentRowoIndexContext = tbl.getContextByIndex(rowStart + tbl.indexOfRow(row));
+                                    sq = cx.beforeSearchEvent(sq, currentRowoIndexContext, oModel);
+                                }
                                 Util.show_list(sq, lk, rt, function (data) {
                                     console.log(data);
                                     if (rt.length == 0)

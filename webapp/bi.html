@@ -101,7 +101,9 @@
 //            Util.stopSpin();
 
         });
-
+        window.onbeforeunload = function (e) {
+            return 'Are you sure you want to leave? ';
+        };
     </script>
 
 </head>
