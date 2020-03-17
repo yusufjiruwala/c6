@@ -1,4 +1,4 @@
-sap.ui.jsfragment("bin.forms.lg.Main", {
+sap.ui.jsfragment("bin.forms.press.Main", {
 
     createContent: function (oController) {
         this.view = oController.getView();
@@ -39,7 +39,6 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         return this.app;
     },
     createView: function () {
-
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
         UtilGen.clearPage(this.mainPage);
@@ -116,8 +115,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 pnl3,
                 (Util.nvl(sett["LG_SHOW_MANAGEMENT"], "INVISIBLE") == "INVISIBLE") ? undefined : pnl31,
                 pnl4
-            ],
-            position: sap.ui.layout.GridPosition.Center
+            ]
         });
         (this.view.byId("lblMsg") != undefined ? this.view.byId("lblMsg").destroy() : null);
         var ly2 = new sap.m.HBox({
@@ -128,7 +126,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         });
 
         pnl1.attachBrowserEvent("click", function (e) {
-            that.openForm("bin.forms.lg.JO", that.pgJo);
+            that.openForm("bin.forms.press.JO", that.pgJo);
         });
         pnl2.attachBrowserEvent("click", function (e) {
             that.openForm("bin.forms.lg.contracts", that.pgCnt);
@@ -220,7 +218,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
 
         sc.addContent(this.qv.getControl());
         // layout.setAlignItems("Center");
-        //layout.setJustifyContent("Center");
+        // layout.setJustifyContent("Center");
         ly2.setAlignItems("Center");
         ly2.setJustifyContent("Center");
 
@@ -240,22 +238,17 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         // var qt = UtilGen.getControlValue(that.query_type);
         var typ = Util.nvl(UtilGen.getControlValue(this.query_type), -1);
 
-        var sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
-            "ORD_REFNM,  ORD_DATE, ORD_SHIP, " +
-            "REFERENCE, ORD_FLAG, NO_OF_SO," +
-            " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE,TOTAL_PRETURN, TOTAL_CN, COST_IN_HAND " +
-            "from v_lg_jo where ord_flag=2 " +
-            "and (:TYP=-1 OR ORD_DATE<=SYSDATE - :TYP )" +
-            "  ORDER BY ORD_DATE desc";
+        var sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM " +
+            " FROM ORDER1 WHERE ORD_CODE=601 " +
+            " and ord_flag=2 " +
+            "ORDER BY ORD_DATE DESC,ORD_NO ";
         sql = sql.replace(/:TYP/g, typ);
 
         if (typ == "0" || typ == 0) {
-            sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
-                "ORD_REFNM,  ORD_DATE, ORD_SHIP, " +
-                "REFERENCE, ORD_FLAG, NO_OF_SO," +
-                " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE,TOTAL_PRETURN, TOTAL_CN, COST_IN_HAND " +
-                "from v_lg_jo where ord_flag=1 " +
-                "  ORDER BY ORD_DATE desc";
+            sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM " +
+                " FROM ORDER1 WHERE ORD_CODE=601 and " +
+                " where ord_flag=1 " +
+                " ORDER BY ORD_DATE DESC,ORD_NO ";
         }
 
         var dat = Util.execSQL(sql);
@@ -281,30 +274,6 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
 
                 if (sett["LG_MAIN_QUERY_SHOW_ORD_NO"] != "TRUE")
                     that.qv.mLctb.cols[c].getMUIHelper().display_width = 0;
-
-                c = that.qv.mLctb.getColPos("TOTAL_PURCHASE");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-
-                c = that.qv.mLctb.getColPos("TOTAL_PRETURN");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-
-                c = that.qv.mLctb.getColPos("TOTAL_CN");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-
-                c = that.qv.mLctb.getColPos("TOTAL_SALES");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-
-                c = that.qv.mLctb.getColPos("COST_IN_HAND");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-
-                // that.qv.mLctb.cols[c].mCfOperator = ":EXPIRY_IN <= 0 && :EXPIRY_IN != 0 ";
-                // that.qv.mLctb.cols[c].mCfTrue = "font-weight: bold;color:red!important;";
-
-                // that.qv.mLctb.cols[1].mCfOperator = ":EXPIRY_IN > 0 && :EXPIRY_IN <= 10 && :EXPIRY_IN != 0 ";
-                // that.qv.mLctb.cols[1].mCfTrue = "color:orange!important;";
-
-                // that.qv.mLctb.cols[0].mCfOperator = ":SALEINV_ !=0 ";
-                // that.qv.mLctb.cols[0].mCfTrue = "font-weight: bold;background-color:yellow!important;";
 
                 that.qv.loadData();
                 if (that.qv.mLctb.rows.length > 0) {
@@ -361,6 +330,3 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
     }
 });
-
-
-

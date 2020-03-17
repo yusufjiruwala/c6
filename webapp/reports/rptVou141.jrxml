@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVou141" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.x" value="25"/>
+	<property name="ireport.y" value="32"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -218,9 +218,9 @@ order by order1.ord_no]]>
 					<text><![CDATA[Inv Ref #]]></text>
 				</staticText>
 				<textField>
-					<reportElement style="strHeader" x="350" y="129" width="142" height="20" uuid="db2fead9-9b7a-4046-b12d-ac809cbf1ca8"/>
+					<reportElement style="strHeader" x="350" y="129" width="197" height="20" uuid="db2fead9-9b7a-4046-b12d-ac809cbf1ca8"/>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression><![CDATA[$F{JOB_ONAME} +" - "+ $F{ONAME}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["PR/"+$F{ORD_NO}+"-"+ $F{ONAME}+" ("+$F{MAX_CURRENCY}+")"]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd/MM/yyyy">
 					<reportElement style="strHeader" x="335" y="162" width="218" height="20" uuid="2c3130a6-9e18-4e57-8896-467e45b8b434"/>
@@ -327,7 +327,7 @@ order by order1.ord_no]]>
 				<textField>
 					<reportElement style="strHeader" x="97" y="229" width="90" height="34" uuid="812c714d-8f50-4c7d-8c8a-d6137fedfb87"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle"/>
-					<textFieldExpression><![CDATA[$F{ORD_REFERENCE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{JOB_ONAME}]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd/MM/yyyy">
 					<reportElement style="strHeader" x="97" y="263" width="90" height="34" uuid="89776abd-5292-4fef-8aab-0fae0a66d13d"/>
@@ -498,13 +498,6 @@ order by order1.ord_no]]>
 					</textElement>
 					<text><![CDATA[IID]]></text>
 				</staticText>
-				<textField>
-					<reportElement style="strHeader" x="486" y="129" width="64" height="20" uuid="3cef3af4-ebcb-4b22-bb02-3d7a1a22a1d1"/>
-					<textElement textAlignment="Center">
-						<font size="14" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{MAX_CURRENCY}]]></textFieldExpression>
-				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>

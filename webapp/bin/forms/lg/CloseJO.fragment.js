@@ -107,6 +107,22 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
                     that.post_close();
                 }
             }));
+        frm.getToolbar().addContent(
+            new sap.m.Button({
+                text: "Repair JO",
+                press: function () {
+                    that.repair_jos();
+                }
+            }));
+        frm.getToolbar().addContent(new sap.m.ToolbarSpacer());
+        frm.getToolbar().addContent(
+            new sap.m.Button({
+                text: "Show Details",
+                press: function () {
+                    that.show_details();
+                }
+            }));
+
         this.mainPage.addContent(frm);
         this.mainPage.addContent(this.qv.getControl());
 
@@ -172,21 +188,24 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
         // }
         var sql = "select distinct items.reference cost_item,items.descr cost_item_descr,"
             + "  o2.ORD_RCPTNO RCPTNO,"
-            + " SUM ((O2.ord_price)* (ord_allqty + saleret_qty) - (issued_qty + purret_qty)) total_cost , "
+            + " SUM ((O2.ord_price)* ((ord_allqty + saleret_qty) - (issued_qty + purret_qty))) total_cost , "
             + " SUM((ord_allqty+saleret_qty)-(issued_qty+purret_qty)) Qty_in_Hand ," +
             "  MAX((SELECT REPAIR.getgoodsaccNO(O2.ORD_REFER,1,'EXPACC') FROM DUAL )) DR_ACC,  " +
-            "  max((SELECT REPAIR.getgoodsaccNO(O2.ORD_REFER,1,'STOREACC') FROM DUAL )) CR_ACC  "
+            "  max((SELECT REPAIR.getgoodsaccNO(O2.ORD_REFER,1,'STOREACC') FROM DUAL )) CR_ACC , "
+            + "  sum(ord_allqty+saleret_qty) In_Qty,"
+            + "    sum(issued_qty+purret_qty) Out_qty "
             + " FROM items ,order2 o2,order1 o1  "
             + " where "
-            + " o2.ord_flag=2 and o2.ord_rcptno is not null  "
-            + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) !=0 "
+            + " o1.ord_flag=2 and o2.ord_rcptno is not null  "
+            // + " and o2.ord_refer=items.reference and (ord_allqty+saleret_qty)-(issued_qty+purret_qty) !=0 "
             + " and o2.ord_code=103 and o1.ord_code=103 and o1.ord_no=o2.ord_no "
+            + " and items.reference=o2.ord_refer "
             // + " and lg.code =" + Util.quoted(UtilGen.getControlValue(this.o1.ord_ref))
             // + "   and lg.cost_item=items.reference "
             + " and o1.ord_reference in ("
             + this.ordNos.join() + ")"
             + " group by items.reference,items.descr,ord_rcptno " +
-            " having SUM ((O2.ord_price * o2.ord_fc_rate)* (ord_allqty + saleret_qty) - (issued_qty + purret_qty))>=0" +
+            // " having SUM ((O2.ord_price * o2.ord_fc_rate)* (ord_allqty + saleret_qty) - (issued_qty + purret_qty))>=0" +
             " order by cost_item";
         var data = Util.execSQL(sql);
         if (data.ret == "SUCCESS") {
@@ -217,17 +236,19 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
         var sqlIns = "", s1 = "";
         var kf = Util.getSQLValue("select nvl(max(keyfld),0)+1 from lg_close_o1");
 
+        that.loadData();
+
         if (UtilGen.getControlValue(this.o1.totvar) == "" || UtilGen.getControlValue(this.o1.totvar) == "" ||
-            UtilGen.getControlValue(this.o1.totvar) <= 0) {
-            sap.m.MessageToast.show("Variance must not negative or zero  !");
+            UtilGen.getControlValue(this.o1.totvar) < 0) {
+            sap.m.MessageToast.show("Variance must not negative  !");
             return;
         }
-
 
         var k = "";
         var s2 = "";
         var s3 = "";
         // CHECKING IF ANY ORDER IS NOT POSTED !
+
         for (var i in this.ordNos) {
             var flg = Util.getSQLValue("select nvl(max(ord_no),-1) " +
                 " from order1 where ord_code in (111,103,141,151,152) and ord_flag!=2 and ord_reference=" + this.ordNos[i])
@@ -248,9 +269,13 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
             k = "insert into lg_close_o1 " + k + ";";
             var defaultValues = {KEYFLD: kf};
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
+                if (this.qv.mLctb.getFieldValue(i, "TOTAL_COST") < 0) {
+                    sap.m.MessageToast.show('Negative cost cant be closed ! ' + this.qv.mLctb.getFieldValue(i, "COST_ITEM"));
+                    return;
+                }
                 defaultValues["POS"] = i;
                 s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "LG_CLOSE_O2", i,
-                    ["COST_ITEM_DESCR"], defaultValues, true) + ";");
+                    ["COST_ITEM_DESCR", "IN_QTY", "OUT_QTY"], defaultValues, true) + ";");
             }
 
             k = "declare cst number:=0; qnt number:=0; begin " + k + s1 + s2 + s3 + " x_lg_close_jo(" + kf + "); end; ";
@@ -274,6 +299,62 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
             sap.m.MessageToast.show("Saved Successfully !");
             that.mainPage.backFunction();
         });
+    },
+    show_details: function () {
+        var that = this;
+        var qv = new QueryView("tbldet1");
+        var vb = new sap.m.VBox({items: [qv.getControl()]});
+
+        var itms = "";
+        var indicOF = that.qv.getControl().getBinding("rows").aIndices;
+        var indic = that.qv.getControl().getSelectedIndices();
+        for (var i in indic)
+            itms += (itms.length > 0 ? "," : "") +
+                Util.quoted(that.qv.mLctb.getFieldValue(indicOF[indic[i]], "COST_ITEM") +
+                    "-" + that.qv.mLctb.getFieldValue(indicOF[indic[i]], "RCPTNO"));
+        var sq = "select ord_refer||'-'||ORD_RCPTNO REFERENCE,ord_date,ord_no,decode(ord_code,103,'Purchase',111,'Sales',141,'Proforma',151,'DR Notes',152,'CR Note',131,'P.RETURN') type,ord_allqty from " +
+            " joined_order where " +
+            "ord_refer||'-'||ord_rcptno in (" + itms + ") and ord_reference in (" + that.ordNos.join() + ") order by ord_date,ord_refer,ord_code,ord_no";
+        Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
+            if (data.ret == "SUCCESS") {
+                qv.setJsonStrMetaData("{" + data.data + "}");
+                qv.mLctb.parse("{" + data.data + "}", true);
+                //UtilGen.applyCols("C6LGREQ.DN1", that.qv);
+                qv.mLctb.cols[0].mGrouped = true;
+                qv.loadData();
+            }
+        });
+        var dlg = new sap.m.Dialog(
+            {
+                width: "100%",
+                height: "600px",
+                content: vb,
+                buttons: [new sap.m.Button({
+                    text: "Close", press: function () {
+                        dlg.close();
+                    }
+                })]
+            }
+        );
+
+        dlg.open();
+    },
+    repair_jos: function () {
+        var that = this;
+        var qv = new QueryView("tbldet1");
+        var vb = new sap.m.VBox({items: [qv.getControl()]});
+        var sq = "";
+        for (var i in that.ordNos)
+            sq += "X_LG_UPDATE_ISSUES(" + that.ordNos[i] + ");";
+        sq = "begin " + sq + " end;";
+        var dat = Util.execSQL(sq);
+        if (dat.ret == "SUCCESS") {
+            sap.m.MessageToast.show("( " + that.ordNos[i] + " ) JO REPAIRED successfully ");
+            that.loadData();
+        } else
+            sap.m.MessageToast.show(dat.ret);
+
+
     }
 });
 

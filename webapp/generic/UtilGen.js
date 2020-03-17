@@ -563,12 +563,12 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     })
                 });
             },
-            addControl(ar, lbl, cntClass, id, sett, dataType, fldFormat, view) {
+            addControl(ar, lbl, cntClass, id, sett, dataType, fldFormat, view, fnchange, sqlStr) {
                 var setx = sett;
                 var idx = id;
                 if (Util.nvl(id, "") == "")
                     idx = lbl.replace(/ ||,||./g, "");
-                var cnt = this.createControl(cntClass, view, idx, setx, dataType, fldFormat);
+                var cnt = this.createControl(cntClass, view, idx, setx, dataType, fldFormat, fnchange, sqlStr);
                 if (lbl.length != 0)
                     ar.push(lbl);
                 ar.push(cnt);
@@ -835,10 +835,12 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                                 var sq = cx.mSearchSQL;
                                 var lk = Util.nvl(cx.mLookUpCols, "").split(",");
                                 var rt = Util.nvl(cx.mRetValues, "").split(",");
+
                                 if (cx.beforeSearchEvent != undefined) {
                                     var oModel = tbl.getModel();
                                     var rowStart = tbl.getFirstVisibleRow();
                                     var currentRowoIndexContext = tbl.getContextByIndex(rowStart + tbl.indexOfRow(row));
+                                    oModel.setProperty(currentRowoIndexContext.sPath + "/" + cx.mColName, evtx.getSource().getValue(), undefined, true);
                                     sq = cx.beforeSearchEvent(sq, currentRowoIndexContext, oModel);
                                 }
                                 Util.show_list(sq, lk, rt, function (data) {

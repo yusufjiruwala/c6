@@ -284,7 +284,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var sq = "select ord_no,ord_ref,ord_refnm,ord_amt," +
             "decode(ord_flag,'2','sap-icon://accept','sap-icon://less') ord_flag ,posted_date," +
             " (select max(invoice_no) from pur1  where keyfld=order1.pur_keyfld) invoice_no ,ord_code,ord_flag flgx," +
-            "(select max(no) from acvoucher1 where keyfld=order1.saleinv) PROFORMA " +
+            "(select max(no) from acvoucher1 where keyfld=order1.saleinv) PROFORMA , " +
+            " ORD_DATE,APPROVED_BY " +
             "    from order1 where ord_reference=" + Util.quoted(this.qryStr) + " and ord_code=" + Util.quoted(typ);
 
         var dt = Util.execSQL(sq);
@@ -295,6 +296,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.qv.mLctb.getColByName("PROFORMA").mHideCol = true;
             that.qv.mLctb.parse("{" + dt.data + "}", true);
             //that.qv.setJsonStr("{" + dt.data + "}");
+            that.qv.mLctb.getColByName("ORD_AMT").mSummary = "SUM";
             that.qv.loadData();
             if (that.qv.mLctb.rows.length > 0) {
                 //that.qv.getControl().setSelectedIndex(0);
