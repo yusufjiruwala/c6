@@ -35,8 +35,8 @@ sap.ui.jsfragment("bin.forms.press.JO", {
 
     createView: function () {
         var that = this;
+        var view = this.view;
         var sett = sap.ui.getCore().getModel("settings").getData();
-        var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
         this.jo = {};
         this.frmJO;
         this.qv = new QueryView("tblPODetails");
@@ -70,6 +70,11 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 that.save_data();
             }
         }));
+
+        sf.getToolbar().addContent(new sap.m.ToolbarSpacer());
+        (this.view.byId("poMsgInv") != undefined ? this.view.byId("poMsgInv").destroy() : null);
+        sf.getToolbar().addContent(new sap.m.Text(view.createId("poMsgInv"), {text: ""}).addStyleClass("redText blinking"));
+        sf.getToolbar().addContent(new sap.m.Title({text: "Job Order"}));
 
         var sc = new sap.m.ScrollContainer();
 
@@ -123,7 +128,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 // layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
             }, "string", undefined, view, undefined, "@Digital/digital,Offset/offset,Outside Job/Outside Job");
 
-        this.jo.ord_date = UtilGen.addControl(fe, "@Date No", sap.m.DatePicker, "joord_date",
+        this.jo.ord_date = UtilGen.addControl(fe, "@Date", sap.m.DatePicker, "joord_date",
             {
                 valueFormat: sett["ENGLISH_DATE_FORMAT"],
                 displayFormat: sett["ENGLISH_DATE_FORMAT"]
@@ -186,6 +191,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 displayFormat: sett["ENGLISH_DATE_FORMAT"]
             },
             "date", undefined, view);
+
         fe.push("#Status");
 
         // material steps.
@@ -251,9 +257,9 @@ sap.ui.jsfragment("bin.forms.press.JO", {
     loadData: function () {
         var view = this.view;
         var sett = sap.ui.getCore().getModel("settings").getData();
-
         UtilGen.setControlValue(this.jo.payterm, "Offset", "Offset", false);
         UtilGen.setControlValue(this.jo.location_code, sett["DEFAULT_LOCATION"]);
+        view.byId("poMsgInv").setText("");
         if (this.qryStr == "") {
             var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
             UtilGen.setControlValue(this.jo.ord_no, on);
@@ -266,6 +272,9 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 UtilGen.loadDataFromJson(this.jo, dtx[0], true);
                 this.jo.ord_no.setEnabled(false);
                 UtilGen.setControlValue(this.jo.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
+                if (dtx[0].IS_ACTIVE == "Y") {
+                    view.byId("poMsgInv").setText("Status is Active !");
+                }
             }
         }
         this.loadData_details();
@@ -327,6 +336,30 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+        if (this.qryStr != "") {
+            var dt = Util.execSQL("select *from order1 where ord_code=601 and ord_no=" + this.qryStr);
+            if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+                var dtx = JSON.parse("{" + dt.data + "}").data;
+                UtilGen.setControlValue(that.jo.mat_flag, dtx[0].MAT_FLAG);
+                UtilGen.setControlValue(that.jo.mat_flag, dtx[0].DES_FLAG);
+                UtilGen.setControlValue(that.jo.mat_flag, dtx[0].PLATE_FLAG);
+            }
+            var mat_flag = (UtilGen.getControlValue(that.jo.des_flag) == "N" ? 1 : 2);
+            var des_flag = (UtilGen.getControlValue(that.jo.des_flag) == "N" ? 1 : 2);
+            var plate_flag = (UtilGen.getControlValue(that.jo.plate_flag) == "N" ? 1 : 2);
+            var stat = Util.getSQLValue("select is_active from order1 where ord_code=601 and ord_no=" + this.qryStr);
+
+            if (mat_flag == 2 || des_flag == 2 || plate_flag == 2) {
+                sap.m.MessageToast.show("One of (Steps) have been finished on this JO ! ");
+                return false;
+            }
+            if (stat == "Y") {
+                sap.m.MessageToast.show("Status is Active ! ");
+                return false;
+            }
+        }
+
+
         this.do_summary(true);
         return true;
     },
@@ -340,7 +373,10 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         var defaultValues = {
             "PERIODCODE": sett["CURRENT_PERIOD"],
             "ORD_CODE": this.vars.ord_code,
-            "ORD_FLAG": 1,
+            "ORD_NO": UtilGen.getControlValue(that.jo.ord_no),
+            "ORD_DATE": UtilGen.getControlValue(that.jo.ord_date),
+            "ORD_REFER": UtilGen.getControlValue(that.jo.ord_ship),
+            "ORD_FLAG": 2,
             "ORD_ITMAVER": 0,
             "YEAR": "2000",
             "DELIVEREDQTY": 0,
@@ -359,7 +395,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         if (this.qryStr == "") {
             k = UtilGen.getSQLInsertString(this.jo, {
                 "ord_code": this.vars.ord_code,
-                "ord_flag": 1,
+                "ord_flag": 2,
                 "periodcode": Util.quoted(sett["CURRENT_PERIOD"]),
                 "ORD_REFNM": Util.quoted(custName),
                 "CREATED_BY": Util.quoted(sett["LOGON_USER"]),
@@ -367,6 +403,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 "MAT_FLAG": mat_flag,
                 "DES_FLAG": des_flag,
                 "PLATE_FLAG": plate_flag
+                "LAST_READY_DATE": Utul.toOraDateString(this.jo.ord_date)
             }, ["mat_flag", "des_flag", "plate_flag"]);
             k = "insert into order1 " + k + ";";
             var s1 = "";
@@ -374,8 +411,9 @@ sap.ui.jsfragment("bin.forms.press.JO", {
 
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
+
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
-                that.updatePosItems(i);
+                s1 += that.updatePosItems(i);
             }
             k = "begin " + k + s1 + " end; ";
 
@@ -385,15 +423,19 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                     "ORD_REFNM": Util.quoted(custName),
                     "MODIFIED_BY": Util.quoted(sett["LOGON_USER"]),
                     "MODIFIED_DATE": "sysdate",
-                    "ORD_FC_RATE": avg
+                    "MAT_FLAG": mat_flag,
+                    "DES_FLAG": des_flag,
+                    "PLATE_FLAG": plate_flag,
+                    "LAST_READY_DATE": Util.toOraDateString(this.jo.ord_date)
 
                 },
-                "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStr)) + ";";
+                "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStr), ["mat_flag", "des_flag", "plate_flag"]) + ";";
 
             var s1 = "delete from order2 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStr + ";";  // sqls for insert string in order2 table.
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
+                s1 += that.updatePosItems(i);
             }
             k = "begin " + k + s1 + " end;";
         }
@@ -417,7 +459,8 @@ sap.ui.jsfragment("bin.forms.press.JO", {
             sap.m.MessageToast.show("Saved Successfully !");
             that.joApp.backFunction();
         });
-    },
+    }
+    ,
     updatePosItems: function (r) {
         var that = this;
         var ld = this.qv.mLctb;
@@ -429,14 +472,36 @@ sap.ui.jsfragment("bin.forms.press.JO", {
             " :ITEM_SIZE, :ADD_WORK, :RECTO_VERSO, " +
             " :SRNO, :PAGES, :SECTION, :MACHINE, :MATERIAL, :PRICE); ";
 
-        var sq1 = sq.replace(/:REFER/g, UtilGen.getControlValue(this.jo.ord_ship));
-        sq1 = sq1.replace(/:DESCR/g, UtilGen.getControlValue(this.jo.ord_ship));
+        var sq1 = insq.replace(/:REFER/g, Util.quoted(UtilGen.getControlValue(this.jo.ord_ship)));
         sq1 = sq1.replace(/:KEYFLD/g, " (SELECT NVL(MAX(KEYFLD),0)+1 FROM POSITEMS) ");
-        sq1 = sq1.replace(/:DESCR/g, );
-
+        sq1 = sq1.replace(/:DESCR/g, Util.quoted(ld.getFieldValue(r, "DESCR")));
+        sq1 = sq1.replace(/:ITEM_COLOR/g, Util.quoted(ld.getFieldValue(r, "ITEM_COLOR")));
+        sq1 = sq1.replace(/:ITEM_SIZE/g, Util.quoted(ld.getFieldValue(r, "ITEM_SIZE")));
+        sq1 = sq1.replace(/:ADD_WORK/g, Util.quoted(ld.getFieldValue(r, "ADD_WORK")));
+        sq1 = sq1.replace(/:RECTO_VERSO/g, Util.quoted(ld.getFieldValue(r, "RECTO_VESO")));
+        sq1 = sq1.replace(/:SRNO/g, Util.quoted(ld.getFieldValue(r, "SRNO")));
+        sq1 = sq1.replace(/:PAGES/g, Util.quoted(ld.getFieldValue(r, "PAGES")));
+        sq1 = sq1.replace(/:SECTION/g, Util.quoted(ld.getFieldValue(r, "SECTION")));
+        sq1 = sq1.replace(/:MACHINE/g, Util.quoted(ld.getFieldValue(r, "MACHINE")));
+        sq1 = sq1.replace(/:MATERIAL/g, Util.quoted(ld.getFieldValue(r, "MATERIAL")));
+        sq1 = sq1.replace(/:PRICE/g, Util.quoted(Util.getNumber(ld.getFieldValue(r, "ORD_PRICE"))));
+        return sq1;
+        // var pls = "begin " + sq1 + " end;";
+        // Util.doAjaxJson("sqlexe", pls, false).done(function (data) {
+        //     console.log(data);
+        //     if (data == undefined) {
+        //         sap.m.MessageToast.show("Error: unexpected, check server admin");
+        //         return;
+        //     }
+        //     if (data.ret != "SUCCESS") {
+        //         sap.m.MessageToast.show("Error :" + data.ret);
+        //         return;
+        //     }
+        // });
 
     }
-});
+})
+;
 
 
 

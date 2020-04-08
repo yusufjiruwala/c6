@@ -650,6 +650,9 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     return "to_date('" + sf.format(dt) + "','" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
                 }
             },
+            getNumber(str) {
+                return parseFloat((Util.nvl(str, "")).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
+            },
             quoted: function (qt) {
                 return "'" + this.nvl(qt, "") + "'";
             },
@@ -1047,10 +1050,17 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var cc = tbl.getContextByIndex(i);
                 var cv = oModel.getProperty(cc.sPath + "/" + colname);
                 return cv;
+            },
+            getDaysBetween: function (dt1, dt2) {
+                var oneDay = 24 * 60 * 60 * 1000;
+                return Math.round((dt1.getTime() - dt2.getTime()) / (oneDay));
+
             }
+
         };
         return Util;
-    });
+    })
+;
 
 
 

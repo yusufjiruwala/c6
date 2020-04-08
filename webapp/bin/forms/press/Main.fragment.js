@@ -137,7 +137,7 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                 sap.m.MessageToast.show("Must select JO !");
                 return;
             }
-            that.openForm("bin.forms.lg.Req", that.pgReq);
+            that.openForm("bin.forms.press.Status", that.pgReq);
         });
         pnl31.attachBrowserEvent("click", function (e) {
             //that.openForm("bin.forms.lg.MG", that.pgCnt);
@@ -241,14 +241,14 @@ sap.ui.jsfragment("bin.forms.press.Main", {
         var sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM " +
             " FROM ORDER1 WHERE ORD_CODE=601 " +
             " and ord_flag=2 " +
-            "ORDER BY ORD_DATE DESC,ORD_NO ";
+            "ORDER BY ORD_DATE DESC,ORD_NO desc ";
         sql = sql.replace(/:TYP/g, typ);
 
         if (typ == "0" || typ == 0) {
             sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM " +
                 " FROM ORDER1 WHERE ORD_CODE=601 and " +
                 " where ord_flag=1 " +
-                " ORDER BY ORD_DATE DESC,ORD_NO ";
+                " ORDER BY ORD_DATE DESC,ORD_NO desc";
         }
 
         var dat = Util.execSQL(sql);
@@ -271,9 +271,6 @@ sap.ui.jsfragment("bin.forms.press.Main", {
 
                 var c = that.qv.mLctb.getColPos("ORD_NO");
                 that.qv.mLctb.cols[c].getMUIHelper().data_type = "NUMBER";
-
-                if (sett["LG_MAIN_QUERY_SHOW_ORD_NO"] != "TRUE")
-                    that.qv.mLctb.cols[c].getMUIHelper().display_width = 0;
 
                 that.qv.loadData();
                 if (that.qv.mLctb.rows.length > 0) {
