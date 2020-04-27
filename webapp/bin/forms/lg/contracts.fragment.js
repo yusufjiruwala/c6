@@ -39,6 +39,11 @@ sap.ui.jsfragment("bin.forms.lg.contracts", {
                     }
                 }),
                 new sap.m.ToolbarSpacer(),
+                new sap.m.SearchField({
+                    liveChange: function (event) {
+                        UtilGen.doFilterLiveTable(event, that.qv, ["COST_ITEM", "COST_ITEM_DESCR"]);
+                    }
+                }),
                 this.txt
             ]
         });

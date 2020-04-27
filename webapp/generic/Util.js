@@ -869,8 +869,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     }
                 });
                 container.addItem(searchField);
-
-                var dat = this.execSQL(sql);
+                var dat = {};
+                if (!sql.startsWith("@"))
+                    dat = this.execSQL(sql);
+                else dat = Util.getRowData(sql);
                 if (dat.ret == "SUCCESS" && dat.data.length > 0) {
                     qv.setJsonStr("{" + dat.data + "}");
                     qv.loadData();
@@ -881,7 +883,22 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
                     return qv;
                 }
+
                 return null;
+            },
+            getRowData: function (sql) {
+                var dtxx = [];
+                var spt = sql.substring(1).split(",");
+                for (var i1 in spt) {
+                    var dttt = {CODE: "", TITLE: ""};
+                    var sx = spt[i1].split("/");
+                    dttt.CODE = "" + sx[0];
+                    dttt.TITLE = "" + sx[1];
+                    dtxx.push(dttt);
+                }
+                var md = '"metadata": [{"colname":"CODE","width":50,"data_type":"STRING"},{"colname":"TITLE","width":150,"data_type":"STRING"}]';
+                var dt = JSON.stringify(dtxx);
+                return {sql: sql, ret: "SUCCESS", data: md + ",\"data\":" + dt};
             },
             showSearchList: function (sql, colDes, colVal, fnConfirm) {
                 // if (e.getParameters().refreshButtonPressed)

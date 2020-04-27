@@ -13,6 +13,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.lastSelectedCode = "";
             this.onselect = undefined;
             this.onAddRow = undefined;
+            this.afterDelRow = undefined;
             this.parent = undefined;
             this.queryType = 'table';
 
@@ -353,6 +354,17 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 // oModel.setData(dt);
                 // this.getControl().setModel(oModel);
                 // this.getControl().bindRows("/");
+            }
+            return idx;
+
+        };
+        QueryView.prototype.deleteRow = function (idx, dontReload) {
+            if (this.mLctb.rows.length > 0)
+                this.updateDataToTable();
+            var idx = this.mLctb.deleteRow(idx);
+            if (Util.nvl(dontReload, false) == false) {
+                this.updateDataToControl();
+
             }
             return idx;
 

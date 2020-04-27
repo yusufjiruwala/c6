@@ -169,6 +169,21 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
             editable: false
         }, "string");
+        // emails
+        this.jo.emails = UtilGen.createControl(sap.m.TextArea, this.view, "joemails", {
+            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            // editable: false
+        }, "string");
+        // button for emails.
+        (this.view.byId("joCmdEmails") != undefined ? this.view.byId("joCmdEmails").destroy() : null);
+        this.jo._cmdEmails = new sap.m.Button(this.view.createId("joCmdEmails"),
+            {
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S4"}),
+                text: "Emails",
+                press: function () {
+                    that.get_emails_sel();
+                }
+            });
         //costcent , cost center
         this.jo.costcent = UtilGen.createControl(sap.m.ComboBox, this.view, "costcent", {
             items: {
@@ -249,6 +264,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     "JO No", this.jo.ord_no,
                     "Cost Center", this.jo.costcent,
                     "JO,Complete NO", this.jo.oname,
+                    "Emails", this.jo.emails,
+                    "", this.jo._cmdEmails,
                     "# ",
                     "Ord Date", this.jo.ord_date,
                     "Customer", this.jo.ord_ref,
@@ -599,6 +616,29 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             that.joApp.backFunction();
         });
 
+    },
+    get_emails_sel: function () {
+        var that = this;
+        var s = Util.getSQLValue("select email from c_ycust where code=" + Util.quoted(UtilGen.getControlValue(this.jo.ord_ref)));
+
+        var p = UtilGen.getControlValue(this.jo.ord_ref);
+        while (Util.nvl(s, "").length == 0 && p.length > 0) {
+            p = Util.getSQLValue("select parentcustomer from c_ycust where code=" + Util.quoted(p));
+            s = Util.getSQLValue("select email from c_ycust where code=" + Util.quoted(p));
+        }
+        var s1 = s.split(",");
+        var sq = "";
+        for (var i in s1)
+            sq += (sq.length > 0 ? "," : "") + s1[i] + "/" + s1[i];
+        sq = "@" + sq;
+        Util.show_list(sq, ["CODE", "TITLE"], "CODE", function (data) {
+            var ss = "";
+            for (var i in data)
+                ss += (ss.length > 0 ? "," : "") + data[i].CODE;
+
+            UtilGen.setControlValue(that.jo.emails, ss);
+            return true;
+        }, "100%", "100%", 10, true);
     }
 
 });

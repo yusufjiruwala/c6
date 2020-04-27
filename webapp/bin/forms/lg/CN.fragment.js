@@ -85,6 +85,26 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
                 that.add_items();
             }
         }));
+
+        sc.addContent(new sap.m.Button({
+            icon: "sap-icon://add", press: function () {
+                that.qv.addRow();
+            }
+        }));
+        sc.addContent(new sap.m.Button({
+            icon: "sap-icon://sys-minus", press: function () {
+                if (that.qv.getControl().getSelectedIndices().length == 0) {
+                    sap.m.MessageToast.show("Select a row to delete. !");
+                    return;
+                }
+
+                var r = that.qv.getControl().getSelectedIndices()[0] + that.qv.getControl().getFirstVisibleRow();
+                that.qv.deleteRow(r);
+                that.do_summary(false);
+
+            }
+        }));
+
         sc.addContent(this.qv.getControl());
         this.pgDN.addContent(sc);
         this.createViewFooter(sc);

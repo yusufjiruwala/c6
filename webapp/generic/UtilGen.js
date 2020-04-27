@@ -332,7 +332,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     c.field_type = fldtype;
                 if (fnChange != undefined)
                     c.fnChange = fnChange;
-                if (c instanceof sap.m.Input)
+                if (c instanceof sap.m.InputBase)
                     c.attachChange(function (oEvent) {
                         var _oInput = oEvent.getSource();
                         var val = _oInput.getValue();
@@ -602,7 +602,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     }
 
                 for (var key in tbl) {
-                    if (!key.startsWith("_") || (excFlds != undefined && excFlds.indexOf(key) < 0)) {
+                    if (!key.startsWith("_") && (excFlds == undefined || excFlds.indexOf(key) < 0)) {
                         str += (str.length == 0 ? "" : ",") + key;
                         var val = this.getControlValue(tbl[key]);
 
@@ -651,7 +651,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
                 // put field=value in string
                 for (var key in tbl) {
-                    if (!key.startsWith("_") || (excFlds != undefined && excFlds.indexOf(key) < 0)) {
+                    if (!key.startsWith("_") && (excFlds == undefined || excFlds.indexOf(key) < 0)) {
                         var val = this.getControlValue(tbl[key]);
 
                         val = "'" + (val + "").replace("'", "''") + "'";
