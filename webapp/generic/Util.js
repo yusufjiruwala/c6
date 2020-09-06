@@ -1064,8 +1064,24 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var cc = tbl.getContextByIndex(i);
                 var cv = oModel.getProperty(cc.sPath + "/" + colname);
                 return cv;
+            },
+            destroyID(id, view) {
+                var ids = [];
+                if (!Array.isArray(id))
+                    ids = [id];
+                else ids = id;
+                for (var i in ids)
+                    if (view != undefined)
+                        (view.byId(ids[i]) != undefined ? view.byId(ids[i]).destroy() : null);
+                    else
+                        (sap.ui.getCore().byId(ids[i]) != undefined ? sap.ui.getCore().byId(ids[i]).destroy() : null);
+            },
+            isNull: function (vl) {
+                return ((Util.nvl(vl, "") + "").trim().length == 0 ? true : false);
             }
+
         };
+
         return Util;
     });
 

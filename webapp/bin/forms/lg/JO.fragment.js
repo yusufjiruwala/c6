@@ -296,12 +296,30 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             this.frmJO.getToolbar().addContent(this._cmdNewNo);
             this.frmJO.getToolbar().addContent(new sap.m.Button({
                 icon: "sap-icon://save", press: function () {
-                    that.save_data();
+                    that.save_data(true);
                 }
             }));
             this.frmJO.getToolbar().addContent(new sap.m.Button({
                 icon: "sap-icon://delete", press: function () {
 
+                }
+            }));
+            this.frmJO.getToolbar().addContent(new sap.m.Button({
+                icon: "sap-icon://print", press: function () {
+                    that.save_data(false);
+                    Util.doXhr("report?reportfile=rptLGJob&_para_PNO=" + that.qryStr, true, function (e) {
+                        if (this.status == 200) {
+                            var blob = new Blob([this.response], {type: "application/pdf"});
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.target = "_blank";
+                            link.style.display = "none";
+                            document.body.appendChild(link);
+                            link.download = "rptVou" + new Date() + ".pdf";
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                    });
                 }
             }));
             this.frmJO.getToolbar().addContent(
@@ -553,7 +571,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         return true;
     }
     ,
-    save_data: function () {
+    save_data: function (ret) {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
         if (!this.validateSave())
@@ -613,7 +631,9 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             }
 
             sap.m.MessageToast.show("Saved Successfully !");
-            that.joApp.backFunction();
+            if (ret)
+                that.joApp.backFunction();
+
         });
 
     },

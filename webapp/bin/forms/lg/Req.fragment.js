@@ -127,7 +127,13 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                         that.lastSel = "141";
                         that.openPO(141);
                     }
-                })
+                }),
+                new sap.m.Button({
+                    icon: "sap-icon://add", text: "Update Info", press: function () {
+                        that.lastSel = "103";
+                        that.updateInfo();
+                    }
+                }),
             ]
         });
         (this.view.byId("tbCreate2") != undefined ? this.view.byId("tbCreate2").destroy() : null);
@@ -666,6 +672,156 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         frm.addContent(sp);
         this.joApp.to(frm, "slide");
 
+    },
+    updateInfo: function () {
+        var that = this;
+
+        var indic = that.qv.getControl().getSelectedIndices();
+        if (indic.length <= 0) {
+            sap.m.MessageToast.show("No any invoice selected !");
+            return;
+        }
+        var arPo = [];
+        for (var i = 0; i < indic.length; i++)
+            (Util.nvl(Util.getCellColValue(that.qv.getControl(), indic[i], "ORD_NO"), "") != "" ?
+                arPo.push(Util.nvl(Util.getCellColValue(that.qv.getControl(), indic[i], "ORD_NO"), "")) : "");
+
+
+        var qvDt = new QueryView("infoTbl");
+        qvDt.getControl().setFixedBottomRowCount(0);
+        qvDt.getControl().addStyleClass("sapUiSizeCompact");
+        var oc = this.qv.mLctb.getFieldValue(indic[0], "ORD_CODE"); // ord code to check type;
+
+        var sq = "select ord_no,ord_date," +
+            "ord_txt_wo WO," +
+            "ord_txt_wodate WOdate," +
+            "ord_txt_woval WOVAL," +
+            "ord_txt_iid IID, " +
+            "ord_txt_iiddate iiddate ," +
+            "ord_txt_iidval iidval ," +
+            "ord_txt_iidinvno iidinvno ," +
+            "ord_txt_iidinvdate iidinvdate ," +
+            "ord_txt_iidinvval iidinvval  " +
+            " from order1 where ord_code=" + oc + " and " +
+            " ord_no in (" + arPo.join() + ")";
+
+        var dt = Util.execSQL(sq);
+
+        if (dt.ret = "SUCCESS") {
+            qvDt.setJsonStrMetaData("{" + dt.data + "}");
+
+            UtilGen.applyCols("C6LGREQ.UI1", qvDt);
+            // if (typ != 141)
+            //     that.qv.mLctb.getColByName("PROFORMA").mHideCol = true;
+            // qvDt.mLctb.getColByName("WO").mColClass = "sap.m.Input";
+            // qvDt.mLctb.getColByName("WODATE").mColClass = "sap.m.Input";
+            // qvDt.mLctb.getColByName("WOVAL").mColClass = "sap.m.DatePicker";
+            // qvDt.mLctb.getColByName("IID").mColClass = "sap.m.Input";
+            // qvDt.mLctb.getColByName("IIDDATE").mColClass = "sap.m.Input";
+            // qvDt.mLctb.getColByName("IIDVAL").mColClass = "sap.m.Input";
+            // qvDt.mLctb.getColByName("IIDINVNO").mColClass = "sap.m.Input";
+            // qvDt.mLctb.getColByName("IIDINVDATE").mColClass = "sap.m.DatePicker";
+            // qvDt.mLctb.getColByName("IIDINVVAL").mColClass = "sap.m.Input";
+
+            qvDt.mLctb.parse("{" + dt.data + "}", true);
+            qvDt.loadData();
+            // qvDt.setJsonStr("{" + dt.data + "}");
+
+            if (qvDt.mLctb.rows.length > 0)
+                qvDt.getControl().setFirstVisibleRow(0);
+
+
+        }
+        var vb = new sap.m.VBox(
+            {
+                items: [qvDt.getControl()]
+            }
+        );
+        var dlg = new sap.m.Dialog({
+                content: [vb],
+                title: "Update info",
+                buttons: [
+                    new sap.m.Button({
+                        text: "Cancel",
+                        press: function () {
+                            dlg.close();
+
+                        }
+                    }),
+                    new sap.m.Button({
+                        text: "Update",
+                        press: function () {
+                            var sq = "update order1 " +
+                                "set ord_txt_wo=:wo , " +
+                                "ord_txt_wodate=:wodate , " +
+                                "ord_txt_woval=:woval , " +
+                                "ord_txt_iiddate=:iiddate ," +
+                                "ord_txt_iidval=:iidval ," +
+                                "ord_txt_iidinvno=:iidinvno ," +
+                                "ord_txt_iidinvdate=:iidinvdate ," +
+                                "ord_txt_iidinvval=:iidinvval ,  " +
+                                "ord_txt_iid=:iid " +
+                                "where ord_no=:on and ord_code=" + oc + ";";
+                            var sqs = "";
+                            for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
+                                var wo = Util.getCellColValue(qvDt.getControl(), i, "WO");
+                                var wodate = Util.getCellColValue(qvDt.getControl(), i, "WODATE");
+                                var woval = Util.getCellColValue(qvDt.getControl(), i, "WOVAL");
+                                var iid = Util.getCellColValue(qvDt.getControl(), i, "IID");
+                                var iiddate = Util.getCellColValue(qvDt.getControl(), i, "IIDDATE");
+                                var iidval = Util.getCellColValue(qvDt.getControl(), i, "IIDVAL");
+                                var iidinvno = Util.getCellColValue(qvDt.getControl(), i, "IIDINVNO");
+                                var iidinvdate = Util.getCellColValue(qvDt.getControl(), i, "IIDINVDATE");
+                                var iidinvval = Util.getCellColValue(qvDt.getControl(), i, "IIDINVVAL");
+
+
+                                var on = Util.getCellColValue(qvDt.getControl(), i, "ORD_NO");
+                                var s = sq.replace(/:wodate/g, Util.toOraDateString(wodate));
+                                s = s.replace(/:woval/g, Util.quoted(woval));
+                                s = s.replace(/:wo/g, Util.quoted(wo));
+
+                                s = s.replace(/:iiddate/g, Util.toOraDateString(iiddate));
+                                s = s.replace(/:iidval/g, Util.quoted(iidval));
+                                s = s.replace(/:iidinvno/g, Util.quoted(iidinvno));
+                                s = s.replace(/:iidinvdate/g, Util.toOraDateString(iidinvdate));
+                                s = s.replace(/:iidinvval/g, Util.quoted(iidinvval));
+
+                                s = s.replace(/:iid/g, Util.quoted(iid));
+
+                                s = s.replace(/:on/g, Util.quoted(on));
+
+                                sqs += s;
+                            }
+                            if (sqs.length > 0) {
+                                sqs = "begin " + sqs + " end;";
+                                var oSql = {
+                                    "sql": sqs,
+                                    "ret": "NONE",
+                                    "data": null
+                                };
+                                Util.doAjaxJson("sqlexe", oSql, false).done(function (data) {
+                                    console.log(data);
+                                    if (data == undefined) {
+                                        sap.m.MessageToast.show("Error: unexpected, check server admin");
+                                        return;
+                                    }
+                                    if (data.ret != "SUCCESS") {
+                                        sap.m.MessageToast.show("Error :" + data.ret);
+                                        return;
+                                    }
+
+                                    sap.m.MessageToast.show("Updated Successfully !");
+
+                                });
+
+                            }
+                            dlg.close();
+                        }
+                    })
+                ]
+            })
+        ;
+        dlg.open();
     }
 });
 

@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptLGJob" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d55c331e-aab4-48d1-895b-64fdc5414fb0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["CHAINEL INFOSYSTEM PVT LTD"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["DAR AL TAQADOM"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_SPECS" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["India"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_LOGO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["company_logo.bmp"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="COMPANY_SPECSA" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["Kuwait"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="VOU_TITLE" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["Job Voucher"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PNO" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\yaali\\Others\\reports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="OTYPE" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT O.*,''  COSTCENT_NAME,DECODE(ORD_TYPE,1,'LAND',2,'SEA',3,'AIR') TYPE_TEXT
+,L.NAME LOCATION_NAME
+FROM ORDER1 O,LOCATIONS L
+where O.ord_code=106
+AND L.CODE=O.LOCATION_CODE
+AND O.ORD_NO=$P{PNO}]]>
+	</queryString>
+	<field name="PERIODCODE" class="java.lang.String"/>
+	<field name="ORD_NO" class="java.math.BigDecimal"/>
+	<field name="ORD_CODE" class="java.math.BigDecimal"/>
+	<field name="ORD_REF" class="java.lang.String"/>
+	<field name="ORD_REFNM" class="java.lang.String"/>
+	<field name="ORD_DATE" class="java.sql.Timestamp"/>
+	<field name="ORD_SHIP" class="java.lang.String"/>
+	<field name="ORD_SHPDT" class="java.sql.Timestamp"/>
+	<field name="ORD_AMT" class="java.math.BigDecimal"/>
+	<field name="ORD_DISCAMT" class="java.math.BigDecimal"/>
+	<field name="ORD_FLAG" class="java.math.BigDecimal"/>
+	<field name="ORD_EMPNO" class="java.math.BigDecimal"/>
+	<field name="YEAR" class="java.lang.String"/>
+	<field name="REMARKS" class="java.lang.String"/>
+	<field name="PAYTERM" class="java.lang.String"/>
+	<field name="VALIDATIY" class="java.lang.String"/>
+	<field name="ATTN" class="java.lang.String"/>
+	<field name="KEYFLD" class="java.math.BigDecimal"/>
+	<field name="DELIVEREDQTY" class="java.math.BigDecimal"/>
+	<field name="ORDERDQTY" class="java.math.BigDecimal"/>
+	<field name="SALEINV" class="java.math.BigDecimal"/>
+	<field name="ONAME" class="java.lang.String"/>
+	<field name="LOCATION_CODE" class="java.lang.String"/>
+	<field name="COSTCENT" class="java.lang.String"/>
+	<field name="ORD_TYPE" class="java.math.BigDecimal"/>
+	<field name="RECIPT_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="PUR_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="LCNO" class="java.lang.String"/>
+	<field name="ORDACC" class="java.lang.String"/>
+	<field name="APPROVED_BY" class="java.lang.String"/>
+	<field name="APPROVED_TIME" class="java.sql.Timestamp"/>
+	<field name="LAST_MODIFIED_TIME" class="java.sql.Timestamp"/>
+	<field name="LAST_MODIFYED_BY" class="java.lang.String"/>
+	<field name="DELIVERED_FREEQTY" class="java.math.BigDecimal"/>
+	<field name="PUR_ADJUST_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="HAVE_ADJUSTMENT" class="java.lang.String"/>
+	<field name="ADJUST_AMOUNT" class="java.math.BigDecimal"/>
+	<field name="ADJUST_CURRENCY" class="java.lang.String"/>
+	<field name="ADJUST_RATE" class="java.math.BigDecimal"/>
+	<field name="ADJUST_DATE" class="java.sql.Timestamp"/>
+	<field name="ADJUST_DESCR" class="java.lang.String"/>
+	<field name="PUR_AND_SRV" class="java.lang.String"/>
+	<field name="STRA" class="java.math.BigDecimal"/>
+	<field name="SAL_AND_ISS" class="java.lang.String"/>
+	<field name="ISSUE_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="ORD_REFERENCE" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_RATE" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_DESCR" class="java.lang.String"/>
+	<field name="PAY_KEYFLD" class="java.lang.String"/>
+	<field name="SALERET_KEYFLD" class="java.math.BigDecimal"/>
+	<field name="SALERET" class="java.lang.String"/>
+	<field name="ORD_TXT_WO" class="java.lang.String"/>
+	<field name="ORD_TXT_IID" class="java.lang.String"/>
+	<field name="STARTDATE" class="java.sql.Timestamp"/>
+	<field name="ENDDATE" class="java.sql.Timestamp"/>
+	<field name="PREV_CLOSE_DATE" class="java.sql.Timestamp"/>
+	<field name="CREATED_BY" class="java.lang.String"/>
+	<field name="MODIFIED_BY" class="java.lang.String"/>
+	<field name="CREATED_DATE" class="java.sql.Timestamp"/>
+	<field name="MODIFIED_DATE" class="java.sql.Timestamp"/>
+	<field name="POSTED_DATE" class="java.sql.Timestamp"/>
+	<field name="SO_REFERENCE" class="java.math.BigDecimal"/>
+	<field name="ORD_PROF_AC" class="java.lang.String"/>
+	<field name="PROF_ORD_NO" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_AMT" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_DISC" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_MAIN_RATE" class="java.math.BigDecimal"/>
+	<field name="ORD_FC_MAIN_DESCR" class="java.lang.String"/>
+	<field name="ONM" class="java.math.BigDecimal"/>
+	<field name="EMAILS" class="java.lang.String"/>
+	<field name="ORD_TXT_WODATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_WOVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDINVNO" class="java.lang.String"/>
+	<field name="ORD_TXT_IIDINVDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDINVVAL" class="java.math.BigDecimal"/>
+	<field name="COSTCENT_NAME" class="java.lang.String"/>
+	<field name="TYPE_TEXT" class="java.lang.String"/>
+	<field name="LOCATION_NAME" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="225" splitType="Stretch">
+			<image scaleImage="FillFrame">
+				<reportElement x="393" y="0" width="162" height="85" uuid="5e1910b9-35e4-48e3-a266-3c47aa5e4297"/>
+				<imageExpression><![CDATA[$P{COMPANY_LOGO}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement style="strTitle" x="0" y="85" width="555" height="20" uuid="7800e591-101a-4ac7-8035-b6eb7d1f772b"/>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VOU_TITLE}]]></textFieldExpression>
+			</textField>
+			<rectangle radius="10">
+				<reportElement x="2" y="115" width="553" height="110" uuid="0a3750f2-0c2d-422c-b267-2e1f40b0399f"/>
+			</rectangle>
+			<staticText>
+				<reportElement style="strHeader" x="14" y="138" width="65" height="20" uuid="7844cd21-72b7-4074-b0d0-e801f3b68d82"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Location:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strHeader" x="177" y="138" width="66" height="20" uuid="9df3c3af-e7eb-4669-b208-9b773590bbe5"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Date :]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="83" y="138" width="90" height="20" uuid="b24f1f6b-45d6-4ac7-8b42-1cb16d34db35"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LOCATION_NAME}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="253" y="138" width="98" height="20" uuid="fa01eadf-f39e-4756-a3ad-88bb089926fe"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ORD_DATE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="412" y="138" width="135" height="20" uuid="31ad4b9e-83b1-4e96-bd88-f52dba5eb016"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{TYPE_TEXT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="355" y="138" width="57" height="20" uuid="df94ef90-3181-41ff-b486-f6f5e9515be4"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[FR. Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strHeader" x="14" y="158" width="65" height="20" uuid="e8baa37e-afd5-428c-a1b0-98b9fff68127"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cust Ref :]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="83" y="158" width="90" height="20" uuid="74513df1-6d55-4779-a7c8-823f4c5ccdf6"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ORD_SHIP}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="178" y="158" width="65" height="20" uuid="b54c21de-417a-400c-9e55-1b857b123634"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cost Center]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="253" y="158" width="98" height="20" uuid="d5527367-0511-49c0-a712-97a321fa8c6a"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{COSTCENT_NAME}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="14" y="118" width="65" height="20" uuid="4f7c2c6a-5fb8-4481-9463-02469e458b41"/>
+				<textElement verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Job Ord #]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="field" x="83" y="118" width="242" height="20" uuid="deee9495-641b-409f-8b76-2b8d873f2fb0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ONAME}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="14" y="178" width="65" height="20" uuid="a12ff394-3b7b-4903-a9d2-f2d33238e009"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Customer:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="83" y="178" width="268" height="20" uuid="76eda5a0-7f88-4fff-bb78-2172029eb72d"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ORD_REF} + $F{ORD_REFNM}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="355" y="158" width="57" height="20" uuid="f0000133-8137-4d1f-a344-c5bb452d4c5e"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[End Date]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="412" y="158" width="135" height="20" uuid="a47e6891-3aec-40fa-a8fa-5ebd19b7ccd1"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ORD_SHPDT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="412" y="178" width="135" height="20" uuid="38729d9c-92c7-4707-b173-3481d47534a6"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{VALIDATIY}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="355" y="178" width="57" height="20" uuid="b47066f1-afb6-4039-b8ac-ad40738055a2"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Activity]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="strHeader" x="15" y="198" width="61" height="20" uuid="44483eae-b2f1-4f09-a3b2-ba2f45d12335"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Origin:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="83" y="198" width="90" height="20" uuid="d06b7fbd-f51c-4e5a-b1e0-e9daa4a8e9f7"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ATTN}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="174" y="198" width="65" height="20" uuid="4577504a-1e43-4993-920e-ed547b7319c9"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Destination]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="239" y="198" width="112" height="20" uuid="6f8056b6-9720-4b40-8d6e-4b990308bf9f"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{VALIDATIY}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="355" y="198" width="57" height="20" uuid="cea1d209-c6dc-4cff-b0d6-009a8a392213"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cust Inv #]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="field" x="412" y="198" width="135" height="20" uuid="870152e5-8920-49f9-8487-d88ce44017a9"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ADJUST_DESCR}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="0" width="373" height="32" uuid="0178af5f-7653-43a1-b1c2-64f4f37fc951"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{COMPANY_NAME}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="247" splitType="Stretch">
+			<subreport>
+				<reportElement x="2" y="0" width="553" height="237" uuid="735cf330-76dc-45f4-8c3d-298fac143ccb"/>
+				<subreportParameter name="PNO">
+					<subreportParameterExpression><![CDATA[$F{ORD_NO}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["rptLGJob_"+$P{OTYPE}+".jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="139" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="field" x="14" y="24" width="532" height="90" uuid="82d43b1d-da21-4445-b765-79f80e6eb1f0"/>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression><![CDATA[$F{REMARKS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="strHeader" x="18" y="4" width="65" height="20" uuid="301f0c0b-f367-45bb-8092-9f8227c62013"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Notes:]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

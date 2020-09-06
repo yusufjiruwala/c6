@@ -222,7 +222,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 if (this.mLctb.cols[i].mQtreeType == "LEVEL")
                     this.mColLevel = this.mLctb.cols[i].mColName;
                 if (this.mLctb.cols[i].mQtreeType == "PATH")
-                    this.mColpath = this.mLctb.cols[i].mColName;
+                    this.mColPath = this.mLctb.cols[i].mColName;
                 if (this.mLctb.cols[i].mQtreeType == "PARENT")
                     this.mColParent = this.mLctb.cols[i].mColName;
                 if (this.mLctb.cols[i].mQtreeType == "CHILDCOUNT")

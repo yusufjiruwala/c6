@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptLGJob_3" language="groovy" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="d61cabf1-980f-4ce3-8164-1708f6788140">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<template><![CDATA["voucherStyle.jrtx"]]></template>
+	<parameter name="PNO" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT I.* ,
+DECODE(LG_PERMANENT_EXEMPTION,'Y','Permanent Exemption-',' ') LG_PE,
+DECODE(LG_TEMPORARY_IMPORT,'Y','Temporary Import -',' ') LG_TI,
+DECODE(LG_DUTY_PAID,'Y','Duty Paid',' ') LG_DP
+FROM LG_INFO I
+WHERE I.ORD_NO=$P{PNO}]]>
+	</queryString>
+	<field name="ORD_NO" class="java.math.BigDecimal"/>
+	<field name="ORD_CODE" class="java.math.BigDecimal"/>
+	<field name="ORD_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_KIND" class="java.lang.String"/>
+	<field name="LG_PERMANENT_EXEMPTION" class="java.lang.String"/>
+	<field name="LG_TEMPORARY_IMPORT" class="java.lang.String"/>
+	<field name="LG_DUTY_PAID" class="java.lang.String"/>
+	<field name="LG_L_RE_EXPORT" class="java.lang.String"/>
+	<field name="LG_L_LOCAL" class="java.lang.String"/>
+	<field name="LG_L_ORIGIN_TRUCK" class="java.lang.String"/>
+	<field name="LG_DRIVER_NO" class="java.lang.String"/>
+	<field name="LG_TRUCK_IQ" class="java.lang.String"/>
+	<field name="LG_TRUCK_TYPE" class="java.lang.String"/>
+	<field name="LG_LOADING_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_L_CLEARANCE_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_L_DELIVERY_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_L_OFFLOAD_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_SHIPPER" class="java.lang.String"/>
+	<field name="LG_CONSIGNEE" class="java.lang.String"/>
+	<field name="LG_S_VESSEL_NAME" class="java.lang.String"/>
+	<field name="LG_S_CONTAINER_NO" class="java.lang.String"/>
+	<field name="LG_S_MBL" class="java.lang.String"/>
+	<field name="LG_S_HBL" class="java.lang.String"/>
+	<field name="LG_S_FCL_LCL_BB" class="java.lang.String"/>
+	<field name="LG_A_AIRLINE" class="java.lang.String"/>
+	<field name="LG_A_FLT_NO" class="java.lang.String"/>
+	<field name="LG_A_MAWB" class="java.lang.String"/>
+	<field name="LG_A_HAWB" class="java.lang.String"/>
+	<field name="LG_OFFLOADING_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_ACTIVITY" class="java.lang.String"/>
+	<field name="LG_ORIGIN" class="java.lang.String"/>
+	<field name="LG_DESTINATION" class="java.lang.String"/>
+	<field name="LG_NO_OF_PCS" class="java.lang.String"/>
+	<field name="LG_WEIGHT" class="java.lang.String"/>
+	<field name="LG_MEASUREMENT" class="java.lang.String"/>
+	<field name="LG_DESCRIPTION" class="java.lang.String"/>
+	<field name="LG_NOTES" class="java.lang.String"/>
+	<field name="LG_PE" class="java.lang.String"/>
+	<field name="LG_TI" class="java.lang.String"/>
+	<field name="LG_DP" class="java.lang.String"/>
+	<detail>
+		<band height="302" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="868cc987-dfe6-4c6a-a54b-c5ec749708e5" x="1" y="13" width="552" height="281"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="186431ab-04dd-404c-9577-01249a3b75b1" style="strHeader" x="18" y="27" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Type Of Entry :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="86c12f36-a4c9-4cf2-8636-4f30c372b78f" style="strHeader" x="18" y="127" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[MAWB:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="7f11bf90-0642-458a-90bc-707b626db48b" style="field" x="96" y="167" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_TRUCK_IQ}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="00bb4383-c859-4bb7-ae3c-f9cfa26907a4" style="field" x="96" y="67" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_S_CONTAINER_NO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="fba67c45-1e05-47b3-87fe-a34adf6d2a73" style="field" x="430" y="27" width="113" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_NO_OF_PCS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="aa04b728-56a5-4435-bafb-89367f2f098e" style="strHeader" x="343" y="27" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No Of Pcs]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="2e34a5f4-cca6-49af-848a-7a466589f94c" style="strHeader" x="343" y="47" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Weight]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="64dc062a-2934-4dfc-ba66-79cc8f39a69c" style="field" x="430" y="67" width="113" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_MEASUREMENT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="82fcc6de-7495-471f-bf4c-07b297ba4439" style="strHeader" x="343" y="67" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Measurement]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="43528dc8-40a6-40d1-9d88-563f82ed4791" style="field" x="430" y="147" width="113" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_TRUCK_TYPE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="eba37b3a-fcbf-43db-a014-b9948b69c488" style="strHeader" x="343" y="147" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Truck Type]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="94dcae34-2934-4eac-aa66-c147392825a5" style="field" x="96" y="27" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_PE}+" "+$F{LG_TI}+" "+$F{LG_DP}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="15bc1e48-8d0a-424f-8fb1-85b38924a4ae" style="strHeader" x="18" y="107" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[No Of Truck:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="eee26128-261d-430d-bd8d-799d62766daa" style="field" x="96" y="47" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_S_VESSEL_NAME}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="f8d92dce-2cea-4478-9cb3-7a10596ec3db" style="strHeader" x="18" y="47" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vessel Name:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f166e1ed-12f0-4e30-863d-b734f96384bd" style="field" x="96" y="107" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_L_ORIGIN_TRUCK}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="0b5c100e-5543-4a63-a10f-3f6e29c7de98" style="field" x="96" y="127" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_A_MAWB}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="30e25a00-38db-4949-a346-2e8e197a427e" style="strHeader" x="18" y="167" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[IQ Truck:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="6368a500-5918-48ce-9091-c76c1a85ffa6" style="strHeader" x="18" y="67" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Air Line]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="1f246f07-1737-4872-b7af-04ed3ce2925c" style="strHeader" x="18" y="147" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[HAWB:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="74eeefe1-7f4f-409a-b9d8-8f3e4f6c962a" style="field" x="96" y="147" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_A_HAWB}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="464e5cd9-f177-4a00-b086-a68348a55e18" style="field" x="430" y="47" width="113" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_WEIGHT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="8f4ee212-5c80-4083-adc5-dbbc141b6f2b" style="strHeader" x="18" y="187" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Shipper:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="ad93897b-416c-428a-8e31-b3435b28f6b8" style="strHeader" x="18" y="207" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Consignee:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="48dea898-f201-46f1-969b-22ed198033fc" style="field" x="96" y="187" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_SHIPPER}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="54952efa-f104-46a6-909f-b46fee9b13e1" style="field" x="96" y="207" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_CONSIGNEE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="1f3a39b0-a7dd-4b80-b786-05cb849a169c" style="field" x="94" y="87" width="221" height="20"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{LG_A_FLT_NO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="2eeda4bc-d7d4-4eb1-aacd-492494c761c8" style="strHeader" x="18" y="87" width="76" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Flt No]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>

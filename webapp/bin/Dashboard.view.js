@@ -131,7 +131,6 @@ sap.ui.jsview('bin.Dashboard', {
     ,
 
     buildDashboardModel: function () {
-
         var that = this;
         this.reps = [];
         this.gData = [];
@@ -146,7 +145,6 @@ sap.ui.jsview('bin.Dashboard', {
             "_para_todate=@" + df.format((that.byId("todate").getDateValue()));
         ps += (ps.length > 0 ? "&" : "") + "_total_no=1";
         ps += (ps.length > 0 ? "&" : "");
-
 
         Util.doAjaxGet("exe?command=get-subrep&report-id=" + that.screen, "", false).done(function (data) {
             that.reps = JSON.parse("{" + data + "}").subrep;
@@ -536,12 +534,13 @@ sap.ui.jsview('bin.Dashboard', {
                 displayFormat: sett["ENGLISH_DATE_FORMAT"],
                 change: function (ev) {
                     var dt = ev.getParameters("value");
-                    that.todt = dt;
+                    // that.todt = dt;
                     that.buildDashboardModel();
                 }
             }
         );
-
+        this.todt.setDateValue(fromDate);
+        //this.todt.setValue(fromdate);
         var menuBar = new sap.m.Bar({
             contentLeft: [new sap.m.Button({
                 icon: "sap-icon://log",

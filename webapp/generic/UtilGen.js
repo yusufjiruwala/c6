@@ -441,11 +441,11 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 }
                 if (comp instanceof sap.m.InputBase || comp instanceof sap.m.SearchField) {
                     comp.setValue(val);
-                    if (customVal.length > 0)
-                        if (comp.getCustomData().length == 0)
-                            comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
-                        else
-                            comp.getCustomData()[0].setKey(customVal);
+                    // if (customVal.length > 0)
+                    if (comp.getCustomData().length == 0)
+                        comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                    else
+                        comp.getCustomData()[0].setKey(customVal);
                     if (comp instanceof sap.m.InputBase && executeChange)
                         comp.fireChange();
                 }
@@ -463,11 +463,11 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 }
                 if (comp instanceof sap.m.Text) {
                     comp.setText(val);
-                    if (customVal.length > 0)
-                        if (comp.getCustomData().length == 0)
-                            comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
-                        else
-                            comp.getCustomData()[0].setKey(customVal);
+                    // if (customVal.length > 0)
+                    if (comp.getCustomData().length == 0)
+                        comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                    else
+                        comp.getCustomData()[0].setKey(customVal);
 
 
                 }
@@ -567,7 +567,12 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var setx = sett;
                 var idx = id;
                 if (Util.nvl(id, "") == "")
-                    idx = lbl.replace(/ ||,||./g, "");
+                    idx = lbl.replace(/[ ||,||.||\/||@||#]/g, "");
+                if (Util.nvl(id, "").endsWith("_")) {
+                    idx = id + lbl.replace(/[ ||,||.||\/||@||#]/g, "");
+                    if (lbl.startsWith("@") || lbl.startsWith("#"))
+                        idx = lbl.substr(1, 1) + idx;
+                }
                 var cnt = this.createControl(cntClass, view, idx, setx, dataType, fldFormat, fnchange, sqlStr);
                 if (lbl.length != 0)
                     ar.push(lbl);
@@ -938,6 +943,70 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
             }
             ,
+            showErrorNoVal: function (obj, msg) {
+                var ob = [];
+                var fnd = 0;
+                var errobjs = [];
+                if (!Array.isArray(obj))
+                    ob = [obj];
+                else ob = obj;
+                for (var i in ob) {
+                    var objj = ob[i];
+                    if ((this.nvl(this.getControlValue(objj), "") + "").length == 0) {
+                        fnd++;
+                        errobjs.push(objj);
+                    }
+                }
+                if (fnd > 0) {
+                    sap.m.MessageToast.show(fnd + " Field(s)  must have value !");
+                    setTimeout(function () {
+                        for (var i in errobjs) {
+                            errobjs[i].addStyleClass("errBack");
+                        }
+                        setTimeout(function () {
+                            for (var i in errobjs)
+                                errobjs[i].removeStyleClass("errBack");
+
+                        }, 10000);
+                    }, 100);
+                }
+                return fnd;
+            },
+            openForm: function (frag, frm, ocAdd, view, app) {
+                var oC = {};
+                if (view != undefined)
+                    oC = {
+                        getView:
+                            function () {
+                                return view;
+                            }
+                    };
+                if (ocAdd != undefined)
+                    for (var xx in ocAdd)
+                        oC[xx] = ocAdd[xx];
+
+                var sp = sap.ui.jsfragment(frag, oC);
+                if (app != undefined)
+                    sp.app = app;
+
+                return sp;
+            },
+
+            doSearch: function (event, sql, obj, fnAfter) {
+                if (event != undefined
+                    && (event.getParameters().clearButtonPressed
+                        || event.getParameters().refreshButtonPressed)) {
+                    UtilGen.setControlValue(obj, "", "", true);
+                    return;
+                }
+
+                Util.showSearchList(sql, "TITLE", "CODE", function (valx, val) {
+                    UtilGen.setControlValue(obj, val, valx, true);
+                    if (fnAfter != undefined)
+                        fnAfter();
+                });
+
+            }
         };
 
 

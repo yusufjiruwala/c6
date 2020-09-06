@@ -34,6 +34,12 @@ sap.ui.jsfragment("bin.Queries", {
                 }
             });
         }
+        this.qd = new sap.m.Button({
+            icon: "sap-icon://create",
+            press: function () {
+                that.openQuery();
+            }
+        });
 
         (view.byId("filterBox") != undefined ? view.byId("filterBox").destroy() : "");
         (view.byId("profile") != undefined ? view.byId("profile").destroy() : "");
@@ -55,6 +61,7 @@ sap.ui.jsfragment("bin.Queries", {
 
         this.getProfileList();
         var fp = (this.bk != undefined ? [this.bk] : []);
+        fp.push(this.qd);
         fp.push(view.cb);
 
         this.filterBox = new sap.m.FlexBox(view.createId("filterBox"),
@@ -192,6 +199,16 @@ sap.ui.jsfragment("bin.Queries", {
 
         });
     },
+    openQuery: function () {
+
+        var that = this;
+        var view = this.view;
+//        var repCode = selRec.CODE;
+        UtilGen.clearPage(this.pgQuery);
+        var fr = sap.ui.jsfragment("bin.Qd", this.oController);
+        this.pgQuery.addContent(fr);
+
+    },
     show_report: function (selRec) {
 
         var that = this;
@@ -206,7 +223,9 @@ sap.ui.jsfragment("bin.Queries", {
         if (this.toe == "QUERY" || this.toe == "SUBREP" || this.toe == "QTREE")
             this.createViewQuery(selRec);
         if (this.toe == "FORM") {
+            var splitApp = sap.ui.getCore().byId("reportApp");
             var fr = sap.ui.jsfragment(selRec.EXEC_LINE, this.oController);
+            splitApp.toDetail(that.pgQuery, "flip");
             this.pgQuery.addContent(fr);
         }
 

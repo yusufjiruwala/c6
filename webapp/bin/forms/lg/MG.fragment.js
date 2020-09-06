@@ -26,11 +26,17 @@ sap.ui.jsfragment("bin.forms.lg.MG", {
                 splitApp.backFunction();
             }
         });
+        this.qd = new sap.m.Button({
+            icon: "sap-icon://create",
+            press: function () {
+                that.openQuery();
+            }
+        });
 
         this.filterBox = new sap.m.FlexBox(view.createId("filterBox"),
             {
                 width: "100%",
-                items: [this.bk],
+                items: [this.bk,this.qd],
                 direction: sap.m.FlexDirection.Row,
                 alignItems: sap.m.FlexAlignItems.Start
             }
@@ -133,6 +139,15 @@ sap.ui.jsfragment("bin.forms.lg.MG", {
                 }
             ));
         });
+    },
+    openQuery: function () {
+        var that = this;
+        var view = this.view;
+        var repCode = selRec.CODE;
+        UtilGen.clearPage(this.pgQuery);
+        var fr = sap.ui.jsfragment("bin.Qd", this.oController);
+        this.pgQuery.addContent(fr);
+
     },
     createResultPage: function () {
         var splitApp = sap.ui.getCore().byId("reportApp");

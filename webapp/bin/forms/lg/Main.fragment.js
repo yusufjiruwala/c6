@@ -8,7 +8,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         var that = this;
 
         this.app = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
-
+        Util.destroyID("pgMain", this.view);
         this.mainPage = new sap.m.Page("pgMain", {
             showHeader: false,
             content: []
@@ -107,7 +107,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 })
 
             }).addStyleClass("mytile");
-
+        
         (this.view.byId("layout") != undefined ? this.view.byId("layout").destroy() : null);
         var layout = new sap.ui.layout.Grid(this.view.createId("layout"), {
             content: [

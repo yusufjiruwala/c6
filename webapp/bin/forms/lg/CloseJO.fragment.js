@@ -2,6 +2,7 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
 
     createContent: function (oController) {
         var that = this;
+        jQuery.sap.require("sap.m.MessageBox");
         this.oController = oController;
         this.lastSel = undefined;
         this.view = oController.getView();
@@ -104,7 +105,19 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
                 icon: "sap-icon://accept",
                 text: "Close JO",
                 press: function () {
-                    that.post_close();
+                    sap.m.MessageBox.confirm("Are you sure, to CLOSE  ?  ", {
+                        title: "Confirm",                                    // default
+                        onClose: function (oAction) {
+                            if (oAction == sap.m.MessageBox.Action.OK) {
+                                that.post_close();
+                            }
+                        },                                       // default
+                        styleClass: "",                                      // default
+                        initialFocus: null,                                  // default
+                        textDirection: sap.ui.core.TextDirection.Inherit     // default
+                    });
+
+
                 }
             }));
         frm.getToolbar().addContent(
@@ -135,7 +148,9 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
                 sap.m.MessageToast.show("No JO is selected !");
                 this.mainPage.backFunction();
             }
-            UtilGen.setControlValue(this.o1.close_date, new Date());
+
+            if (UtilGen.getControlValue(this.o1.close_date) == undefined)
+                UtilGen.setControlValue(this.o1.close_date, new Date());
             this.ordNos = [];
             for (var i in this.cOrdNos) {
                 var flg = Util.getSQLValue("select ord_flag from order1 where ord_code=106 and ord_no=" + Util.quoted(this.cOrdNos[i]));
