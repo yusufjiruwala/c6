@@ -799,6 +799,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                                 var cx = columns[clx].tableCol;
                                 var evl = cx.eOther.replace(/:newValue/g, "\"'" + newValue + "'\"");
                                 evl = evl.replace(/:nwValue/g, "\"" + newValue + "\"");
+                                evl = evl.replace(/:quote/g, "\"");
                                 if (!eval(evl))
                                     this.requestFocus();
 
@@ -938,6 +939,59 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
             }
             ,
+            openForm: function (view, frag, frm, ocAdd) {
+                var oC;
+                if (ocAdd == undefined)
+                    oC = {
+                        getView:
+                            function () {
+                                return view;
+                            }
+                    };
+                else
+                    oC = ocAdd;
+
+                var sp = sap.ui.jsfragment(frag, oC);
+                // sp.backFunction = function () {
+                //     that.joApp.to(that.mainPage, "show");
+                //     that.createView();
+                //     that.loadData();
+                // };
+                // sp.app = this.joApp;
+                UtilGen.clearPage(frm);
+                frm.addContent(sp);
+                return sp;
+            },
+
+            rowButtonDel: function (qv) {
+                return new sap.m.Button({
+                    icon: "sap-icon://sys-minus",
+                    press: function () {
+                        if (qv.getControl().getSelectedIndices().length == 0) {
+                            sap.m.MessageToast.show("Select a row to delete. !");
+                            return;
+                        }
+
+                        var r = qv.getControl().getSelectedIndices()[0] + qv.getControl().getFirstVisibleRow();
+                        qv.deleteRow(r);
+                    }
+                });
+            },
+            rowButtonAdd: function (qv) {
+                return new sap.m.Button({
+                    icon: "sap-icon://add",
+                    press: function () {
+                        qv.addRow();
+                    }
+                });
+            },
+            rowGridButtons: function (qv) {
+                var tb2 = new sap.m.Toolbar().addStyleClass("sapUiMediumMarginTop");
+                tb2.addContent(this.rowButtonAdd(qv));
+                tb2.addContent(this.rowButtonDel(qv));
+                return tb2;
+            }
+
         };
 
 

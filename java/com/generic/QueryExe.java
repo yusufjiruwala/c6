@@ -68,7 +68,7 @@ public class QueryExe {
 	}
 
 	public QueryExe() {
-
+		
 	}
 
 	public String AutoGenerateInsertStatment(String table_name) {

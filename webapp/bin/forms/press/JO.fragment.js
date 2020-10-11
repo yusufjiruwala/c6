@@ -5,12 +5,16 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         this.oController = oController;
         this.view = oController.getView();
         this.qryStr = "";
+        this.qv1 = undefined;
+        this.qv2 = undefined;
         this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
             ord_code: 601,
-            onm: ""
+            onm: "",
+            matexp: 0,
+            otherexp: 0
         };
         this.pgDetail = new sap.m.Page({showHeader: false});
 
@@ -76,16 +80,70 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         sf.getToolbar().addContent(new sap.m.Text(view.createId("poMsgInv"), {text: ""}).addStyleClass("redText blinking"));
         sf.getToolbar().addContent(new sap.m.Title({text: "Job Order"}));
 
+        (this.view.byId("poCmdExpense") != undefined ? this.view.byId("poCmdExpense").destroy() : null);
+        sf.getToolbar().addContent(new sap.m.Button(this.view.createId("poCmdExpense"), {
+            text: "Expenses", press: function () {
+                that.showExpenses(true);
+            }
+        }));
+
         var sc = new sap.m.ScrollContainer();
 
         sc.addContent(sf);
 
+        sc.addContent(UtilGen.rowGridButtons(this.qv));
         sc.addContent(this.qv.getControl());
+
         this.mainPage.addContent(sc);
+        this.createViewFooter(sc);
         // this.createViewFooter(sc);
 
     },
+    createViewFooter: function (sc) {
+        var that = this;
+        var view = this.view;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        this.o2 = [];
+        var fe = [];
+        // this.o2.ord_discamt = UtilGen.createControl(sap.m.Input, this.view, "poOrdDisc", {enabled: false}, "number");
+        // this.o2.ord_amt = UtilGen.createControl(sap.m.Input, this.view, "poOrdamt", {enabled: false}, "number");
+        // var hb1 = new sap.m.HBox({items: [new sap.m.Text({text: "Discount"}), this.o2.ord_discamt]});
+        // var hb2 = new sap.m.HBox({items: [new sap.m.Text({text: "Amount"}), this.o2.ord_amt]});
+        // this.o2.ord_discamt = this.addControl(fe, "Discount", sap.m.Input, "poOrdDisc",
+        //     {
+        //         editable: false,
+        //         layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+        //     }, "number", sett["FORMAT_MONEY_1"])
+        this.o2.ord_amt = UtilGen.addControl(fe, "Total Sales", sap.m.Input, "joSaleAmt",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L3 M3 S12"})
+            }, "number", sett["FORMAT_MONEY_1"], view);
+        this.o2.ord_exp_amt = UtilGen.addControl(fe, "Total Expense", sap.m.Input, "joTotExpAMt",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L3 M3 S12"})
+            }, "number", sett["FORMAT_MONEY_1"], view);
 
+        this.o2.net_profit = UtilGen.addControl(fe, "Net Profit", sap.m.Input, "joNetProfit",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L3 M3 S12"})
+            }, "number", sett["FORMAT_MONEY_1"], view);
+
+        this.o2._tmp1 = UtilGen.addControl(fe, " ", sap.m.Text, "joDot1",
+            {
+                height: "50px",
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L3 M3 S12"})
+            }, "string", undefined, view);
+
+
+        var frm = UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
+        frm.setToolbar(undefined);
+        frm.destroyToolbar();
+        sc.addContent(frm);
+    },
     createViewJOControls: function (addForm, pg) {
         var that = this;
         var view = this.view;
@@ -309,6 +367,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 that.setItemSql();
             }
         });
+        this.showExpenses(false);
     },
     do_summary: function (reAmt) {
         var that = this;
@@ -317,13 +376,58 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var tbl = that.qv.getControl();
 
+        var totamt = 0;
         for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
             var pr = parseFloat((Util.getCellColValue(tbl, i, 'ORD_PRICE')).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
             var qt = parseFloat((Util.getCellColValue(tbl, i, 'ORD_PKQTY')).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
             var amt = pr * qt;
             Util.setCellColValue(tbl, i, "AMOUNT", df.format(amt));
+            totamt += amt;
         }
+        UtilGen.setControlValue(this.o2.ord_amt, df.format(totamt));
         this.qv.updateDataToTable();
+    },
+    do_summary1: function (reAmt) {
+        if (this.qv1 == undefined) return;
+        var that = this;
+        reamt = Util.nvl(reAmt, false); // re calculate amount if require.
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+        var tbl = that.qv1.getControl();
+        var tbl2 = that.qv2.getControl();
+        var totamt = 0;
+        for (var i = 0; i < that.qv1.mLctb.rows.length; i++) {
+            var pr = parseFloat((Util.getCellColValue(tbl, i, 'ORD_PRICE')).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
+            var qt = parseFloat((Util.getCellColValue(tbl, i, 'ORD_PKQTY')).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
+            var amt = pr * qt;
+            Util.setCellColValue(tbl, i, "AMOUNT", df.format(amt));
+            totamt += amt;
+        }
+
+        var totexp = that.view.byId("joMatExp");
+        totexp.setText(df.format(totamt));
+        this.vars.matexp = totamt;
+
+        totamt = 0;
+
+        for (var i = 0; i < that.qv2.mLctb.rows.length; i++) {
+            var amt = parseFloat((Util.getCellColValue(tbl2, i, 'AMOUNT')).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
+            totamt += amt;
+        }
+        this.vars.otherexp = totamt;
+        var txttotexp = that.view.byId("joOtherExp");
+        txttotexp.setText(df.format(totamt));
+
+        var totsal = UtilGen.getControlValue(this.o2.ord_amt);
+        totexp = this.vars.matexp + this.vars.otherexp;
+        var netpr = totsal - totexp;
+
+        UtilGen.setControlValue(this.o2.ord_exp_amt, df.format(totexp));
+        UtilGen.setControlValue(this.o2.net_profit, df.format(netpr));
+
+        // UtilGen.setControlValue();
+        this.qv1.updateDataToTable();
+        this.qv2.updateDataToTable();
     },
     setItemSql: function () {
         var that = this;
@@ -336,6 +440,24 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+        var cnts = {};
+
+        for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
+            var rn = Util.nvl(that.qv.mLctb.getFieldValue(i, "DESCR"), "");
+            var rn1 = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_REFER"), "");
+            if (rn == "") {
+                sap.m.MessageToast.show("Must  DESCR/ITEM  have value .. !");
+                return false;
+            }
+            cnts[rn] = Util.nvl(cnts[rn], 0) + 1;
+            if (cnts[rn] > 1) {
+                sap.m.MessageToast.show("Must have Unique value for Item # " + rn);
+                return false;
+            }
+
+
+        }
+
         if (this.qryStr != "") {
             var dt = Util.execSQL("select *from order1 where ord_code=601 and ord_no=" + this.qryStr);
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
@@ -353,14 +475,26 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 sap.m.MessageToast.show("One of (Steps) have been finished on this JO ! ");
                 return false;
             }
+
+
             if (stat == "Y") {
                 sap.m.MessageToast.show("Status is Active ! ");
                 return false;
             }
+
+            var stat = Util.getSQLValue("select nvl(max(ord_code),-1) from joined_order where ord_code!=601 and ord_reference=" + this.qryStr);
+            var st = "";
+            if (stat != -1) {
+                st = (stat == 111 ? "Sales " : "Delivery");
+                sap.m.MessageToast.show("Transaction is existed in " + st + " !");
+                return false;
+            }
+
         }
 
 
         this.do_summary(true);
+        this.do_summary1(true);
         return true;
     },
     save_data: function () {
@@ -380,14 +514,29 @@ sap.ui.jsfragment("bin.forms.press.JO", {
             "ORD_ITMAVER": 0,
             "YEAR": "2000",
             "DELIVEREDQTY": 0,
-            "ORDEREDQTY": 0
+            "ORDEREDQTY": 0,
         };
+
+        var defaultValues2 = {
+            "PERIODCODE": sett["CURRENT_PERIOD"],
+            "ORD_CODE": this.vars.ord_code + 1,
+            "ORD_NO": UtilGen.getControlValue(that.jo.ord_no),
+            "ORD_DATE": UtilGen.getControlValue(that.jo.ord_date),
+            "ORD_FLAG": 2,
+            "ORD_ITMAVER": 0,
+            "YEAR": "2000",
+            "DELIVEREDQTY": 0,
+            "ORDEREDQTY": 0,
+        };
+
 
         var custName = Util.getSQLValue("select name from c_ycust where code=" + Util.quoted(UtilGen.getControlValue(that.jo.ord_ref)));
         for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
             var vl = that.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
             that.qv.mLctb.setFieldValue(i, "ORD_ALLQTY", vl);
         }
+
+
         var mat_flag = (UtilGen.getControlValue(that.jo.mat_flag) == "N" ? 1 : 2);
         var des_flag = (UtilGen.getControlValue(that.jo.des_flag) == "N" ? 1 : 2);
         var plate_flag = (UtilGen.getControlValue(that.jo.plate_flag) == "N" ? 1 : 2);
@@ -402,21 +551,45 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 "CREATED_DATE": "sysdate",
                 "MAT_FLAG": mat_flag,
                 "DES_FLAG": des_flag,
-                "PLATE_FLAG": plate_flag
-                "LAST_READY_DATE": Utul.toOraDateString(this.jo.ord_date)
+                "PLATE_FLAG": plate_flag,
+                "DELIVEREDQTY": 0,
+                "ORDERDQTY": that.qv.mLctb.getSummaryOf("ORD_PKQTY"),
             }, ["mat_flag", "des_flag", "plate_flag"]);
+
             k = "insert into order1 " + k + ";";
             var s1 = "";
             // sqls for insert string in order2 table.
 
+
+            //qv for main sales quoted.
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
-
+                defaultValues["ORDEREDQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
                 s1 += that.updatePosItems(i);
             }
-            k = "begin " + k + s1 + " end; ";
 
+
+            // qv1 table for material expenses...
+            if (this.qv1 != undefined) {
+
+                for (var i = 0; i < this.qv1.mLctb.rows.length; i++) {
+                    defaultValues2["ORD_ALLQTY"] = this.qv1.mLctb.getFieldValue(i, "ORD_PKQTY");
+                    s1 += UtilGen.getInsertRowString(this.qv1.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues2, true) + ";"
+                }
+            }
+
+            // qv2 : table for labor expenses.
+            if (this.qv2 != undefined) {
+                for (var i = 0; i < this.qv2.mLctb.rows.length; i++) {
+                    s1 += UtilGen.getInsertRowString(this.qv2.mLctb, "ORD_JO_EXP", i, ["DESCR"], {
+                        "ORD_CODE": this.vars.ord_code,
+                        "ORD_NO": UtilGen.getControlValue(that.jo.ord_no),
+                    }, true) + ";"
+                }
+            }
+
+            k = "begin " + k + s1 + " end; ";
         } else {
             k = UtilGen.getSQLUpdateString(this.jo, "order1",
                 {
@@ -426,17 +599,52 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                     "MAT_FLAG": mat_flag,
                     "DES_FLAG": des_flag,
                     "PLATE_FLAG": plate_flag,
-                    "LAST_READY_DATE": Util.toOraDateString(this.jo.ord_date)
-
+                    // "LAST_STATUS_DATE": Util.toOraDateString(UtilGen.getControlValue(this.jo.ord_date)),
+                    "DELIVEREDQTY": 0,
+                    "ORDERDQTY": that.qv.mLctb.getSummaryOf("ORD_PKQTY"),
                 },
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStr), ["mat_flag", "des_flag", "plate_flag"]) + ";";
 
-            var s1 = "delete from order2 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStr + ";";  // sqls for insert string in order2 table.
+            var s1 = "delete from order2 where ord_code in ("
+                + this.vars.ord_code + "," + (this.vars.ord_code + 1) + ") and ord_no=" +
+                this.qryStr + ";" +
+                " delete from ORD_JO_EXP where ord_code=" + this.vars.ord_code + " and " +
+                " ord_no = " + Util.quoted(this.qryStr) + ";";  // sqls for insert string in order2 table.
+
+            //ON UPDATE : qv  sales table
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
-                s1 += UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";"
+                defaultValues["ORDEREDQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
+                s1 += UtilGen.getInsertRowString(
+                    this.qv.mLctb,
+                    "order2",
+                    i,
+                    ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"],
+                    defaultValues
+                    , true) + ";";
                 s1 += that.updatePosItems(i);
             }
+
+
+            // ON UPDATE:  QV1 table ( expenses )
+
+            if (this.qv1 != undefined)
+                for (var i = 0; i < this.qv1.mLctb.rows.length; i++) {
+                    defaultValues2["ORD_ALLQTY"] = this.qv1.mLctb.getFieldValue(i, "ORD_PKQTY");
+                    s1 += UtilGen.getInsertRowString(this.qv1.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues2, true) + ";"
+                }
+
+            // ON UPDATE:  QV2 table ( LABOR expenses )
+            if (this.qv2 != undefined) {
+                for (var i = 0; i < this.qv2.mLctb.rows.length; i++) {
+                    s1 += UtilGen.getInsertRowString(this.qv2.mLctb, "ORD_JO_EXP", i, ["DESCR"], {
+                        "ORD_CODE": this.vars.ord_code,
+                        "ORD_NO": UtilGen.getControlValue(that.jo.ord_no),
+                    }, true) + ";"
+                }
+            }
+
+
             k = "begin " + k + s1 + " end;";
         }
 
@@ -499,9 +707,119 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         //     }
         // });
 
+    },
+    showExpenses: function (showScreen) {
+        var that = this;
+        var view = this.view;
+        if (this.qv1 == undefined) {
+            this.qv1 = new QueryView("tblExp1");
+            this.qv2 = new QueryView("tblExp2");
+            that.qv1.getControl().view = this.view;
+            that.qv2.getControl().view = this.view;
+            var sq = "select order2.*, ord_price*ord_allqty amount " +
+                " from order2 where ord_no="
+                + Util.quoted(this.qryStr)
+                + " and ord_code="
+                + (this.vars.ord_code + 1)
+                + " order by ord_pos";
+
+            var sq2 = "select O.*,C.NAME DESCR from ord_jo_exp O, c_ycust C  where c.code=o.refer " +
+                " and o.ord_code=" + that.vars.ord_code + " and o.ord_no=" + Util.quoted(this.qryStr);
+
+            this.qv1.getControl().view = this;
+            this.qv2.getControl().view = this;
+            this.qv1.getControl().addStyleClass("sapUiSizeCondensed");
+            this.qv1.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
+            this.qv1.getControl().setFixedBottomRowCount(0);
+            this.qv1.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
+            this.qv1.getControl().setVisibleRowCount(7);
+
+            this.qv2.getControl().addStyleClass("sapUiSizeCondensed");
+            this.qv2.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
+            this.qv2.getControl().setFixedBottomRowCount(0);
+            this.qv2.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
+            this.qv2.getControl().setVisibleRowCount(7);
+
+
+            this.qv2.onAddRow = function (idx, ld) {
+                ld.setFieldValue(idx, "ORD_POS", idx + 1);
+                ld.setFieldValue(idx, "AMOUNT", 0);
+            };
+
+            this.qv1.onAddRow = function (idx, ld) {
+                ld.setFieldValue(idx, "ORD_POS", idx + 1);
+                ld.setFieldValue(idx, "ORD_PKQTY", 1);
+                ld.setFieldValue(idx, "ORD_ALLQTY", 1);
+                ld.setFieldValue(idx, "ORD_PRICE", 0);
+            };
+
+
+            this.qv1.getControl().setEditable(true);
+
+            Util.doAjaxJson("sqlmetadata", {sql: sq2}, false).done(function (data) {
+                if (data.ret == "SUCCESS") {
+                    that.qv2.setJsonStrMetaData("{" + data.data + "}");
+                    UtilGen.applyCols("C6P.JO3", that.qv2, that);
+                    // var c = that.qv2.mLctb.getColPos("DESCR");
+                    that.qv2.mLctb.parse("{" + data.data + "}", true);
+                    that.qv2.loadData();
+
+
+                }
+            });
+
+            Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
+                if (data.ret == "SUCCESS") {
+                    that.qv1.setJsonStrMetaData("{" + data.data + "}");
+                    UtilGen.applyCols("C6P.JO2", that.qv1, that);
+                    that.qv1.mLctb.parse("{" + data.data + "}", true);
+                    that.qv1.loadData();
+                }
+            });
+            var tb = new sap.m.Toolbar();
+            tb.addContent(new sap.m.Button({
+                icon: "sap-icon://nav-back",
+                press: function () {
+                    that.joApp.toDetail(that.mainPage, "slide");
+                }
+            }));
+            tb.addContent(new sap.m.ToolbarSpacer());
+            tb.addContent(new sap.m.Text({text: "Expenses for Job Ord # " + that.qryStr}).addStyleClass("redText"));
+
+            //----------------------------------------------------Adding material table.........
+
+            var tb2 = new sap.m.Toolbar().addStyleClass("sapUiMediumMarginTop");
+            tb2.addContent(UtilGen.rowButtonAdd(that.qv1));
+            tb2.addContent(UtilGen.rowButtonDel(that.qv1));
+
+            tb2.addContent(new sap.m.ToolbarSpacer());
+            (this.view.byId("joMatExp") != undefined ? this.view.byId("joMatExp").destroy() : null);
+            tb2.addContent(new sap.m.Title({text: "Material Expenses :"}));
+            tb2.addContent(new sap.m.Text(view.createId("joMatExp"), {}));
+
+
+            //----------------------------------------------------Adding expenses table.........
+
+            var tbb2 = new sap.m.Toolbar().addStyleClass("sapUiMediumMarginTop");
+
+            tbb2.addContent(UtilGen.rowButtonAdd(that.qv2));
+            tbb2.addContent(UtilGen.rowButtonDel(that.qv2));
+            tbb2.addContent(new sap.m.ToolbarSpacer());
+            (this.view.byId("joOtherExp") != undefined ? this.view.byId("joOtherExp").destroy() : null);
+            tbb2.addContent(new sap.m.Title({text: "Other Expenses :"}));
+            tbb2.addContent(new sap.m.Text(view.createId("joOtherExp"), {}));
+
+            this.pgDetail.addContent(tb);
+            this.pgDetail.addContent(tb2);
+            this.pgDetail.addContent(this.qv1.getControl());
+
+            this.pgDetail.addContent(tbb2);
+            this.pgDetail.addContent(this.qv2.getControl());
+            this.do_summary1(true);
+        }
+        if (showScreen) {
+            this.joApp.toDetail(this.pgDetail, "slide");
+            // that.qv1.loadData();
+        }
     }
-})
-;
-
-
-
+});

@@ -62,7 +62,7 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                 // width: "200px",
                 content: [
                     new sap.m.Text({
-                        alignText: "center", text: "Contracts"
+                        alignText: "center", text: "Sales"
                     }).addStyleClass("whiteText")
                 ],
                 layoutData: new sap.ui.layout.GridData({
@@ -75,7 +75,7 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                 expanded: true,
                 // width: "200px",
                 content: [
-                    new sap.m.Text({text: "Requests"}).addStyleClass("whiteText")
+                    new sap.m.Text({text: "Status"}).addStyleClass("whiteText")
                 ],
                 layoutData: new sap.ui.layout.GridData({
                     span: spn
@@ -129,7 +129,18 @@ sap.ui.jsfragment("bin.forms.press.Main", {
             that.openForm("bin.forms.press.JO", that.pgJo);
         });
         pnl2.attachBrowserEvent("click", function (e) {
-            that.openForm("bin.forms.lg.contracts", that.pgCnt);
+            var qr = Util.nvl(Util.getCurrentCellColValue(that.qv.getControl(), "ORD_NO"), "");
+            if (Util.nvl(qr, "") == "") {
+                sap.m.MessageToast.show("JO is not selected !");
+                return;
+            }
+            var stat = Util.getSQLValue("select is_active from order1 where ord_code=601 and ord_no=" + Util.quoted(qr));
+            if (stat != "Y") {
+                sap.m.MessageToast.show("Status is Not-ready ! ");
+                return;
+            }
+
+            that.openForm("bin.forms.press.Sales", that.pgCnt);
         });
         pnl3.attachBrowserEvent("click", function (e) {
             var idx = that.qv.getControl().getSelectedIndex();
@@ -238,16 +249,19 @@ sap.ui.jsfragment("bin.forms.press.Main", {
         // var qt = UtilGen.getControlValue(that.query_type);
         var typ = Util.nvl(UtilGen.getControlValue(this.query_type), -1);
 
-        var sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM " +
-            " FROM ORDER1 WHERE ORD_CODE=601 " +
+        var sql = "SELECT STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM ," +
+            "  SLP,DLP " +
+            " FROM V_C6P_JO WHERE ORD_CODE=601 " +
             " and ord_flag=2 " +
             "ORDER BY ORD_DATE DESC,ORD_NO desc ";
+
         sql = sql.replace(/:TYP/g, typ);
 
         if (typ == "0" || typ == 0) {
-            sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM " +
-                " FROM ORDER1 WHERE ORD_CODE=601 and " +
-                " where ord_flag=1 " +
+            sql = "SELECT DECODE(IS_ACTIVE,'Y','READY','N','NOT READY') STATUS , ORD_NO,ORD_DATE,ORD_REF,ORD_REFNM," +
+                "  SLP,DLP " +
+                " FROM V_C6P_JO WHERE ORD_CODE=601 and " +
+                " ord_flag=1 " +
                 " ORDER BY ORD_DATE DESC,ORD_NO desc";
         }
 
@@ -271,7 +285,10 @@ sap.ui.jsfragment("bin.forms.press.Main", {
 
                 var c = that.qv.mLctb.getColPos("ORD_NO");
                 that.qv.mLctb.cols[c].getMUIHelper().data_type = "NUMBER";
-
+                var c = that.qv.mLctb.getColPos("SLP");
+                that.qv.mLctb.cols[c].mTitle = "Sold %";
+                var c = that.qv.mLctb.getColPos("DLP");
+                that.qv.mLctb.cols[c].mTitle = "Delivery %";
                 that.qv.loadData();
                 if (that.qv.mLctb.rows.length > 0) {
                     that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
@@ -285,6 +302,8 @@ sap.ui.jsfragment("bin.forms.press.Main", {
 
     openForm: function (frag, frm, ocAdd) {
         var that = this;
+
+
         this.lastFirstRow = that.qv.getControl().getFirstVisibleRow();
         this.lastIndexSelected = that.qv.getControl().getSelectedIndex();
 

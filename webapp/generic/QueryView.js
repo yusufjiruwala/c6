@@ -308,6 +308,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
         QueryView.prototype.updateDataToTable = function () {
             if (this.getControl().getModel() == undefined) return false;
             var dt = JSON.stringify(this.getControl().getModel().getData());
+            if (this.getControl().getModel().getData() == undefined) return false;
             dt = "{\"data\":" + dt + "}";
             this.mLctb.parse(dt, true);
 
@@ -357,7 +358,17 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             return idx;
 
         };
+        QueryView.prototype.deleteRow = function (idx, dontReload) {
+            if (this.mLctb.rows.length > 0)
+                this.updateDataToTable();
+            var idx = this.mLctb.deleteRow(idx);
+            if (Util.nvl(dontReload, false) == false) {
+                this.updateDataToControl();
 
+            }
+            return idx;
+
+        };
         QueryView.prototype.loadData = function (noDestroy) {
             //resetingg,
             var that = this;

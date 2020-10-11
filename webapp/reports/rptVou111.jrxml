@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSO" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="395"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -530,7 +530,7 @@ order by order1.ord_no]]>
 			<band height="202" splitType="Stretch">
 				<image scaleImage="RealSize" hAlign="Center" vAlign="Bottom">
 					<reportElement mode="Opaque" x="62" y="108" width="140" height="92" uuid="b812b5f6-402b-41eb-a338-c07c0d257a8c"/>
-					<imageExpression><![CDATA["sign.jpg"]]></imageExpression>
+					<imageExpression><![CDATA[$P{COMPANY_LOGO}.substring( 0, 2 )   +"_sign.jpg"]]></imageExpression>
 				</image>
 				<staticText>
 					<reportElement style="strHeader" x="1" y="1" width="115" height="24" uuid="26fb5599-c008-4278-ad91-e3959ac52e66"/>

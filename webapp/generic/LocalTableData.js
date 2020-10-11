@@ -363,7 +363,13 @@ sap.ui.define("sap/ui/ce/generic/LocalTableData", ["./DataCell", "./Column", "./
             return JSON.parse(tmpstr);
         };
         LocalTableData.prototype.getSummaryOf = function (colName, sumType) {
-            var cp = this.getColPos(fieldName);
+            var cp = this.getColPos(colName);
+            var db = 0;
+            for (var i = 0; i < this.rows.length; i++) {
+                var dd = this.rows[i].cells[cp].getValue();
+                db += dd;
+            }
+            return db;
         };
         return LocalTableData;
 

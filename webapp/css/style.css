@@ -441,6 +441,10 @@
 
 }
 
+.redText .sapMInputBaseInner {
+    color: red!important;
+}
+
 .paraResultInput {
 
     width: 150px !important;
