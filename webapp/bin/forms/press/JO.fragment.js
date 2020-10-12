@@ -249,6 +249,20 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 displayFormat: sett["ENGLISH_DATE_FORMAT"]
             },
             "date", undefined, view);
+        this.jo.costcent =
+            UtilGen.addControl(fe, "Cost Cent", sap.m.ComboBox, "joCostCent",
+                {
+                    editable: true,
+                    items: {
+                        path: "/",
+                        template: new sap.ui.core.ListItem({text: "{TITLE} - {CODE}", key: "{CODE}"}),
+                        templateShareable: true
+                    },
+                    selectionChange: function (event) {
+
+                    }
+                    // layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                }, "string", undefined, view, undefined, "select code,title from accostcent1 order by 1");
 
         fe.push("#Status");
 
@@ -542,6 +556,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         var plate_flag = (UtilGen.getControlValue(that.jo.plate_flag) == "N" ? 1 : 2);
 
         if (this.qryStr == "") {
+            var cc = Util.quoted(Util.nvl(UtilGen.getControlValue(this.jo.costcent), UtilGen.getControlValue(this.jo.ord_no)));
             k = UtilGen.getSQLInsertString(this.jo, {
                 "ord_code": this.vars.ord_code,
                 "ord_flag": 2,
@@ -554,9 +569,15 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 "PLATE_FLAG": plate_flag,
                 "DELIVEREDQTY": 0,
                 "ORDERDQTY": that.qv.mLctb.getSummaryOf("ORD_PKQTY"),
-            }, ["mat_flag", "des_flag", "plate_flag"]);
+                "COSTCENT": cc
+            }, ["mat_flag", "des_flag", "plate_flag", "costcent"]);
 
             k = "insert into order1 " + k + ";";
+            if (Util.nvl(UtilGen.getControlValue(this.jo.costcent), "") == '') {
+                var ccc = cc.replace(/'/g, '');
+                k = k + " insert into accostcent1(code,title,type,CLOSECTG,path) values (" + cc + ",'JO # " + ccc + "',1,'a','XXX\\" + ccc + "' );";
+            }
+
             var s1 = "";
             // sqls for insert string in order2 table.
 
