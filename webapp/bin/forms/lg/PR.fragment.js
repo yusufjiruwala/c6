@@ -240,8 +240,8 @@ sap.ui.jsfragment("bin.forms.lg.PR", {
             UtilGen.setControlValue(this.o1.ord_no, on);
             UtilGen.setControlValue(this.o1.ord_date, new Date());
             // UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
-            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
-            UtilGen.setControlValue(this.o1.so_reference, this.qryStrSO, false);
+            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"));
+            UtilGen.setControlValue(this.o1.so_reference, this.qryStrSO);
 
             this.o1.ord_no.setEnabled(true);
             var dt = Util.execSQL("select ord_ref,ord_refnm from order1 where ord_code=103 and ord_no=" + Util.quoted(this.qryStrSO));
@@ -265,7 +265,7 @@ sap.ui.jsfragment("bin.forms.lg.PR", {
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.pur_keyfld = dtx[0].PUR_KEYFLD;
 
-                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"));
                 this.view.byId("poMsgInv").setText(" JO # " + UtilGen.getControlValue(this.o1._jo_complete));
             }
         }
