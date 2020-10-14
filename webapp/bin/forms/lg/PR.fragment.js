@@ -787,6 +787,7 @@ sap.ui.jsfragment("bin.forms.lg.PR", {
             var vl = Util.getSQLValue(sql);
             ld.setFieldValue(i, "ORD_FC_RATE", vl);
         }
+
         this.qv.updateDataToControl();
         that.do_summary(true);
         if (that.qv.mLctb.cols.length > 0)

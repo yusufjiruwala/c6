@@ -190,6 +190,22 @@ sap.ui.jsfragment("bin.forms.press.Status", {
                     var df = that.jo.des_flag.getSelected() ? 2 : 1;
                     var mf = that.jo.mat_flag.getSelected() ? 2 : 1;
                     var pf = that.jo.plate_flag.getSelected() ? 2 : 1;
+                    if (mf == 2) {
+                        var dt = Util.execSQL("SELECT ORD_REFER,descr,SUM(ORD_ALLQTY),NVL((SELECT SUM(QTYIN-QTYOUT) FROM INVOICE2 WHERE REFER=ORD_REFER),0) AVAIL_QTY FROM ORDER2 " +
+                            " WHERE ORD_CODE=602 AND ORD_NO=" + Util.quoted(that.qryStr) +
+                            " GROUP BY ORD_REFER,descr " +
+                            " HAVING " +
+                            " SUM(ORD_ALLQTY) - NVL((SELECT SUM(QTYIN-QTYOUT) FROM INVOICE2 WHERE REFER=ORD_REFER),0)>=0");
+                        if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+                            var dtx = JSON.parse("{" + dt.data + "}").data;
+                            if (dtx.length > 0) {
+                                sap.m.MessageToast.show("Material :" + dtx[0].DESCR + "  available only " + dtx[0].AVAIL_QTY);
+                                return;
+                            }
+                        }
+
+                    }
+
                     if (df == 2 && mf == 2 && pf == 2) {
                         sap.m.MessageBox.confirm("Are you sure Activate this JO  ?  ", {
                             title: "Confirm",                                    // default
