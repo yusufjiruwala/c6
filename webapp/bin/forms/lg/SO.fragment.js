@@ -17,7 +17,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             ord_code: 111,
             pur_keyfld: -1,
             pur_and_srv: 'N',
-            pur_inv_no: -1
+            pur_inv_no: -1,
+            vat_p: 5
         };
         this.o1 = {};
         this.bk = new sap.m.Button({
@@ -52,6 +53,10 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             var fc_main_descr = UtilGen.getControlValue(that.o1.ord_fc_main_descr);
             ld.setFieldValue(idx, "FC_MAIN_DESCR", fc_main_descr);
             ld.setFieldValue(idx, "FC_MAIN_RATE", fc_main_rate);
+            ld.setFieldValue(idx, "VAT_P", 0);
+            ld.setFieldValue(idx, "VAT_ADD", 0);
+            ld.setFieldValue(idx, "NET_LC", 0);
+            ld.setFieldValue(idx, "NET_FC", 0);
         };
         this.qv.afterDelRow = function (idx, ld) {
             that.do_summary(false);
@@ -137,12 +142,42 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 editable: false,
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
             }, "number", sett["FORMAT_MONEY_1"]);
-        this.o2.ord_amt_lc = this.addControl(fe, "Amount", sap.m.Input, "poOrdAmtLc",
+        this.o2.ord_amt_lc = this.addControl(fe, "@Amount", sap.m.Input, "poOrdAmtLc",
             {
                 editable: false,
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
-            }, "number", sett["FORMAT_MONEY_1"])
+            }, "number", sett["FORMAT_MONEY_1"]);
 
+        this.o2.tot_vat_p = this.addControl(fe, "VAT %", sap.m.Input, "poOrdTotVatP",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            }, "number", sett["FORMAT_MONEY_1"]);
+
+        this.o2.tot_vat_amt = this.addControl(fe, "@VAT Amount", sap.m.Input, "poOrdTotVatAmt",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            }, "number", sett["FORMAT_MONEY_1"]);
+        this.o2.netlcamt = this.addControl(fe, "Net Amt LC", sap.m.Input, "poOrdnetAmtLc",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            }, "number", sett["FORMAT_MONEY_1"]);
+        this.o2.netfcamt = this.addControl(fe, "@Net Amt FC", sap.m.Input, "poOrdnetAmtFc",
+            {
+                editable: false,
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            }, "number", sett["FORMAT_MONEY_1"]);
+
+
+        this.o2._label = this.addControl(fe, " ", sap.m.Text, "poLbl1",
+            {
+                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            }, "string");
+
+        this.o2.netfcamt.addStyleClass("yellow");
+        this.o2.netlcamt.addStyleClass("yellow");
         var frm = UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
         frm.setToolbar(undefined);
         frm.destroyToolbar();
@@ -213,6 +248,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
     loadData: function () {
         var view = this.view;
         var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
         this.vars.pur_and_srv = 'N';
         this.vars.pur_keyfld = -1;
         this.vars.pur_inv_no = -1;
@@ -229,6 +265,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
         }
         if (this.qryStrPO == "") {
+            this.vars.vat_p = parseFloat(Util.nvl(sett["LG_VAT_P"], "0"));
             this.showFRDE();
             var on = Util.getSQLValue("select nvl(max(ord_no),0)+1 from order1 where ord_code=" + this.vars.ord_code);
             UtilGen.setControlValue(this.o1.ord_no, on);
@@ -251,6 +288,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + Util.quoted(this.qryStrPO));
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
                 var dtx = JSON.parse("{" + dt.data + "}").data;
+                this.vars.vat_p = parseFloat(Util.nvl(sett["LG_VAT_P"], "0"));
                 this.qryStrSP = "";
                 if (dtx[0].PROF_ORD_NO != 0 || dtx[0].PROF_ORD_NO != "") {
                     this.qryStrSP = dtx[0].PROF_ORD_NO;
@@ -288,7 +326,9 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
     loadData_details: function () {
         var that = this;
         var sq = "select order2.*,'' descr2, 0 discp,((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY amount," +
-            "(((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount " +
+            "(((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount , " +
+            " (((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY) +vat_add NET_FC,   " +
+            " ((((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate) + (vat_add*ord_fc_rate) NET_LC   " +
             " from order2 where ord_no="
             + Util.quoted(this.qryStrPO)
             + " and ord_code="
@@ -318,6 +358,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
     },
     loadDataSP: function () {
         var that = this;
+
         if (Util.nvl(this.qryStrSP, "") == "")
             return;
         var sq = "";
@@ -543,7 +584,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 defaultValues["PO_SR_NO"] = this.qv.mLctb.getFieldValue(i, "PO_SR_NO");
 
-                s1 += (sqt + UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";").replace(/'cst'/g, 'cst');
+                s1 += (sqt + UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT", "NET_FC", "NET_LC"], defaultValues, true) + ";").replace(/'cst'/g, 'cst');
             }
             k = "declare cst number:=0; qnt number:=0; begin " + k + s1 + " end; ";
         } else {
@@ -578,7 +619,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
                 defaultValues["PO_SR_NO"] = this.qv.mLctb.getFieldValue(i, "PO_SR_NO");
 
-                s1 += (sqt + UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";").replace(/'cst'/g, 'cst');
+                s1 += (sqt + UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT", "NET_FC", "NET_LC"], defaultValues, true) + ";").replace(/'cst'/g, 'cst');
             }
             k = "declare cst number:=0; qnt number:=0; begin " + k + s1 + " end; ";
         }
@@ -621,10 +662,19 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 var qt = parseFloat((Util.getCellColValue(tbl, i, 'ORD_PKQTY')).toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
                 var pk = parseFloat(Util.getCellColValue(tbl, i, 'ORD_PACK'));
                 var rate = parseFloat(Util.getCellColValue(tbl, i, 'ORD_FC_RATE'));
-                var vp = pr * rate;
+                var vp = parseFloat(Util.getCellColValue(tbl, i, 'VAT_P'));
+                // var vp = pr * rate;
                 var amt = pr * qt;
+                var vamt = 0;
+                if (vp > 0 && amt > 0)
+                    vamt = ((vp * amt) / 100);
+                var netfc = amt + vamt;
+                var netlc = (amt * rate) + (vamt * rate);
+                Util.setCellColValue(tbl, i, "VAT_ADD", df.format(vamt));
                 Util.setCellColValue(tbl, i, "AMOUNT", df.format(amt));
                 Util.setCellColValue(tbl, i, "LC_AMOUNT", df.format(amt * rate));
+                Util.setCellColValue(tbl, i, "NET_FC", df.format(netfc));
+                Util.setCellColValue(tbl, i, "NET_LC", df.format(netlc));
                 //     that.qv.mLctb.setFieldValue(i, "FC_MAIN_DESCR", fc_main_descr);
                 //     that.qv.mLctb.setFieldValue(i, "FC_MAIN_RATE", fc_main_rate);
                 //     that.qv.mLctb.setFieldValue(i, "ORD_PRICE", vp);
@@ -632,26 +682,41 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             }
         this.qv.updateDataToTable();
         var cl = that.qv.mLctb.getColByName("AMOUNT");
-        var sum = 0, sumc = 0;
+        var sum = 0, sumc = 0,
+            vatsum = 0, vatpsum = 0, netfc = 0, netlc = 0;
         var ld = that.qv.mLctb;
         for (var i = 0; i < ld.rows.length; i++) {
-            var val = that.qv.mLctb.getFieldValue(i, "AMOUNT");
-            var valc = that.qv.mLctb.getFieldValue(i, "LC_AMOUNT");
+            var val = that.qv.mLctb.getFieldValue(i, "AMOUNT").toString().replace(/[^\d\.]/g, '').replace(/,/g, '');
+            var valc = that.qv.mLctb.getFieldValue(i, "LC_AMOUNT").toString().replace(/[^\d\.]/g, '').replace(/,/g, '');
+            var vatadd = parseFloat(that.qv.mLctb.getFieldValue(i, "VAT_ADD").toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
+            var nf = parseFloat(that.qv.mLctb.getFieldValue(i, "NET_FC").toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
+            var nl = parseFloat(that.qv.mLctb.getFieldValue(i, "NET_LC").toString().replace(/[^\d\.]/g, '').replace(/,/g, ''));
             df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
             val = parseFloat(df.formatBack(val));
             sum += val;
             valc = parseFloat(df.formatBack(valc));
             sumc += valc;
+            vatsum += vatadd;
             var pr = ld.getFieldValue(i, "FC_PRICE");
             var rate = ld.getFieldValue(i, "ORD_FC_RATE");
             var vp = pr * rate;
-
+            netfc += nf;
+            netlc += nl;
             that.qv.mLctb.setFieldValue(i, "FC_MAIN_DESCR", fc_main_descr);
             that.qv.mLctb.setFieldValue(i, "FC_MAIN_RATE", fc_main_rate);
             that.qv.mLctb.setFieldValue(i, "ORD_PRICE", vp);
         }
+        vatpsum = 0;
+        if (vatsum > 0 && sum > 0)
+            vatpsum = (vatsum / sum) * 100;
+
         UtilGen.setControlValue(that.o2.ord_amt_lc, sum, sum, true);
         UtilGen.setControlValue(that.o2.ord_amt, sumc, sumc, true);
+        UtilGen.setControlValue(that.o2.tot_vat_amt, vatsum, vatsum, true);
+        UtilGen.setControlValue(that.o2.tot_vat_p, vatpsum, vatpsum, true);
+        UtilGen.setControlValue(that.o2.netfcamt, netfc, netfc, true);
+        UtilGen.setControlValue(that.o2.netlcamt, netlc, netlc, true);
+
     }
     ,
     delete_data: function () {
@@ -836,7 +901,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 ld.setFieldValue(idx, "FC_PRICE", data[i].FC_PRICE);
                 ld.setFieldValue(idx, "ORD_FC_DESCR", data[i].ORD_FC_DESCR);
                 ld.setFieldValue(idx, "ORD_FC_RATE", data[i].ORD_FC_RATE);
-
+                ld.setFieldValue(idx, "VAT_P", that.vars.vat_p);
 
             }
             var ritms = []; // removable rows

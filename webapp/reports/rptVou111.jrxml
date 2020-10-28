@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSO" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="395"/>
+	<property name="ireport.y" value="16"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -36,7 +36,7 @@
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
 (select max(payterm) from order1 o where ord_code=106 and ord_no=order1.ord_reference) payterm_1,
 (select max(attn) from order1 o where ord_code=106 and ord_no=order1.ord_reference) attn_1,
-(select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,y.email,ORDER1.ONAME,
+(select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,(select emails from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) email,ORDER1.ONAME,
 (select bank_details from currency_master where code=(select max(ord_fc_descr) from order2 where order2.ord_no=order1.ord_no and ord_code=111)) bnk,
 order1.ord_txt_wo,order1.ord_txt_iid
 from order1,lg_info,c_ycust y
@@ -115,6 +115,14 @@ order by order1.ord_no]]>
 	<field name="ORD_FC_MAIN_RATE" class="java.math.BigDecimal"/>
 	<field name="ORD_FC_MAIN_DESCR" class="java.lang.String"/>
 	<field name="ONM" class="java.math.BigDecimal"/>
+	<field name="EMAILS" class="java.lang.String"/>
+	<field name="ORD_TXT_WODATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_WOVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDINVNO" class="java.lang.String"/>
+	<field name="ORD_TXT_IIDINVDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDINVVAL" class="java.math.BigDecimal"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>

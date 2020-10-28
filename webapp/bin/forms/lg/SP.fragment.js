@@ -208,7 +208,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             UtilGen.setControlValue(this.o1.ord_no, on);
             UtilGen.setControlValue(this.o1.ord_date, new Date());
             // UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
-            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106");
             UtilGen.setControlValue(this.o1.so_reference, this.qryStrSO, false);
 
             this.o1.ord_no.setEnabled(true);
@@ -239,7 +239,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
                 this.vars.pur_and_srv = dtx[0].PUR_AND_SRV;
                 this.vars.saleinv = dtx[0].SALEINV;
 
-                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"), false);
+                UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"));
 
                 var prAc = Util.getSQLValue("select name from acaccount where accno=" + Util.quoted(dtx[0].ORD_PROF_AC));
                 UtilGen.setControlValue(that.o1.ord_prof_ac, dtx[0].ORD_PROF_AC + "-" + prAc, dtx[0].ORD_PROF_AC, true);
