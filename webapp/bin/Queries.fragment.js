@@ -1341,6 +1341,7 @@ sap.ui.jsfragment("bin.Queries", {
 
         UtilGen.clearPage(that.pgGraph);
         this._addHeaderGraphToolbar(rep);
+        this._addHeaderGraphToolbar(rep);
 
         // that.pgGraph.addContent(that.graphToolBar);
         (view.byId("gp") != undefined ? view.byId("gp").destroy() : null);

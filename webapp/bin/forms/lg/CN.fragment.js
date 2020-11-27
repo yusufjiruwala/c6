@@ -294,7 +294,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
-                UtilGen.applyCols("C6LGREQ.CN1", that.qv);
+                UtilGen.applyCols("C6LGREQ.CN1", that.qv, that);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
@@ -694,6 +694,9 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
         }
 
         that.qv.mLctb.getColByName("ORD_REFER").mSearchSQL = sql;
+        var sq = that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL;
+        this.originFCDescrSql = Util.nvl(this.originFCDescrSql, sq);
+        that.qv.mLctb.getColByName("ORD_FC_DESCR").mSearchSQL = sq.replace(/:ord_date/g, Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
     },
     add_items: function () {
         var that = this;

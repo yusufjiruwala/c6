@@ -292,6 +292,7 @@ sap.ui.jsfragment("bin.forms.lg.PO", {
                 UtilGen.applyCols("C6LGREQ.PO1", that.qv, that);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 if (that.qv.mLctb.rows.length == 0)
+                if (that.qv.mLctb.rows.length == 0)
                     that.qv.addRow();
                 that.qv.loadData();
                 that.do_summary(true);

@@ -55,6 +55,11 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                 that.printDRNote();
             }
         });
+        this.cmdPrTx = new sap.m.Button({
+            icon: "sap-icon://print", text: "Tx Inv", press: function () {
+                that.printTaxInv();
+            }
+        });
 
         (this.view.byId("reqCmdPost") != undefined ? this.view.byId("reqCmdPost").destroy() : null);
 
@@ -329,10 +334,14 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         if (sett["LG_POST_" + typ] == "DISABLED" || Util.nvl(sett["LG_POST_ALL"], "DISABLED") == "DISABLED")
             view.byId("reqCmdPost").setEnabled(false);
 
-        if (typ == 111)
+        if (typ == 111) {
             tb2.addContent(this.cmdPrDr);
-        else
+            tb2.addContent(this.cmdPrTx);
+        }
+        else {
             tb2.removeContent(this.cmdPrDr);
+            tb2.removeContent(this.cmdPrTx);
+        }
     }
 
     ,
@@ -617,6 +626,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
     },
     printDRNote: function () {
         this.printSel("DR")
+    },
+    printTaxInv: function () {
+        this.printSel("T");
     },
     showOnstartup: function () {
         var that = this;

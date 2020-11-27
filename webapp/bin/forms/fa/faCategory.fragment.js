@@ -104,7 +104,6 @@ sap.ui.jsfragment("bin.forms.fa.faCategory", {
             sap.m.MessageToast.show("Code / Name must have a value !");
             return false;
         }
-
         return true;
     }
     ,
@@ -142,7 +141,6 @@ sap.ui.jsfragment("bin.forms.fa.faCategory", {
             }
 
             sap.m.MessageToast.show("Saved Successfully !,  Enter New category..!");
-            //that.oController.backFunction();
             that.qryStr = "";
             that.loadData();
         });
@@ -199,7 +197,7 @@ sap.ui.jsfragment("bin.forms.fa.faCategory", {
         return -1;
     },
     createFormToolBar: function () {
-        var that=this;
+        var that = this;
         this.frm.getToolbar().addContent(this.bk);
         Util.destroyID("faCmdSave", this.view);
         this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("faCmdSave"), {

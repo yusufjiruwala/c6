@@ -208,7 +208,7 @@ sap.ui.jsfragment("bin.forms.lg.SP", {
             UtilGen.setControlValue(this.o1.ord_no, on);
             UtilGen.setControlValue(this.o1.ord_date, new Date());
             // UtilGen.setControlValue(this.o1.ord_reference, this.qryStr, false);
-            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106");
+            UtilGen.setControlValue(this.o1._jo_complete, Util.getSQLValue("select oname from order1 where ord_no=" + this.qryStr + " and ord_code=106"));
             UtilGen.setControlValue(this.o1.so_reference, this.qryStrSO, false);
 
             this.o1.ord_no.setEnabled(true);

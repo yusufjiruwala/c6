@@ -315,7 +315,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
         };
 
         QueryView.prototype.updateDataToControl = function () {
-            var dt = this.buildJsonData();
+            var dt = Util.nvl(this.buildJsonData(), []);
             var oModel = new sap.ui.model.json.JSONModel();
             oModel.setData(dt);
             this.getControl().setModel(oModel);
@@ -395,7 +395,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             this.getControl().setEnableGrouping(false);
             this.getControl().destroyColumns();
 
-            var dt = this.buildJsonData();
+            var dt = Util.nvl(this.buildJsonData(), []);
             var cc = null;
             // purpose    : settiong columns ,  format, alignment , multilable,
 
@@ -415,6 +415,10 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     a = "center";
                     f = sett["SHORT_DATE_FORMAT"];
                 }
+                if (cc.getMUIHelper().display_format == "SHORT_TIME_FORMAT") {
+                    a = "center";
+                    f = sett["SHORT_TIME_FORMAT"];
+                }
                 if (cc.getMUIHelper().display_format == "NONE")
                     f = "";
 
@@ -426,6 +430,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                         // technical   : replacing global "___" with colname for cross tab.
                         "text": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         "value": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
+                        "dateValue": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         textAlign: Util.getAlignTable(a),
                         width: "100%",
                         src: "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
@@ -487,6 +492,11 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                         }
 
                     });
+                    if (o instanceof sap.m.TimePicker) {
+                        o.setSupport2400(true);
+                        o.setDisplayFormat("h:mm a");
+                        o.setValueFormat("h:mm a");
+                    }
                     // if combobox have list of values then add it into sap.m.CombBox model. ( check either LOV in sql or data )
                     if (o instanceof sap.m.ComboBox) {
                         // o.bindAggregation("items",
@@ -693,6 +703,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
             var dfq = new DecimalFormat(sett["FORMAT_QTY_1"]);
             var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+            var sft = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + " h mm a");
 
             for (var i = 0; i < Util.nvl(o, []).length; i++) {
                 cnt = 0;
@@ -753,10 +764,21 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                             this.mLctb.getColByName(vv).getMUIHelper().display_format === "SHORT_DATE_FORMAT") {
                             if (Util.nvl(o[i][v], "").length > 0) {
                                 var dt = new Date(o[i][v]);
-                                o[i][v] = sf.format(dt);
-                            }
+                                o[i][v] = dt; //sf.format(dt);
+                            } else
+                                o[i][v] = null;
                         }
-
+                        if (v != "_rowid" &&
+                            this.mLctb.getColByName(vv) != undefined &&
+                            this.mLctb.getColByName(vv).getMUIHelper().display_format === "SHORT_TIME_FORMAT") {
+                            if (Util.nvl(o[i][v], "").length > 0) {
+                                var dt = new Date(o[i][v]);
+                                o[i][v] = dt;//sft.format(dt);
+                            } else
+                                o[i][v] = null;
+                            if (dt.getHours() == 0)
+                                o[i][v] = null;
+                        }
 
                     }
                     cnt++;

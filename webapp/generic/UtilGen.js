@@ -397,6 +397,11 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     var sett = sap.ui.getCore().getModel("settings").getData();
                     c.setValueFormat(sett["ENGLISH_DATE_FORMAT"]);
                     c.setDisplayFormat(sett["ENGLISH_DATE_FORMAT"]);
+                    if (fldFormat != undefined) {
+                        c.setValueFormat(fldFormat);
+                        c.setDisplayFormat(fldFormat);
+                    }
+
                 }
                 return c;
 
@@ -407,11 +412,15 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     customVal = comp.getCustomData()[0].getKey();
                 if (customVal == "NaN")
                     customVal = "";
+                if (customVal == "false" && !(comp instanceof sap.m.CheckBox))
+                    customVal = "";
                 if (comp instanceof sap.m.Text)
                     return this.nvl(customVal, comp.getText());
                 if (comp instanceof sap.m.SearchField)
                     return this.nvl(customVal, comp.getValue());
                 if (comp instanceof sap.m.DatePicker)
+                    return comp.getDateValue();
+                if (comp instanceof sap.m.DateTimePicker)
                     return comp.getDateValue();
                 if (comp instanceof sap.m.ComboBoxBase)
                     return this.nvl(comp.getSelectedKey(), comp.getValue());
@@ -589,9 +598,16 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     frm.addContent(controls);
             }
             ,
-            getSQLInsertString: function (tbl, flds, excFlds) {
+            getSQLInsertString: function (tbl, flds, excFlds, datesWithTime) {
+
+                var hma = "";
+                var ohma = "";
+                if (datesWithTime) {
+                    hma = " h mm a";
+                    ohma = " HH MI AM"
+                }
                 var sett = sap.ui.getCore().getModel("settings").getData();
-                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + hma);
                 var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
 
 
@@ -624,7 +640,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         val = "'" + (val + "").replace("'", "''") + "'";
 
                         if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() != undefined)
-                            val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + "')";
+                            val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + ohma + "')";
                         if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() == undefined)
                             val = "null";
                         if (tbl[key].field_type != undefined && tbl[key].field_type == "number")
@@ -640,9 +656,17 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
             }
             ,
-            getSQLUpdateString: function (tbl, tbl_name, flds, where, excFlds) {
+            getSQLUpdateString: function (tbl, tbl_name, flds, where, excFlds, datesWithTime) {
+
+                var hma = "";
+                var ohma = "";
+                if (datesWithTime) {
+                    hma = " h mm a";
+                    ohma = " HH MI AM"
+                }
+
                 var sett = sap.ui.getCore().getModel("settings").getData();
-                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+                var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + hma);
                 var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
 
                 var kys = [];
@@ -662,7 +686,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         val = "'" + (val + "").replace("'", "''") + "'";
 
                         if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() != undefined)
-                            val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + "')";
+                            val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + ohma + "')";
                         if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() == undefined)
                             val = "null";
                         if (tbl[key].field_type != undefined && tbl[key].field_type == "number")
@@ -735,6 +759,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var cls = {
                     "TEXTFIELD": "sap.m.Input",
                     "DATEFIELD": "sap.m.DatePicker",
+                    "DATETIMEFIELD": "sap.m.DateTimePicker",
+                    "TIMEFIELD": "sap.m.TimePicker",
                     "COMBOBOX": "SelectText",
                     "CHECKBOX": "sap.m.CheckBox",
                     "SEARCHFIELD": "SearchText",
@@ -772,6 +798,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         cx.mRetValues = Util.nvl(dtx[col].RETURN_VALUES, "");
                         cx.eOther = Util.nvl(dtx[col].VALIDATE_EVENT, "");
                         cx.mDefaultValue = Util.nvl(UtilGen.parseDefaultValue(dtx[col].DEFAULT_VALUE), '');
+
 
                         if (cx.eValidateColumn != undefined) {
 
@@ -849,7 +876,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                                     sq = cx.beforeSearchEvent(sq, currentRowoIndexContext, oModel);
                                 }
                                 Util.show_list(sq, lk, rt, function (data) {
-                                    console.log(data);
+                                    // console.log(data);
                                     if (rt.length == 0)
                                         return;
                                     var oModel = tbl.getModel();
@@ -1006,6 +1033,15 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         fnAfter();
                 });
 
+            },
+            editableContent: function (frm, b) {
+                for (var i = 0; i < frm.getContent().length; i++) {
+                    if (frm.getContent()[i] instanceof sap.m.InputBase)
+                        frm.getContent()[i].setEditable(b);
+                    if (frm.getContent()[i] instanceof sap.m.SearchField)
+                        frm.getContent()[i].setEnabled(b);
+
+                }
             }
         };
 

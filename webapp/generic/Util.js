@@ -915,7 +915,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     ret: "NONE",
                     data: null
                 }, false).done(function (data) {
-                    console.log(data);
+                    // console.log(data);
                     var dt = JSON.parse("{" + data.data + "}").data;
                     sap.ui.getCore().setModel(new sap.ui.model.json.JSONModel(dt), "searchList");
                     var t = {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSO" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
-	<property name="ireport.zoom" value="1.0"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouT" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
+	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="191"/>
+	<property name="ireport.y" value="400"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -12,7 +12,7 @@
 	</parameter>
 	<parameter name="COMPANY_SPECSA" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="VOU_TITLE" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["DEBIT NOTE"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["Sales Invoice"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="P_ORD" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[1]]></defaultValueExpression>
@@ -36,9 +36,10 @@
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
 (select max(payterm) from order1 o where ord_code=106 and ord_no=order1.ord_reference) payterm_1,
 (select max(attn) from order1 o where ord_code=106 and ord_no=order1.ord_reference) attn_1,
-(select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,y.email,ORDER1.ONAME,
+(select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,(select emails from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) email,ORDER1.ONAME,
 (select bank_details from currency_master where code=(select max(ord_fc_descr) from order2 where order2.ord_no=order1.ord_no and ord_code=111)) bnk,
-order1.ord_txt_wo,order1.ord_txt_iid
+order1.ord_txt_wo,order1.ord_txt_iid,
+(select nvl(sum(vat_add),0) from order2 where ord_code=111 and ord_no=order1.ord_no ) vat_tot
 from order1,lg_info,c_ycust y
 where order1.ord_code=111 and order1.ORD_no IN (select field1 from temporary where USERNM=$P{SES_ID} AND IDNO=111)
 and y.code=order1.ord_ref
@@ -115,6 +116,16 @@ order by order1.ord_no]]>
 	<field name="ORD_FC_MAIN_RATE" class="java.math.BigDecimal"/>
 	<field name="ORD_FC_MAIN_DESCR" class="java.lang.String"/>
 	<field name="ONM" class="java.math.BigDecimal"/>
+	<field name="EMAILS" class="java.lang.String"/>
+	<field name="ORD_TXT_WODATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_WOVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDINVNO" class="java.lang.String"/>
+	<field name="ORD_TXT_IIDINVDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDINVVAL" class="java.math.BigDecimal"/>
+	<field name="TOT_VAT_AMT" class="java.math.BigDecimal"/>
+	<field name="TOT_VAT_P" class="java.math.BigDecimal"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
@@ -165,15 +176,19 @@ order by order1.ord_no]]>
 	<field name="REFERENCE" class="java.lang.String"/>
 	<field name="EMAIL" class="java.lang.String"/>
 	<field name="BNK" class="java.lang.String"/>
+	<field name="VAT_TOT" class="java.math.BigDecimal"/>
+	<variable name="VAT_AMT" class="java.math.BigDecimal" incrementType="Group" incrementGroup="N1">
+		<variableExpression><![CDATA[$F{FC_AMOUNT} + $F{VAT_TOT}]]></variableExpression>
+	</variable>
 	<group name="N1" isStartNewPage="true" keepTogether="true">
 		<groupExpression><![CDATA[$F{ORD_NO}]]></groupExpression>
 		<groupHeader>
-			<band height="403" splitType="Stretch">
+			<band height="373" splitType="Stretch">
 				<rectangle>
 					<reportElement x="2" y="95" width="246" height="109" uuid="cce8faa1-7a19-4dac-9cb4-0a9ff885b2db"/>
 				</rectangle>
 				<image scaleImage="FillFrame">
-					<reportElement x="394" y="-2" width="162" height="56" uuid="e2af0a09-59da-465e-ab84-b19e8fe178dc"/>
+					<reportElement x="414" y="-2" width="142" height="52" uuid="e2af0a09-59da-465e-ab84-b19e8fe178dc"/>
 					<imageExpression><![CDATA[$P{COMPANY_LOGO}]]></imageExpression>
 				</image>
 				<textField isBlankWhenNull="true">
@@ -181,7 +196,7 @@ order by order1.ord_no]]>
 					<textElement textAlignment="Center">
 						<font fontName="DejaVu Sans" size="12"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{VOU_TITLE}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["TAX INVOICE"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="strHeader" x="5" y="99" width="242" height="40" uuid="f7b326a7-dc97-482b-8234-122bd540ac88"/>
@@ -264,13 +279,6 @@ order by order1.ord_no]]>
 						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Delivery Date]]></text>
-				</staticText>
-				<staticText>
-					<reportElement style="strHeader" x="2" y="344" width="94" height="27" uuid="723f3315-69f3-44a1-8fb3-46e63dec6e53"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="DejaVu Sans" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Description of Goods]]></text>
 				</staticText>
 				<line>
 					<reportElement x="187" y="204" width="1" height="103" uuid="3201e64c-cd69-4847-9722-1bde6472c616"/>
@@ -416,16 +424,11 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA[$P{COMPANY_NAMEA}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement style="labelHeader" x="5" y="40" width="299" height="58" uuid="bae41d42-fc54-4262-9a65-77488879200d"/>
+					<reportElement x="5" y="40" width="299" height="58" uuid="bae41d42-fc54-4262-9a65-77488879200d"/>
 					<textElement textAlignment="Left">
-						<font fontName="DejaVu Sans" size="10" isBold="true" isStrikeThrough="false"/>
+						<font fontName="DejaVu Sans" size="10" isBold="true" isUnderline="false" isStrikeThrough="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{COMPANY_SPECS}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement style="strHeader" x="97" y="340" width="453" height="29" uuid="d410e8e7-3890-4262-ada9-f138b5ab9014"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle"/>
-					<textFieldExpression><![CDATA[$F{LG_DESCRIPTION}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="strHeader" x="5" y="139" width="242" height="44" uuid="f816b49a-72e7-444b-ad7f-5be742220809"/>
@@ -446,62 +449,6 @@ order by order1.ord_no]]>
 					<textElement textAlignment="Center" verticalAlignment="Middle"/>
 					<textFieldExpression><![CDATA[$F{EMAIL}]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement style="strHeader" x="0" y="375" width="94" height="28" forecolor="#000000" uuid="6ed5a586-a699-4ee0-985a-1a6b84f52287">
-						<printWhenExpression><![CDATA[($F{ORD_TXT_WO}!=null)]]></printWhenExpression>
-					</reportElement>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="DejaVu Sans" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Work Order]]></text>
-				</staticText>
-				<textField isBlankWhenNull="true">
-					<reportElement style="strHeader" x="96" y="374" width="193" height="29" forecolor="#000000" uuid="4cafccd1-c023-404c-8265-57e0b4edc3b8">
-						<printWhenExpression><![CDATA[($F{ORD_TXT_WO}!=null)]]></printWhenExpression>
-					</reportElement>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle"/>
-					<textFieldExpression><![CDATA[$F{ORD_TXT_WO}]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement style="strHeader" x="383" y="374" width="172" height="29" forecolor="#000000" uuid="41f1a11c-63cd-41ac-95c7-9a28ceebe58d">
-						<printWhenExpression><![CDATA[($F{ORD_TXT_WO}!=null)]]></printWhenExpression>
-					</reportElement>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle"/>
-					<textFieldExpression><![CDATA[$F{ORD_TXT_IID}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement style="strHeader" x="289" y="374" width="94" height="29" forecolor="#000000" uuid="647b8e2d-53eb-459d-aa9c-2454cc0d8e26">
-						<printWhenExpression><![CDATA[($F{ORD_TXT_WO}!=null)]]></printWhenExpression>
-					</reportElement>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.5"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="DejaVu Sans" isBold="true"/>
-					</textElement>
-					<text><![CDATA[IID]]></text>
-				</staticText>
 				<textField>
 					<reportElement style="strHeader" x="489" y="106" width="64" height="20" uuid="ca96d8ae-f537-4530-a633-caaccc523872"/>
 					<textElement textAlignment="Center">
@@ -536,11 +483,11 @@ order by order1.ord_no]]>
 					<text><![CDATA[Sales Invoice Amount:]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="116" y="1" width="311" height="24" uuid="cc1f6b5c-f04a-4bb8-b009-659b56282d99"/>
+					<reportElement x="116" y="1" width="248" height="24" uuid="cc1f6b5c-f04a-4bb8-b009-659b56282d99"/>
 					<textFieldExpression><![CDATA[$F{AMT_IN_WORD}]]></textFieldExpression>
 				</textField>
 				<textField pattern="">
-					<reportElement style="numQtyCenter" mode="Opaque" x="434" y="0" width="116" height="25" backcolor="#FFFF00" uuid="307d8e2b-c480-4cd0-8585-99d024b8c72b"/>
+					<reportElement style="numQtyCenter" mode="Opaque" x="456" y="1" width="96" height="25" backcolor="#FFFF00" uuid="307d8e2b-c480-4cd0-8585-99d024b8c72b"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -569,6 +516,51 @@ order by order1.ord_no]]>
 					<reportElement x="0" y="25" width="414" height="107" uuid="c78fa714-5859-4101-9645-c7f087fe61d7"/>
 					<textFieldExpression><![CDATA[$F{BNK}]]></textFieldExpression>
 				</textField>
+				<textField pattern="">
+					<reportElement style="numQtyCenter" mode="Opaque" x="456" y="26" width="96" height="25" backcolor="#FFFF00" uuid="8b959d3d-2464-4c71-a25d-671f17abcb8f"/>
+					<box>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression><![CDATA[$F{VAT_TOT}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField pattern="">
+					<reportElement style="numQtyCenter" mode="Opaque" x="456" y="51" width="96" height="25" backcolor="#FFFF00" uuid="0af94b97-6791-45fb-b96c-fd3a4ff903c9"/>
+					<box>
+						<topPen lineWidth="0.5"/>
+						<leftPen lineWidth="0.5"/>
+						<bottomPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression><![CDATA[$V{VAT_AMT}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<staticText>
+					<reportElement style="strHeader" x="379" y="0" width="75" height="24" uuid="e17ef8b8-0097-441e-9d97-b5afc20e701c"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Gross Amount]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="strHeader" x="379" y="26" width="76" height="24" uuid="90a81200-df81-4667-b6c8-6311e54c91d3"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Add : VAT Amt]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="strHeader" x="378" y="52" width="75" height="24" uuid="ebfec9f8-2595-490c-9df4-c35f022b804a"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Net Total]]></text>
+				</staticText>
 			</band>
 		</groupFooter>
 	</group>
@@ -586,7 +578,7 @@ order by order1.ord_no]]>
 					<subreportParameterExpression><![CDATA[$P{CURRENCY_FORMAT}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["rptVouSo_details_LG_1.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["rptVouSoT_details_LG_1.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
