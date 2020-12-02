@@ -173,7 +173,6 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
     }
     ,
     loadData: function () {
-        var sqlDt = "select nvl(max(start_time),SYSDATE) from cl6_appoint ";
         var sql1 = "select no,name from salesp  where type='D' and flag=1 order by no";
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
@@ -184,6 +183,9 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
             " and trunc(a.start_time)>=" + Util.toOraDateString(fr) +
             " and trunc(a.start_time)<=" + Util.toOraDateString(to) +
             " and a.empno=:DRNO order by a.empno,a.start_time";
+        var sqlDt = "select trunc(nvl(max(a.start_time),SYSDATE)) from cl6_appoint a where " +
+            "  trunc(a.start_time)>=" + Util.toOraDateString(fr) +
+            " and trunc(a.start_time)<=" + Util.toOraDateString(to);
 
         this.mdlData = {};
 
@@ -215,7 +217,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 docs.push(doc);
             }
             var st = new Date(Util.getSQLValue(sqlDt));
-            st.setHours(st.getHours() - 6);
+            st.setHours(9);
             this.mdlData.startDate = Util.nvl(this.start_date, st);
             this.mdlData.doctors = docs;
 
@@ -329,7 +331,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 dlg.close();
                 if (st != undefined) {
                     that.start_date = st;
-                    st.setHours(st.getHours() - 6);
+                    st.setHours(9);
                     that.loadData();
                 }
             },
@@ -372,7 +374,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 that.joApp.to(that.mainPage, "baseSlide");
                 if (st != undefined) {
                     that.start_date = st;
-                    st.setHours(st.getHours() - 6);
+                    st.setHours(9);
                     that.loadData();
                 }
             },
@@ -406,7 +408,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 dlg.close();
                 if (st != undefined) {
                     that.start_date = st;
-                    st.setHours(st.getHours() - 6);
+                    st.setHours(9);
                     that.loadData();
                 }
             },
@@ -515,7 +517,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         };
 
         var sp = UtilGen.openForm("bin.Queries", undefined, {
-            backFunction:bk,
+            backFunction: bk,
             setProfile: "8800",
             getView:
                 function () {

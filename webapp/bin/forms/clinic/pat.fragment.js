@@ -96,19 +96,47 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
         var that = this;
         var fe = [];
         this.pa = {};
+        var sp_1 = "XL6 L2 M2 S2";
+        var sp_2 = "XL6 L4 M4 S4";
         this.pa.code = UtilGen.addControl(fe, "Code", sap.m.Input, "faCtgCode",
-            {}, "string", undefined, this.view);
+            {
+                layoutData: new sap.ui.layout.GridData({span: sp_1})
+            }, "string", undefined, this.view);
         this.pa.name = UtilGen.addControl(fe, "@Name", sap.m.Input, "paName",
-            {enabled: true}, "string", undefined, this.view);
+            {
+                enabled: true,
+                layoutData: new sap.ui.layout.GridData({span: sp_2})
+            }, "string", undefined, this.view);
         this.pa.tel = UtilGen.addControl(fe, "Tel", sap.m.Input, "paTel",
-            {enabled: true}, "string", undefined, this.view);
+            {
+                enabled: true,
+                layoutData: new sap.ui.layout.GridData({span: sp_1})
+            }, "string", undefined, this.view);
         this.pa.addr = UtilGen.addControl(fe, "@Address", sap.m.Input, "paAddr",
-            {enabled: true}, "string", undefined, this.view);
-        this.pa.reference = UtilGen.addControl(fe, "Civil ID", sap.m.Input, "paCivil",
-            {enabled: true}, "string", undefined, this.view);
+            {
+                enabled: true,
+                layoutData: new sap.ui.layout.GridData({span: sp_2})
+            }, "string", undefined, this.view);
 
-        return UtilGen.formCreate("", true, fe);
-        // return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
+        this.pa.pager = UtilGen.addControl(fe, "Nationality", sap.m.ComboBox, "paNat",
+            {
+                customData: [{key: ""}],
+                items: {
+                    path: "/",
+                    template: new sap.ui.core.ListItem({text: "{PAGER}", key: "{PAGER}"}),
+                    templateShareable: true
+                },
+                enabled: true,
+                layoutData: new sap.ui.layout.GridData({span: sp_1})
+            }, "string", undefined, this.view, undefined, "select distinct pager from c_ycust");
+        this.pa.reference = UtilGen.addControl(fe, "@Civil ID", sap.m.Input, "paCivil",
+            {
+
+                enabled: true,
+                layoutData: new sap.ui.layout.GridData({span: sp_2})
+            }, "string", undefined, this.view);
+        // return UtilGen.formCreate("", true, fe);
+        return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
 
     },
     loadData: function () {
@@ -118,6 +146,9 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
         if (this.qryStr == "") {
             // var n = parseInt(Util.getSQLValue("select nvl(max(no),0)+1 from salesp"));
             UtilGen.resetDataJson(this.pa);
+            var n = Util.getSQLValue("select nvl(max(code),1000) from c_ycust where parentcustomer='1' ");
+            UtilGen.setControlValue(this.pa.code, n);
+
         } else {
             this.pa.code.setEnabled(false);
             var dt = Util.execSQL("select *from c_ycust where code=" + Util.quoted(this.qryStr));

@@ -704,7 +704,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         qvDt.getControl().addStyleClass("sapUiSizeCompact");
         var oc = this.qv.mLctb.getFieldValue(indic[0], "ORD_CODE"); // ord code to check type;
 
-        var sq = "select ord_no,ord_date," +
+        var sq = "select ord_no,ord_date,ORD_AMT," +
             "ord_txt_wo WO," +
             "ord_txt_wodate WOdate," +
             "ord_txt_woval WOVAL," +
@@ -713,7 +713,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             "ord_txt_iidval iidval ," +
             "ord_txt_iidinvno iidinvno ," +
             "ord_txt_iidinvdate iidinvdate ," +
-            "ord_txt_iidinvval iidinvval  " +
+            "ord_txt_iidinvval iidinvval ,  " +
+            "ord_txt_paid_amt paid_amt , " +
+            "ord_txt_paid_date paid_date , " +
+            "ord_txt_paid_ref paid_ref   " +
             " from order1 where ord_code=" + oc + " and " +
             " ord_no in (" + arPo.join() + ")";
 
@@ -761,6 +764,15 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                         }
                     }),
                     new sap.m.Button({
+                        text: "Pay All",
+                        press: function () {
+                            for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
+                                var oa = qvDt.mLctb.getFieldValue(i, "ORD_AMT");
+                                Util.setCellColValue(qvDt.getControl(), i, "PAID_AMT", oa);
+                            }
+                        }
+                    }),
+                    new sap.m.Button({
                         text: "Update",
                         press: function () {
                             var sq = "update order1 " +
@@ -772,7 +784,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                                 "ord_txt_iidinvno=:iidinvno ," +
                                 "ord_txt_iidinvdate=:iidinvdate ," +
                                 "ord_txt_iidinvval=:iidinvval ,  " +
-                                "ord_txt_iid=:iid " +
+                                "ord_txt_iid=:iid ," +
+                                "ord_txt_paid_amt=:paid_amt ," +
+                                "ord_txt_paid_date=:paid_date ," +
+                                "ord_txt_PAID_REF=:paid_ref  " +
                                 "where ord_no=:on and ord_code=" + oc + ";";
                             var sqs = "";
                             for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
@@ -785,6 +800,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                                 var iidinvno = Util.getCellColValue(qvDt.getControl(), i, "IIDINVNO");
                                 var iidinvdate = Util.getCellColValue(qvDt.getControl(), i, "IIDINVDATE");
                                 var iidinvval = Util.getCellColValue(qvDt.getControl(), i, "IIDINVVAL");
+                                var paid_amt = Util.getCellColValue(qvDt.getControl(), i, "PAID_AMT");
+                                var paid_date = Util.getCellColValue(qvDt.getControl(), i, "PAID_DATE");
+                                var paid_ref = Util.getCellColValue(qvDt.getControl(), i, "PAID_REF");
 
 
                                 var on = Util.getCellColValue(qvDt.getControl(), i, "ORD_NO");
@@ -797,6 +815,9 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                                 s = s.replace(/:iidinvno/g, Util.quoted(iidinvno));
                                 s = s.replace(/:iidinvdate/g, Util.toOraDateString(iidinvdate));
                                 s = s.replace(/:iidinvval/g, Util.quoted(iidinvval));
+                                s = s.replace(/:paid_amt/g, Util.quoted(paid_amt));
+                                s = s.replace(/:paid_ref/g, Util.quoted(paid_ref));
+                                s = s.replace(/:paid_date/g, Util.toOraDateString(paid_date));
 
                                 s = s.replace(/:iid/g, Util.quoted(iid));
 

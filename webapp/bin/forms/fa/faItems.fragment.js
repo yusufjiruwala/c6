@@ -113,7 +113,7 @@ sap.ui.jsfragment("bin.forms.fa.faItems", {
         this.fa.purdate = UtilGen.addControl(fe, "Begin Date", sap.m.DatePicker, "faPurDate",
             {
                 enabled: true,
-                layoutData: new sap.uiTemplate_FORM.fragment.js.layout.GridData({span: tl})
+                layoutData: new sap.ui.layout.GridData({span: tl})
             }, "date", undefined, this.view);
 
 
