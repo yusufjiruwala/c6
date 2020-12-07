@@ -99,7 +99,7 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                 expanded: true,
                 // width: "200px",
                 content: [
-                    new sap.m.Text({text: "Close JO"}).addStyleClass("whiteText")
+                    new sap.m.Text({text: "JO Monitoring"}).addStyleClass("whiteText")
                 ],
                 layoutData: new sap.ui.layout.GridData({
                     span: spn
@@ -159,7 +159,8 @@ sap.ui.jsfragment("bin.forms.press.Main", {
             });
         });
         pnl4.attachBrowserEvent("click", function (e) {
-            that.openForm("bin.forms.lg.CloseJO", that.pgReq);
+            // that.openForm("bin.forms.", that.pgReq);
+            that.joStatus();
         });
 
 
@@ -344,5 +345,128 @@ sap.ui.jsfragment("bin.forms.press.Main", {
         that.createView();
         that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
         that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
+    },
+    joStatus: function () {
+        var that = this;
+        var indicOF = that.qv.getControl().getBinding("rows").aIndices;
+        var indic = that.qv.getControl().getSelectedIndices();
+        if (indic.length == 0) {
+            sap.m.MessageToast.show("Must select a JO # ");
+            return;
+        }
+        var on = Util.nvl(Util.getCellColValue(that.qv.getControl(), indicOF[indic[0]], "ORD_NO"), "");
+        var fe = [];
+        (this.view.byId("monOrdNo") != undefined ? this.view.byId("monOrdNo").destroy() : null);
+        var txtOn = UtilGen.addControl(fe, "Ord No", sap.m.Input, "monOrdNo",
+            {
+                editable: false,
+                value: on
+            }, "string", undefined, this.view);
+        (this.view.byId("monDescr") != undefined ? this.view.byId("monDescr").destroy() : null);
+        var txtDescr = UtilGen.addControl(fe, "JO", sap.m.ComboBox, "monDescr",
+            {
+                items: {
+                    path: "/",
+                    template: new sap.ui.core.ListItem({text: "{JOB_DESCR}", key: "{JOB_DESCR}"}),
+                    templateShareable: true
+                },
+                change: function (ev) {
+                    var de = UtilGen.getControlValue(txtDescr);
+                    if (de == "")
+                        return;
+                    var dt = Util.execSQL("select *from jo_mon where ord_no=" + Util.quoted(on) + " and job_descr=" + Util.quoted(de));
+                    if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+                        var dtx = JSON.parse("{" + dt.data + "}").data;
+                        UtilGen.setControlValue(txtSt, dtx[0].OPEN_TIME, dtx[0].OPEN_TIME, true);
+                        UtilGen.setControlValue(txtEn, dtx[0].CLOSE_TIME, dtx[0].CLOSE_TIME, true);
+                        UtilGen.setControlValue(txtRe, dtx[0].REMARKS, dtx[0].REMARKS, true);
+                    }
+                }
+            }, "string", undefined, this.view, undefined, "select  JOB_DESCR from JO_MON where ORD_NO=" + Util.quoted(on) + " Order by ord_pos");
+        (this.view.byId("apStart") != undefined ? this.view.byId("apStart").destroy() : null);
+        var txtSt = UtilGen.addControl(fe, "Start Time", sap.m.DatePicker, "apStart",
+            {
+                editable: true,
+            }, "date", undefined, this.view);
+        (this.view.byId("apEnd") != undefined ? this.view.byId("apEnd").destroy() : null);
+        var txtEn = UtilGen.addControl(fe, "End Time", sap.m.DatePicker, "apEnd",
+            {
+                editable: true,
+            }, "date", undefined, this.view);
+
+        var txtRe = UtilGen.addControl(fe, "Remarks", sap.m.Input, "moRemarks",
+            {
+                editable: true,
+                value: on
+            }, "string", undefined, this.view);
+
+        var frm = UtilGen.formCreate("", true, fe);
+
+        frm.setToolbar(undefined);
+
+        var dlg = new sap.m.Dialog({
+            content: frm,
+            buttons: [
+                new sap.m.Button({
+                    text: "Update",
+                    press: function () {
+                        var sq = "";
+                        var de = UtilGen.getControlValue(txtDescr);
+                        var on = UtilGen.getControlValue(txtOn);
+                        var st = UtilGen.getControlValue(txtSt);
+                        var en = UtilGen.getControlValue(txtEn);
+                        var re = UtilGen.getControlValue(txtRe);
+                        if (en < st) {
+                            sap.m.MessageToast.show("End date must be greater than start date !");
+                            return;
+                        }
+                        if (st == null || en == null) {
+                            sap.m.MessageToast.show("Must have value  !");
+                            return;
+                        }
+
+                        var sq = "begin" +
+                            " delete from jo_mon where ord_no=:ORD_NO and  job_descr=:DESCR ; " +
+                            " INSERT INTO JO_MON (ORD_NO, ORD_POS, JOB_DESCR, OPEN_TIME, CLOSE_TIME, REMARKS) VALUES " +
+                            " (:ORD_NO, :ORD_POS, :DESCR, :OPEN_TIME, :CLOSE_TIME, :REMARKS); " +
+                            " end; ";
+                        var pos = Util.getSQLValue("select ord_pos from jo_mon " +
+                            " where ord_no=" + Util.quoted(on) + " and job_descr=" + Util.quoted(de));
+                        sq = sq.replace(/:ORD_NO/g, Util.quoted(on));
+                        sq = sq.replace(/:ORD_POS/g, pos);
+                        sq = sq.replace(/:DESCR/g, Util.quoted(de));
+                        sq = sq.replace(/:OPEN_TIME/g, Util.toOraDateString(st));
+                        sq = sq.replace(/:CLOSE_TIME/g, Util.toOraDateString(en));
+                        sq = sq.replace(/:REMARKS/g, Util.quoted(re));
+
+                        var oSql = {
+                            "sql": sq,
+                            "ret": "NONE",
+                            "data": null
+                        };
+                        Util.doAjaxJson("sqlexe", oSql, false).done(function (data) {
+                            console.log(data);
+                            if (data == undefined) {
+                                sap.m.MessageToast.show("Error: unexpected, check server admin");
+                                return;
+                            }
+                            if (data.ret != "SUCCESS") {
+                                sap.m.MessageToast.show("Error :" + data.ret);
+                                return;
+                            }
+
+                            sap.m.MessageToast.show("Saved Successfully !");
+                            dlg.close();
+                        });
+                    }
+                }), new sap.m.Button({
+                    text: "Close",
+                    press: function () {
+                        dlg.close();
+                    }
+                })
+            ]
+        });
+        dlg.open();
     }
 });

@@ -7,6 +7,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         this.qryStr = "";
         this.qv1 = undefined;
         this.qv2 = undefined;
+        this.sqMon = "";
         this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
         this.vars = {
             keyfld: -1,
@@ -84,6 +85,13 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         sf.getToolbar().addContent(new sap.m.Button(this.view.createId("poCmdExpense"), {
             text: "Expenses", press: function () {
                 that.showExpenses(true);
+            }
+        }));
+
+        (this.view.byId("joMonCmd") != undefined ? this.view.byId("joMonCmd").destroy() : null);
+        sf.getToolbar().addContent(new sap.m.Button(this.view.createId("joMonCmd"), {
+            text: "Monitoring", press: function () {
+                that.showJOMon();
             }
         }));
 
@@ -328,6 +336,7 @@ sap.ui.jsfragment("bin.forms.press.JO", {
     },
     loadData: function () {
         var view = this.view;
+        this.sqMon = "";
         var sett = sap.ui.getCore().getModel("settings").getData();
         UtilGen.setControlValue(this.jo.payterm, "Offset", "Offset", false);
         UtilGen.setControlValue(this.jo.location_code, sett["DEFAULT_LOCATION"]);
@@ -609,8 +618,9 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                     }, true) + ";"
                 }
             }
+            var sqMon = that.sqMon.replace(/:ORD_NO/g, UtilGen.getControlValue(that.jo.ord_no));
+            k = "begin " + k + s1 + sqMon + " end; ";
 
-            k = "begin " + k + s1 + " end; ";
         } else {
             k = UtilGen.getSQLUpdateString(this.jo, "order1",
                 {
@@ -665,8 +675,8 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                 }
             }
 
-
-            k = "begin " + k + s1 + " end;";
+            var sqMon = that.sqMon.replace(/:ORD_NO/g, UtilGen.getControlValue(that.jo.ord_no));
+            k = "begin " + k + s1 + sqMon + " end;";
         }
 
         var oSql = {
@@ -735,8 +745,8 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         if (this.qv1 == undefined) {
             this.qv1 = new QueryView("tblExp1");
             this.qv2 = new QueryView("tblExp2");
-            that.qv1.getControl().view = this.view;
-            that.qv2.getControl().view = this.view;
+            that.qv1.getControl().view = this;
+            that.qv2.getControl().view = this;
             var sq = "select order2.*, ord_price*ord_allqty amount " +
                 " from order2 where ord_no="
                 + Util.quoted(this.qryStr)
@@ -747,8 +757,6 @@ sap.ui.jsfragment("bin.forms.press.JO", {
             var sq2 = "select O.*,C.NAME DESCR from ord_jo_exp O, c_ycust C  where c.code=o.refer " +
                 " and o.ord_code=" + that.vars.ord_code + " and o.ord_no=" + Util.quoted(this.qryStr);
 
-            this.qv1.getControl().view = this;
-            this.qv2.getControl().view = this;
             this.qv1.getControl().addStyleClass("sapUiSizeCondensed");
             this.qv1.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
             this.qv1.getControl().setFixedBottomRowCount(0);
@@ -842,5 +850,82 @@ sap.ui.jsfragment("bin.forms.press.JO", {
             this.joApp.toDetail(this.pgDetail, "slide");
             // that.qv1.loadData();
         }
+    },
+    showJOMon: function () {
+        var that = this;
+        this.sqMon = "";
+        var qv = new QueryView("tblJoMon");
+        qv.getControl().setFixedBottomRowCount(0);
+        var dlg = new sap.m.Dialog({
+            title: "Operator's Monitoring",
+            content: qv.getControl(),
+            buttons: [
+                new sap.m.Button({
+                    text: "Update", press: function f() {
+                        that.sqMon = "";
+                        var ld = qv.mLctb;
+                        var sq = "";
+                        var slices = qv.getControl().getSelectedIndices();
+                        for (var i = 0; i < slices.length; i++) {
+                            var de = ld.getFieldValue(slices[i], "DESCR");
+                            var rm = ld.getFieldValue(slices[i], "REMARKS");
+                            var st = "", en = "";
+                            if (Util.nvl(ld.getFieldValue(slices[i], "OPEN_TIME"), "") != "")
+                                st = new Date(ld.getFieldValue(slices[i], "OPEN_TIME"));
+                            if (Util.nvl(ld.getFieldValue(slices[i], "OPEN_TIME"), "") != "")
+                                en = new Date(ld.getFieldValue(slices[i], "CLOSE_TIME"));
+                            sq = " INSERT INTO JO_MON (ORD_NO, ORD_POS, JOB_DESCR, OPEN_TIME, CLOSE_TIME, REMARKS) VALUES " +
+                                " (:ORD_NO, :ORD_POS, :JOB_DESCR, :OPEN_TIME, :CLOSE_TIME, :REMARKS); ";
+                            // sq = sq.replace(/:ORD_NO/g, UtilGen.getControlValue(that.jo.ord_no));
+                            sq = sq.replace(/:ORD_POS/g, i + 1);
+                            sq = sq.replace(/:JOB_DESCR/g, Util.quoted(de));
+                            sq = sq.replace(/:OPEN_TIME/g, Util.toOraDateString(st));
+                            sq = sq.replace(/:CLOSE_TIME/g, Util.toOraDateString(en));
+                            sq = sq.replace(/:REMARKS/g, Util.quoted(rm));
+                            that.sqMon += sq;
+                        }
+                        that.sqMon = " delete from jo_mon where ord_no=:ORD_NO ; " + that.sqMon;
+                        dlg.close();
+
+                    }
+                }),
+                new sap.m.Button({
+                    text: "Close", press: function () {
+                        dlg.close();
+                    }
+                })
+            ]
+        });
+        dlg.open();
+
+        var sq = "SELECT r.POS,R.DESCR,J.OPEN_TIME,J.CLOSE_TIME,j.remarks,j.flag FROM RELISTS R,JO_MON J " +
+            " WHERE IDLIST='JO_MON'AND R.NAME=J.JOB_DESCR(+) order by r.pos";
+
+        this.qv.getControl().setEditable(true);
+        Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
+            if (data.ret == "SUCCESS") {
+                qv.setJsonStrMetaData("{" + data.data + "}");
+                var c = qv.mLctb.getColPos("OPEN_TIME");
+                qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
+                c = qv.mLctb.getColPos("CLOSE_TIME");
+                qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
+                c = qv.mLctb.getColPos("FLAG");
+                qv.mLctb.cols[c].mHideCol = true;
+
+                qv.mLctb.parse("{" + data.data + "}", true);
+
+                qv.loadData();
+
+                for (var i = 0; i < qv.mLctb.rows.length; i++) {
+                    var flg = qv.mLctb.getFieldValue(i, "FLAG");
+                    if (flg != "")
+                        qv.getControl().addSelectionInterval(i, i);
+                }
+
+
+            }
+        });
+
+
     }
 });

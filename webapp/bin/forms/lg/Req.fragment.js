@@ -438,7 +438,6 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             return false;
         }
 
-
         if (oc == 111 && slices.length > 1) {
             sap.m.MessageToast.show("Must select only SINGLE POSTED SALES to create new...");
             return false;

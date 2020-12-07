@@ -850,6 +850,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
         };
 
+
         Util.show_list(sql, undefined, undefined, fnOnSelect, "100%", "100%", 10, true, fnOnDisplay);
 
     },

@@ -398,6 +398,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     c.setValueFormat(sett["ENGLISH_DATE_FORMAT"]);
                     c.setDisplayFormat(sett["ENGLISH_DATE_FORMAT"]);
                 }
+
                 return c;
 
             },

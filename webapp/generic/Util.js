@@ -642,7 +642,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             toOraDateString: function (dt) {
                 var sett = sap.ui.getCore().getModel("settings").getData();
-
+                if (this.nvl(dt, "") == "")
+                    return "null";
                 if (typeof dt == "string") {
                     return "to_date('" + dt + "','" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
                 } else if (dt instanceof Date) {
