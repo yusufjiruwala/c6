@@ -747,7 +747,8 @@ sap.ui.jsfragment("bin.forms.press.JO", {
             this.qv2 = new QueryView("tblExp2");
             that.qv1.getControl().view = this;
             that.qv2.getControl().view = this;
-            var sq = "select order2.*, ord_price*ord_allqty amount " +
+            var sq = "select order2.*, ord_price*ord_allqty amount ," +
+                " (select nvl(sum(qtyin-qtyout),0) from invoice2 where refer=ord_refer )  qty_in_hand " +
                 " from order2 where ord_no="
                 + Util.quoted(this.qryStr)
                 + " and ord_code="
@@ -869,22 +870,30 @@ sap.ui.jsfragment("bin.forms.press.JO", {
                         for (var i = 0; i < slices.length; i++) {
                             var de = ld.getFieldValue(slices[i], "DESCR");
                             var rm = ld.getFieldValue(slices[i], "REMARKS");
+                            var pos = ld.getFieldValue(slices[i], "POS");
+                            var flg = ld.getFieldValue(slices[i], "FLAG");
                             var st = "", en = "";
                             if (Util.nvl(ld.getFieldValue(slices[i], "OPEN_TIME"), "") != "")
                                 st = new Date(ld.getFieldValue(slices[i], "OPEN_TIME"));
                             if (Util.nvl(ld.getFieldValue(slices[i], "OPEN_TIME"), "") != "")
                                 en = new Date(ld.getFieldValue(slices[i], "CLOSE_TIME"));
+
                             sq = " INSERT INTO JO_MON (ORD_NO, ORD_POS, JOB_DESCR, OPEN_TIME, CLOSE_TIME, REMARKS) VALUES " +
                                 " (:ORD_NO, :ORD_POS, :JOB_DESCR, :OPEN_TIME, :CLOSE_TIME, :REMARKS); ";
                             // sq = sq.replace(/:ORD_NO/g, UtilGen.getControlValue(that.jo.ord_no));
-                            sq = sq.replace(/:ORD_POS/g, i + 1);
-                            sq = sq.replace(/:JOB_DESCR/g, Util.quoted(de));
-                            sq = sq.replace(/:OPEN_TIME/g, Util.toOraDateString(st));
-                            sq = sq.replace(/:CLOSE_TIME/g, Util.toOraDateString(en));
-                            sq = sq.replace(/:REMARKS/g, Util.quoted(rm));
-                            that.sqMon += sq;
+                            if (Util.nvl(flg, "") == 0) {
+                                sq = sq.replace(/:ORD_POS/g, pos);
+                                sq = sq.replace(/:JOB_DESCR/g, Util.quoted(de));
+                                sq = sq.replace(/:OPEN_TIME/g, 'null');//Util.toOraDateTimeString(st));
+                                sq = sq.replace(/:CLOSE_TIME/g, 'null');//Util.toOraDateTimeString(en));
+                                sq = sq.replace(/:REMARKS/g, Util.quoted(rm));
+                                that.sqMon += sq;
+                            }
                         }
-                        that.sqMon = " delete from jo_mon where ord_no=:ORD_NO ; " + that.sqMon;
+                        // that.sqMon = " delete from jo_mon where ord_no=:ORD_NO ; " + that.sqMon;
+                        // that.sqMon =  that.sqMon;
+
+
                         dlg.close();
 
                     }
@@ -898,17 +907,22 @@ sap.ui.jsfragment("bin.forms.press.JO", {
         });
         dlg.open();
 
-        var sq = "SELECT r.POS,R.DESCR,J.OPEN_TIME,J.CLOSE_TIME,j.remarks,j.flag FROM RELISTS R,JO_MON J " +
-            " WHERE IDLIST='JO_MON'AND R.NAME=J.JOB_DESCR(+) order by r.pos";
+        var sq = "SELECT r.POS,R.DESCR,to_char(J.OPEN_TIME,'dd/mm/rrrr hh24.mi') OPEN_TIME" +
+            " ,to_char(J.CLOSE_TIME,'dd/mm/rrrr hh24.mi') CLOSE_TIME," +
+            "ROUND(24*(close_time-open_time),1) Hours," +
+            "j.remarks,j.flag " +
+            "FROM RELISTS R,(select *from jo_mon where ord_no=" + Util.quoted(UtilGen.getControlValue(that.jo.ord_no)) + " ) J" +
+            " WHERE IDLIST='JO_MON'AND R.NAME=J.JOB_DESCR (+) " +
+            " order by r.pos";
 
         this.qv.getControl().setEditable(true);
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 qv.setJsonStrMetaData("{" + data.data + "}");
-                var c = qv.mLctb.getColPos("OPEN_TIME");
-                qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
-                c = qv.mLctb.getColPos("CLOSE_TIME");
-                qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
+                // var c = qv.mLctb.getColPos("OPEN_TIME");
+                // qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
+                // c = qv.mLctb.getColPos("CLOSE_TIME");
+                // qv.mLctb.cols[c].getMUIHelper().display_format = "SHORT_DATE_FORMAT";
                 c = qv.mLctb.getColPos("FLAG");
                 qv.mLctb.cols[c].mHideCol = true;
 

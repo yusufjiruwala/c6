@@ -414,6 +414,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     return this.nvl(customVal, comp.getValue());
                 if (comp instanceof sap.m.DatePicker)
                     return comp.getDateValue();
+                if (comp instanceof sap.m.DateTimePicker)
+                    return comp.getDateValue();
                 if (comp instanceof sap.m.ComboBoxBase)
                     return this.nvl(comp.getSelectedKey(), comp.getValue());
                 if (comp instanceof sap.m.CheckBox)

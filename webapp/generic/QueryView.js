@@ -580,7 +580,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             oModel.setData(dt);
             this.getControl().setModel(oModel);
             this.getControl().bindRows("/");
-
+            this.getControl().setFirstVisibleRow(0);
 
             if (this.mLctb.cols.length <= 0) return;
 
@@ -692,6 +692,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
             var dfq = new DecimalFormat(sett["FORMAT_QTY_1"]);
             var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"]);
+            var sft = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] || " h mm a");
 
             for (var i = 0; i < Util.nvl(o, []).length; i++) {
                 cnt = 0;
@@ -755,7 +756,14 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                                 o[i][v] = sf.format(dt);
                             }
                         }
-
+                        if (v != "_rowid" &&
+                            this.mLctb.getColByName(vv) != undefined &&
+                            this.mLctb.getColByName(vv).getMUIHelper().display_format === "SHORT_DATETIME_FORMAT") {
+                            if (Util.nvl(o[i][v], "").length > 0) {
+                                var dt = new Date(o[i][v]);
+                                o[i][v] = sft.format(dt);
+                            }
+                        }
 
                     }
                     cnt++;
@@ -824,7 +832,8 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 o.push(footer);
             return o;
 
-        };
+        }
+        ;
 //tree buildjson data
 
         QueryView.prototype.buildJsonDataTree = function () {

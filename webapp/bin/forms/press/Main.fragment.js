@@ -348,8 +348,11 @@ sap.ui.jsfragment("bin.forms.press.Main", {
     },
     joStatus: function () {
         var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+
         var indicOF = that.qv.getControl().getBinding("rows").aIndices;
         var indic = that.qv.getControl().getSelectedIndices();
+
         if (indic.length == 0) {
             sap.m.MessageToast.show("Must select a JO # ");
             return;
@@ -384,21 +387,46 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                 }
             }, "string", undefined, this.view, undefined, "select  JOB_DESCR from JO_MON where ORD_NO=" + Util.quoted(on) + " Order by ord_pos");
         (this.view.byId("apStart") != undefined ? this.view.byId("apStart").destroy() : null);
-        var txtSt = UtilGen.addControl(fe, "Start Time", sap.m.DatePicker, "apStart",
+        var txtSt = UtilGen.addControl(fe, "Start Time", sap.m.DateTimePicker, "apStart",
             {
                 editable: true,
+                change: function () {
+                    UtilGen.setControlValue(txtms, "", "", true);
+                    var st = UtilGen.getControlValue(txtSt);
+                    var en = UtilGen.getControlValue(txtEn);
+                    if (st == null || en == null)
+                        return;
+                    var t = Util.timeDiffCalc(en, st);
+                    UtilGen.setControlValue(txtms, t , t , true);
+                }
             }, "date", undefined, this.view);
         (this.view.byId("apEnd") != undefined ? this.view.byId("apEnd").destroy() : null);
-        var txtEn = UtilGen.addControl(fe, "End Time", sap.m.DatePicker, "apEnd",
+        var txtEn = UtilGen.addControl(fe, "End Time", sap.m.DateTimePicker, "apEnd",
             {
                 editable: true,
+                change: function () {
+                    UtilGen.setControlValue(txtms, "", "", true);
+                    var st = UtilGen.getControlValue(txtSt);
+                    var en = UtilGen.getControlValue(txtEn);
+                    if (st == null || en == null)
+                        return;
+                    var t = Util.timeDiffCalc(en, st);
+                    UtilGen.setControlValue(txtms, t , t , true);
+                }
             }, "date", undefined, this.view);
+
+        txtSt.setValueFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
+        txtSt.setDisplayFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
+
+        txtEn.setValueFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
+        txtEn.setDisplayFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
 
         var txtRe = UtilGen.addControl(fe, "Remarks", sap.m.Input, "moRemarks",
             {
-                editable: true,
-                value: on
+                editable: true
             }, "string", undefined, this.view);
+        var txtms = UtilGen.addControl(fe, "", sap.m.Text, "moMsg",
+            {}, "string", undefined, this.view);
 
         var frm = UtilGen.formCreate("", true, fe);
 
@@ -420,7 +448,7 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                             sap.m.MessageToast.show("End date must be greater than start date !");
                             return;
                         }
-                        if (st == null || en == null) {
+                        if (st == null) {
                             sap.m.MessageToast.show("Must have value  !");
                             return;
                         }
@@ -435,8 +463,8 @@ sap.ui.jsfragment("bin.forms.press.Main", {
                         sq = sq.replace(/:ORD_NO/g, Util.quoted(on));
                         sq = sq.replace(/:ORD_POS/g, pos);
                         sq = sq.replace(/:DESCR/g, Util.quoted(de));
-                        sq = sq.replace(/:OPEN_TIME/g, Util.toOraDateString(st));
-                        sq = sq.replace(/:CLOSE_TIME/g, Util.toOraDateString(en));
+                        sq = sq.replace(/:OPEN_TIME/g, Util.toOraDateTimeString(st));
+                        sq = sq.replace(/:CLOSE_TIME/g, Util.toOraDateTimeString(en));
                         sq = sq.replace(/:REMARKS/g, Util.quoted(re));
 
                         var oSql = {
