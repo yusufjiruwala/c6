@@ -292,7 +292,8 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
     loadData() {
         var that = this;
         var typ = UtilGen.getControlValue(this.types);
-        var sq = "select ord_no,ord_ref,ord_refnm,ord_amt," +
+        var sq = "select ord_no,ord_ref,ord_refnm," +
+            " (select sum(ord_price*ord_allqty) from order2 where ord_code=" + Util.quoted(typ) + " and order2.ord_no=order1.ord_no ) ord_amt," +
             "decode(ord_flag,'2','sap-icon://accept','sap-icon://less') ord_flag ,posted_date," +
             " (select max(invoice_no) from pur1  where keyfld=order1.pur_keyfld) invoice_no ,ord_code,ord_flag flgx," +
             "(select max(no) from acvoucher1 where keyfld=order1.saleinv) PROFORMA , " +
