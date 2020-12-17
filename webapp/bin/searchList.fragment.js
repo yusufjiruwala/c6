@@ -5,9 +5,9 @@ sap.ui.jsfragment("bin.searchList", {
         var that = this;
         this.setModel(oModel, "data");
         var oTempl = new sap.m.StandardListItem({
-            title: "{" + oController.colDes + "}-{" + oController.colVal + "}",
+            title: "{" + Util.nvl(oController.colDes, "TITLE") + "}-{" + Util.nvl(oController.colVal, "CODE") + "}",
             active: true,
-            customData: {key: "{" + oController.colVal + "}"}
+            customData: {key: "{" + Util.nvl(oController.colVal, "CODE") + "}"}
         });
 
         var oDlg = new sap.m.SelectDialog({
