@@ -264,9 +264,16 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
             {
                 enabled: false,
             }, "string", sett["ENGLISH_DATE_FORMAT"] + " h:m", this.view);
+        var am = UtilGen.addControl(fe, "Amount", sap.m.Text, "frmAmt",
+            {
+                enabled: false,
+            }, "number", sett["FORMAT_MONEY_1"], this.view);
 
         st.setText(sf.format(oAppointment.getProperty("startDate")));
         en.setText(sf.format(oAppointment.getProperty("endDate")));
+
+        var oamt = Util.getSQLValue("select nvl(max(ord_amt),0) from order1 where ord_code=111 and ord_reference=" + Util.quoted(kf));
+        am.setText(df.format(oamt));
         var type = oAppointment.getProperty("type");
         var frm = UtilGen.formCreate("", true, fe);
         frm.setSingleContainerFullSize(true);

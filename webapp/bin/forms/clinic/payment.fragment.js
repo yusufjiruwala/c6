@@ -59,7 +59,7 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
         Util.destroyID("chkPost", this.view);
         this.frm.getToolbar().addContent(new sap.m.CheckBox(this.view.createId("chkPost"), {
             text: "Post ?",
-            selected: false
+            selected: true
         }));
         // that.createScrollCmds(this.frm.getToolbar());
 

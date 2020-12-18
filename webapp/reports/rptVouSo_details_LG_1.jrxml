@@ -16,8 +16,10 @@
 	<parameter name="CURRENCY_FORMAT" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CURRENCY" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[select ORDER2.* , INITCAP(TRIM(ORDER2.DESCR)) DESCR_I,ORD_ALLQTY*(FC_PRICE/ORD_PACK) AMT from order2
-where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
+		<![CDATA[select ORDER2.* , NVL(INITCAP(TRIM(ITEMS.DESCRA)),ITEMS.DESCR) DESCR_I,ORD_ALLQTY*(FC_PRICE/ORD_PACK) AMT from order2,ITEMS
+where ord_code=111 AND ORD_NO=$P{P_ORD}
+AND ITEMS.REFERENCE=ORDER2.ORD_REFER
+ORDER BY ORD_POS]]>
 	</queryString>
 	<field name="PERIODCODE" class="java.lang.String"/>
 	<field name="ORD_NO" class="java.math.BigDecimal"/>
@@ -70,6 +72,8 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 	<field name="FC_DISC" class="java.math.BigDecimal"/>
 	<field name="FC_MAIN_RATE" class="java.math.BigDecimal"/>
 	<field name="FC_MAIN_DESCR" class="java.lang.String"/>
+	<field name="VAT_ADD" class="java.math.BigDecimal"/>
+	<field name="VAT_P" class="java.math.BigDecimal"/>
 	<field name="DESCR_I" class="java.lang.String"/>
 	<field name="AMT" class="java.math.BigDecimal"/>
 	<columnHeader>
@@ -139,9 +143,9 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="17" splitType="Stretch">
 			<frame>
-				<reportElement stretchType="RelativeToBandHeight" x="1" y="0" width="554" height="20" uuid="f54499da-6f17-450d-91dc-899e83eab9fb"/>
+				<reportElement stretchType="RelativeToBandHeight" x="1" y="0" width="554" height="16" uuid="f54499da-6f17-450d-91dc-899e83eab9fb"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>

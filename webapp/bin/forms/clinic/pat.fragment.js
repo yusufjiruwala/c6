@@ -146,7 +146,7 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
         if (this.qryStr == "") {
             // var n = parseInt(Util.getSQLValue("select nvl(max(no),0)+1 from salesp"));
             UtilGen.resetDataJson(this.pa);
-            var n = Util.getSQLValue("select nvl(max(code),1000) from c_ycust where parentcustomer='1' ");
+            var n = Util.getSQLValue("select nvl(max(to_number(code)),1000)+1 from c_ycust where parentcustomer='1' ");
             UtilGen.setControlValue(this.pa.code, n);
 
         } else {
@@ -179,7 +179,8 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
             k = UtilGen.getSQLInsertString(this.pa, {
                 PARENTCUSTOMER: Util.quoted("1"),
                 PATH: Util.quoted("XXX\\1\\" + cod),
-                ISCUST: "'Y'"
+                ISCUST: "'Y'",
+                AC_NO: "(select MAX(ac_no) from c_ycust where code='1')"
             })
             ;
             k = "insert into c_ycust " + k + ";";

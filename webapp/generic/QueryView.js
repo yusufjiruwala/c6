@@ -764,7 +764,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                             this.mLctb.getColByName(vv).getMUIHelper().display_format === "SHORT_DATE_FORMAT") {
                             if (Util.nvl(o[i][v], "").length > 0) {
                                 var dt = new Date(o[i][v]);
-                                o[i][v] = dt; //sf.format(dt);
+                                o[i][v] = sf.format(dt); //dt;
                             } else
                                 o[i][v] = null;
                         }
