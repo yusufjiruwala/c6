@@ -16,6 +16,7 @@ sap.ui.jsview('bin.Dashboard', {
         jQuery.sap.require("sap.viz.library");
         jQuery.sap.require("sap.ui.table.library");
         jQuery.sap.require("sap.ui.layout.library");
+        jQuery.sap.require("sap.ui.commons.library");
 
 
         Util.setLanguageModel(this);
@@ -34,6 +35,7 @@ sap.ui.jsview('bin.Dashboard', {
             var oModel = new sap.ui.model.json.JSONModel(dt);
             sap.ui.getCore().setModel(oModel, "settings");
         });
+
         // get screen data and store it in --screen-- model.. set default screen by URL parameter...
         Util.doAjaxGet("exe?command=get-screens", "", false).done(function (data) {
             if (data != undefined) {
@@ -66,12 +68,14 @@ sap.ui.jsview('bin.Dashboard', {
         this.rows = [];  // rows will be generated in this array
 
         this.custBar = that.createToolbar();
+
         this.pg = new sap.m.Page({
             showHeader: true,
             customHeader: this.custBar,
 
             content: []
         });
+
         if (that.screen_type == "Dashboard")
             this.buildDashboardModel();
         else {
@@ -79,14 +83,15 @@ sap.ui.jsview('bin.Dashboard', {
             UtilGen.clearPage(that.pg);
             that.pg.addContent(fr);
             that.lblTitle.setText(that.screen_name);
-
         }
+
 //this.pg.addContent();
 
         var app = new sap.m.App({pages: [this.pg]});
         return app;
 
     },
+
     createDashBoard: function () {
         var that = this;
         UtilGen.clearPage(this.pg);
@@ -126,7 +131,6 @@ sap.ui.jsview('bin.Dashboard', {
     ,
 
     buildDashboardModel: function () {
-
         var that = this;
         this.reps = [];
         this.gData = [];
@@ -141,7 +145,6 @@ sap.ui.jsview('bin.Dashboard', {
             "_para_todate=@" + df.format((that.byId("todate").getDateValue()));
         ps += (ps.length > 0 ? "&" : "") + "_total_no=1";
         ps += (ps.length > 0 ? "&" : "");
-
 
         Util.doAjaxGet("exe?command=get-subrep&report-id=" + that.screen, "", false).done(function (data) {
             that.reps = JSON.parse("{" + data + "}").subrep;
@@ -531,27 +534,33 @@ sap.ui.jsview('bin.Dashboard', {
                 displayFormat: sett["ENGLISH_DATE_FORMAT"],
                 change: function (ev) {
                     var dt = ev.getParameters("value");
-                    that.todt = dt;
+                    // that.todt = dt;
                     that.buildDashboardModel();
                 }
             }
         );
-
+        this.todt.setDateValue(fromDate);
+        //this.todt.setValue(fromdate);
+        var cookies = document.cookie.split(";");
+        var usr = "";
+        for (var i in cookies)
+            if (cookies[i].startsWith("user"))
+                usr = cookies[i].split("=")[1];
         var menuBar = new sap.m.Bar({
             contentLeft: [new sap.m.Button({
-                icon: "sap-icon://home",
-                text: "",
+                icon: "sap-icon://log",
+                text: "" + usr + "@" + sett["MASTER_USER"],
+                tooltip: "Log off",
                 press: function () {
 
-                    document.location.href = "/?clearCookies=true";
+                    document.location.href = "../?clearCookies=true";
                     //Util.cookiesClear();
                 }
             }),
                 new sap.m.Button({
-                    icon: "sap-icon://product",
-                    text: "",
+                    text: "Change Password ",
                     press: function () {
-                        that.showApps();
+                        that.changeMyPassword();
                     }
                 }),
             ],
@@ -570,7 +579,58 @@ sap.ui.jsview('bin.Dashboard', {
         });
         menuBar.addStyleClass("sapContrast sapMIBar");
         return menuBar;
+    },
+    changeMyPassword: function () {
+        var that = this;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var op = new sap.m.Input({type: sap.m.InputType.Password}); // Old Password
+        var np = new sap.m.Input({type: sap.m.InputType.Password}); // New Password
+        var cp = new sap.m.Input({type: sap.m.InputType.Password});// Confirm password..
+        var vb = new sap.m.VBox({
+            items: [
+                new sap.m.Text({text: "Old Password "}),
+                op,
+                new sap.m.Text({text: "New Password "}),
+                np,
+                new sap.m.Text({text: "Confirm Password "}),
+                cp,
+            ]
+        }).addStyleClass("sapUiMediumMargin");
+        var dlg = new sap.m.Dialog({
+            title: "Changing Password",
+            buttons: [
+                new sap.m.Button({
+                    text: "Cancel", press: function () {
+                        dlg.close();
+                    }
+                }),
+                new sap.m.Button({
+                    text: "Change", press: function () {
+                        var usr = sett["LOGON_USER"];
+                        var sop = UtilGen.getControlValue(op);
+                        var snp = UtilGen.getControlValue(np);
+                        var scp = UtilGen.getControlValue(cp);
+                        if (snp != scp) {
+                            sap.m.MessageToast.show("new password not matched with confirm password !");
+                            return;
+                        }
+                        var dop = Util.getSQLValue("select password from cp_users where username=" + Util.quoted(usr));
+                        if (dop != sop) {
+                            sap.m.MessageToast.show("Invalid Password !");
+                            return;
+                        }
 
+                        var dt = Util.execSQL("update cp_users set password=" + Util.quoted(snp) + " where username=" + Util.quoted(usr));
+                        if (dt.ret == "SUCCESS") {
+                            sap.m.MessageToast.show("Password changed successfully !");
+                            dlg.close();
+                        }
+                    }
+                })
+            ],
+            content: [vb]
+        });
+        dlg.open();
     }
 
 })

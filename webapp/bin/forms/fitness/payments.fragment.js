@@ -57,6 +57,17 @@ sap.ui.jsfragment("bin.forms.fitness.payments", {
         var tb = new sap.m.Toolbar({content: [that.bk]});
 
 
+        this.subs.location_code = UtilGen.createControl(sap.m.ComboBox, this.view, "inv_loc_code",
+            {
+                customData: [{key: ""}],
+                editable: false,
+                items: {
+                    path: "/",
+                    template: new sap.ui.core.ListItem({text: "{CODE}-{NAME}", key: "{CODE}"}),
+                    templateShareable: true
+                },
+            }, "string", undefined, undefined, "select code,name from locations order by 1");
+
         this.subs._athlet_code = UtilGen.createControl(sap.m.Text, this.view, "inv_athlet_code",
             {}, "string");
         this.subs.invoice_date = UtilGen.createControl(sap.m.DatePicker, this.view, "inv_date",
@@ -181,7 +192,9 @@ sap.ui.jsfragment("bin.forms.fitness.payments", {
 
 
         var frm1 = UtilGen.formCreate("{i18n>athlet_info}", true,
-            ["{i18n>sub_name}", this.subs._athlet_code,
+            [
+                "Location", this.subs.location_code,
+                "{i18n>sub_name}", this.subs._athlet_code,
                 "Is Credit", this.subs.cash_type,
                 "{i18n>pay_reference}", this.subs.cash_code, this.subs.invoice_date,
                 "{i18n>pay_descr}", this.subs.invoice_descr,
@@ -361,6 +374,7 @@ sap.ui.jsfragment("bin.forms.fitness.payments", {
             that.vars.athlet_name = dtx[0].ATHLET_NAME;
 
             UtilGen.setControlValue(this.subs._athlet_code, s);
+            UtilGen.setControlValue(this.subs.location_code, dtx[0].LOCATION_CODE, dtx[0].LOCATION_CODE, true);
             UtilGen.setControlValue(this.subs._file, 1, 1, false);
             var invd = this.view.getModel("i18n").getResourceBundle().getText("pay_invoiced");
             var inv_new = this.view.getModel("i18n").getResourceBundle().getText("pay_new_invoice");
@@ -546,7 +560,7 @@ sap.ui.jsfragment("bin.forms.fitness.payments", {
         this.doCalc();
     },
     delete_data: function () {
-        var that=this;
+        var that = this;
         var k = UtilGen.getSQLUpdateString(this.subs, "FT_CONTRACT", {
             // hydro_refer: "'" + that.vars.hydro_refer + "'",
             // pt_refer: "'" + that.vars.pt_refer + "'",

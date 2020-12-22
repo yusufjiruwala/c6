@@ -157,7 +157,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         }, "string", undefined, undefined, sqlQry);
 
 
-        UtilGen.setControlValue(this.locations, sett["DEFAULT_LOCATION"]);
+        UtilGen.setControlValue(this.locations, sett["USER_LOCATION"]);
         UtilGen.setControlValue(this.query_type, -1);
 
         var bt = new sap.m.Button({
@@ -249,14 +249,14 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         if (dat.ret == "SUCCESS") {
 
             that.qv.setJsonStr("{" + dat.data + "}");
-
-            var cc = that.qv.mLctb.getColByName("BALANCE");
-            cc.getMUIHelper().display_format = "MONEY_FORMAT";
-            var cc = that.qv.mLctb.getColByName("ATHLET_CODE");
-            cc.mTitle = "Code";
-            var cc = that.qv.mLctb.getColByName("ATHLET_NAME");
-            cc.mTitle = "Name";
-
+            if (dat.data.length > 0) {
+                var cc = that.qv.mLctb.getColByName("BALANCE");
+                cc.getMUIHelper().display_format = "MONEY_FORMAT";
+                var cc = that.qv.mLctb.getColByName("ATHLET_CODE");
+                cc.mTitle = "Code";
+                var cc = that.qv.mLctb.getColByName("ATHLET_NAME");
+                cc.mTitle = "Name";
+            }
             that.qv.loadData();
 
 

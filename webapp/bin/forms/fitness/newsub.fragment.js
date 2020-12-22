@@ -406,7 +406,7 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
                 this.subs.sport_type.setValue("");
                 this.subs.injury_place.setValue("");
                 this.subs.surgery_date.setDateValue(null);
-                UtilGen.setControlValue(this.subs.location_code, sett["DEFAULT_LOCATION"]);
+                UtilGen.setControlValue(this.subs.location_code, sett["USER_LOCATION"]);
                 that.setNewFileNo();
             } else {
                 this.subs.location_code.setEditable(false);
