@@ -541,6 +541,7 @@ sap.ui.jsview('bin.Dashboard', {
         );
         this.todt.setDateValue(fromDate);
         //this.todt.setValue(fromdate);
+        (sap.ui.getCore().byId("cmdMainScreenChange") != undefined ? sap.ui.getCore().byId("cmdMainScreenChange").destroy() : null);
         var menuBar = new sap.m.Bar({
             contentLeft: [new sap.m.Button({
                 icon: "sap-icon://log",
@@ -562,7 +563,7 @@ sap.ui.jsview('bin.Dashboard', {
             contentMiddle: [that.lblTitle],
 
             contentRight: [this.todt,
-                new sap.m.Button({
+                new sap.m.Button("cmdMainScreenChange", {
                     icon: "sap-icon://drop-down-list",
                     tooltip: "Select another role !",
                     press: function (e) {

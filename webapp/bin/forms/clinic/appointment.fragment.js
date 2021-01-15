@@ -105,6 +105,18 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
         this.fa.tel = UtilGen.addControl(fe, "Tel", sap.m.Input, "apTel",
             {
                 editable: true,
+                change: function () {
+                    var nm = Util.getSQLValue("select name from c_ycust where tel=" + Util.quoted(UtilGen.getControlValue(that.fa.tel)));
+                    UtilGen.setControlValue(that.fa.cust_name, nm, nm, true);
+
+                },
+                liveChange: function (oEvent) {
+                    var _oInput = oEvent.getSource();
+                    var val = _oInput.getValue();
+                    val = val.replace(/[^\d]/g, '');
+                    UtilGen.setControlValue(_oInput, val, val, false);
+                }
+
             }, "string", undefined, this.view);
 
         this.fa.cust_name = UtilGen.addControl(fe, "Cust Name", sap.m.SearchField, "apCustName",
@@ -142,7 +154,6 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
         this.frm = UtilGen.formCreate("", true, fe);
         return this.frm;
         // return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
-
     },
     loadData: function () {
 
@@ -193,6 +204,7 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
         }
 
         return true;
+
     }
     ,
     save_data: function () {
@@ -203,13 +215,19 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
             return;
         var k = ""
         if (this.qryStr != "") {
-            k = UtilGen.getSQLUpdateString(this.fa, "cl6_appoint", {CUST_NAME: Util.quoted(this.fa.cust_name.getValue())}, " keyfld = " + Util.quoted(this.qryStr), ["keyfld", "cust_name"], true);
+            k = UtilGen.getSQLUpdateString(this.fa,
+                "cl6_appoint",
+                {
+                    "CUST_NAME": Util.quoted(this.fa.cust_name.getValue()),
+                    "CUST_CODE": "(SELECT CODE FROM C_YCUST WHERE C_YCUST.TEL=" + Util.quoted(UtilGen.getControlValue(this.fa.tel)) + ")"
+                }, " keyfld = " + Util.quoted(this.qryStr), ["keyfld", "cust_name"], true);
         } else {
             k = UtilGen.getSQLInsertString(this.fa, {
                 "CUST_NAME": Util.quoted(this.fa.cust_name.getValue()),
                 "KEYFLD": Util.getSQLValue("select nvl(max(keyfld),0)+1 from cl6_appoint"),
                 "BOOKED_BY": Util.quoted(usr),
-                "BOOKED_ON": "SYSDATE"
+                "BOOKED_ON": "SYSDATE",
+                "CUST_CODE": "(SELECT CODE FROM C_YCUST WHERE C_YCUST.TEL=" + Util.quoted(UtilGen.getControlValue(this.fa.tel)) + ")"
             }, ["cust_name", "keyfld"], true);
             k = "begin insert into cl6_appoint " + k + "; end;";
         }

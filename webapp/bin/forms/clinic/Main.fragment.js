@@ -176,16 +176,18 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         var sql1 = "select no,name from salesp  where type='D' and flag=1 order by no";
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
-        var sql = "select a.keyfld,a.empno,a.cust_code,a.start_time, a.end_time,a.remarks,s.name emp_name, a.cust_name , " +
-            " decode(a.flag,1,'Type01',2,'Type20') flag " +
+        var sql = "select a.keyfld,a.empno,a.cust_code,a.start_time, a.end_time,a.remarks,s.name emp_name, nvl(y.name,a.cust_name) cust_name , " +
+            " decode(a.flag,1,'Type01',2,'Type20') flag ," +
+            " y.code ycode " +
             " from cl6_appoint a,salesp s,c_ycust y " +
-            " where y.code(+)=a.cust_code and s.no=a.empno " +
+            " where y.tel(+)=a.tel and s.no=a.empno " +
             " and trunc(a.start_time)>=" + Util.toOraDateString(fr) +
             " and trunc(a.start_time)<=" + Util.toOraDateString(to) +
             " and a.empno=:DRNO order by a.empno,a.start_time";
-        var sqlDt = "select trunc(nvl(max(a.start_time),SYSDATE)) from cl6_appoint a where " +
+        var sqlDt = "select trunc(nvl(max(a.start_time),SYSDATE)) from cl6_appoint a,c_ycust y where " +
             "  trunc(a.start_time)>=" + Util.toOraDateString(fr) +
-            " and trunc(a.start_time)<=" + Util.toOraDateString(to);
+            " and trunc(a.start_time)<=" + Util.toOraDateString(to) +
+            " and a.tel=y.tel(+)";
 
         this.mdlData = {};
 
@@ -203,14 +205,19 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 if (dtd.ret = "SUCCESS" && dtd.data.length > 0) {
                     var dtxd = JSON.parse("{" + dtd.data + "}").data;
                     for (var j = 0; j < dtxd.length; j++) {
+                        var typ = dtxd[j].FLAG;
+                        if (Util.nvl(dtxd[j].YCODE, "") == "")
+                            typ = "Type10";
+                        var nw = Util.nvl(dtxd[j].YCODE, "").length > 0 ? "" : "New \n";
                         doc.appointments[j] = {};
                         doc.appointments[j].start = new Date(dtxd[j].START_TIME);
                         doc.appointments[j].end = new Date(dtxd[j].END_TIME);
-                        doc.appointments[j].title = dtxd[j].CUST_NAME;
+                        doc.appointments[j].title = nw + Util.getWord(dtxd[j].CUST_NAME, 1);
                         doc.appointments[j].text = dtxd[j].REMARKS;
-                        doc.appointments[j].type = dtxd[j].FLAG;
+                        doc.appointments[j].type = typ;
                         doc.appointments[j].keyfld = dtxd[j].KEYFLD;
                         doc.appointments[j].tel = dtxd[j].TEL;
+                        doc.appointments[j].full_name = dtxd[j].CUST_NAME;
                     }
                 }
 
@@ -247,11 +254,25 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
         var that = this;
+        var fnm = "", tel = "", code = "";
+        var dt = Util.execSQL("select a.*,nvl(y.name,a.cust_name) name_1 ,y.code from cl6_appoint a,c_ycust y where a.tel=y.tel(+) and a.keyfld=" + Util.quoted(kf));
+        if (dt.ret == "SUCCESS" && dt.data.length > 0) {
+            var dtx = JSON.parse("{" + dt.data + "}").data;
+            fnm = dtx[0].NAME_1;
+            tel = dtx[0].TEL;
+            code = Util.nvl(dtx[0].CODE, "New");
 
-        UtilGen.addControl(fe, "Cust Name", sap.m.Text, "frmCusName",
+        }
+
+        UtilGen.addControl(fe, "Patient", sap.m.Text, "frmCusName",
             {
-                text: oAppointment.getProperty("title"),
+                text: fnm + " / " + code,
             }, "string", undefined, this.view);
+        UtilGen.addControl(fe, "Tel", sap.m.Text, "frmTel",
+            {
+                text: tel,
+            }, "string", undefined, this.view);
+
         UtilGen.addControl(fe, "Remarks", sap.m.Text, "frmRemarks",
             {
                 text: oAppointment.getProperty("text"),
@@ -503,8 +524,10 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
         var that = this;
         var sp = UtilGen.openForm("bin.forms.clinic.pat", undefined, {
-            backFunction: function () {
+            backFunction: function (st) {
                 that.joApp.to(that.mainPage, "baseSlide");
+                that.start_date = that.cl.getStartDate();
+                that.loadData();
             },
             qryStr: "",
             getView:

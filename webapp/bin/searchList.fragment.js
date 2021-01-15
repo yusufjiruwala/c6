@@ -5,12 +5,12 @@ sap.ui.jsfragment("bin.searchList", {
         var that = this;
         var txtTitle = "{" + oController.colDes + "}-{" + oController.colVal + "}";
         if (oController.showOnlyTitle || (oController.colDes == oController.colVal))
-            txtTitle = "{" + oController.colDes + "}";
+            txtTitle = "{" + Util.nvl(oController.colDes, "TITLE") + "}";
         this.setModel(oModel, "data");
         var oTempl = new sap.m.StandardListItem({
             title: txtTitle,
             active: true,
-            customData: {key: "{" + oController.colVal + "}"}
+            customData: {key: "{" + Util.nvl(oController.colVal, "CODE") + "}"}
         });
 
         var oDlg = new sap.m.SelectDialog({

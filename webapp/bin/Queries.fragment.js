@@ -18,6 +18,9 @@ sap.ui.jsfragment("bin.Queries", {
         code = url.searchParams.get("menu_group");
         if (code != undefined)
             that.menu_group = code;
+        code = url.searchParams.get("hide_menu");
+        if (code != undefined)
+            that.hide_menu = code;
 
 
         this.oController = oController;
@@ -109,7 +112,12 @@ sap.ui.jsfragment("bin.Queries", {
         splitApp.addDetailPage(this.pgQuery);
         splitApp.addDetailPage(this.pgResult);
         splitApp.addDetailPage(this.pgGraph);
-        splitApp.setMode(sap.m.SplitAppMode.ShowHideMode);
+        if (Util.nvl(that.hide_menu, "") == "TRUE") {
+            splitApp.setMode(sap.m.SplitAppMode.HideMode);
+            sap.ui.getCore().byId("cmdMainScreenChange").setEnabled(false);
+        }
+        else
+            splitApp.setMode(sap.m.SplitAppMode.ShowHideMode);
         splitApp.showMaster();
         this.generate_list(view);
 
@@ -259,7 +267,13 @@ sap.ui.jsfragment("bin.Queries", {
                         var splitApp = sap.ui.getCore().byId("reportApp");
                         splitApp.toDetail(that.pgQuery, "flip");
                         if (!sap.ui.Device.system.phone)
-                            splitApp.setMode(sap.m.SplitAppMode.ShowHideMode);
+                            if (Util.nvl(that.hide_menu, "") == "TRUE") {
+                                splitApp.setMode(sap.m.SplitAppMode.HideMode);
+                                sap.ui.getCore().byId("cmdMainScreenChange").setEnabled(false);
+                            }
+                            else
+                                splitApp.setMode(sap.m.SplitAppMode.ShowHideMode);
+
                     }
                 }),
                 new sap.m.Button({

@@ -435,7 +435,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                         width: "100%",
                         src: "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",
                         enabled: this.mLctb.cols[i].mEnabled
-                    }, cc.getMUIHelper().data_type.toLowerCase(), f);
+                    }, Util.nvl(cc.getMUIHelper().data_type, "").toLowerCase(), f);
                 else
                     o = new colClass({
                         // "value": "{" + this.mLctb.cols[i].mColName.replace(/\//g, "___") + "}",

@@ -1078,6 +1078,12 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             isNull: function (vl) {
                 return ((Util.nvl(vl, "") + "").trim().length == 0 ? true : false);
+            },
+            getWord: function (str, no) {
+                var sp = str.split(' ');
+                if (no > sp.length || no < 1)
+                    return '';
+                return sp[no - 1];
             }
 
         };

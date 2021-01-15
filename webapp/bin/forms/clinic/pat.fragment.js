@@ -109,6 +109,13 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
             }, "string", undefined, this.view);
         this.pa.tel = UtilGen.addControl(fe, "Tel", sap.m.Input, "paTel",
             {
+                liveChange: function (oEvent) {
+                    var _oInput = oEvent.getSource();
+                    var val = _oInput.getValue();
+                    val = val.replace(/[^\d]/g, '');
+                    UtilGen.setControlValue(_oInput,val,val,true);
+
+                },
                 enabled: true,
                 layoutData: new sap.ui.layout.GridData({span: sp_1})
             }, "string", undefined, this.view);
@@ -143,8 +150,10 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
         var view = this.view;
         var that = this;
         this.pa.code.setEnabled(true);
+        this.pa.tel.setEnabled(true);
         if (this.qryStr == "") {
             // var n = parseInt(Util.getSQLValue("select nvl(max(no),0)+1 from salesp"));
+
             UtilGen.resetDataJson(this.pa);
             var n = Util.getSQLValue("select nvl(max(to_number(code)),1000)+1 from c_ycust where parentcustomer='1' ");
             UtilGen.setControlValue(this.pa.code, n);
@@ -153,7 +162,13 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
             this.pa.code.setEnabled(false);
             var dt = Util.execSQL("select *from c_ycust where code=" + Util.quoted(this.qryStr));
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+
                 var dtx = JSON.parse("{" + dt.data + "}").data;
+
+                var cnt = Util.getSQLValue("select nvl(count(*),0) from cl6_appoint where tel=" + Util.quoted(dtx[0].TEL));
+                if (cnt > 0)
+                    this.pa.tel.setEnabled(false);
+
                 UtilGen.loadDataFromJson(this.pa, dtx[0], true);
                 this.pa.code.setEnabled(false);
             }
@@ -161,6 +176,18 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
     }
     ,
     validateSave: function () {
+        var that = this;
+        var tel = UtilGen.getControlValue(this.pa.tel);
+        var code = UtilGen.getControlValue(this.pa.code);
+        if (Util.nvl(tel, "").length == 0) {
+            sap.m.MessageToast.show("Must enter Tel !");
+            return false;
+        }
+        var telExist = Util.getSQLValue("select name||'-'||code from c_ycust where code!=" + Util.quoted(code) + " and tel=" + Util.quoted(tel));
+        if (Util.nvl(telExist, "").length > 0) {
+            sap.m.MessageToast.show(telExist + " is TEL NO similar !");
+            return false;
+        }
         return true;
     }
     ,
@@ -174,6 +201,8 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
         // inserting or updating order1 and order1 and order2  tables.
         // var defaultValues = {};
         var cod = UtilGen.getControlValue(this.pa.code);
+        var nm = UtilGen.getControlValue(this.pa.name);
+        var tel = UtilGen.getControlValue(this.pa.tel);
         if (this.qryStr == "") {
 
             k = UtilGen.getSQLInsertString(this.pa, {
@@ -184,11 +213,12 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
             })
             ;
             k = "insert into c_ycust " + k + ";";
+            k += " Update cl6_appoint set cust_code=" + Util.quoted(cod) + ",cust_name=" + Util.quoted(nm) + " where flag=1 and tel=" + Util.quoted(tel) + ";";
         }
         else {
             k = UtilGen.getSQLUpdateString(this.pa, "C_YCUST", {},
                 "CODE=" + Util.quoted(this.qryStr)) + " ;";
-
+            k += " Update cl6_appoint set cust_code=" + Util.quoted(cod) + ",cust_name=" + Util.quoted(nm) + " where flag=1 and tel=" + Util.quoted(tel) + ";";
         }
         k = "begin " + k + " end;";
 
@@ -208,7 +238,7 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
                 return;
             }
 
-            sap.m.MessageToast.show("Saved Successfully !,  Enter New Doctor..!");
+            sap.m.MessageToast.show("Saved Successfully ..!");
             that.oController.backFunction();
         });
     },
