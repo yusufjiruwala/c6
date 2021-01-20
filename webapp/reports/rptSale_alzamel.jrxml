@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptSale_alzamel" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ad6628cc-e7d5-4d2a-a1cb-769ce4b5f83c">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="26"/>
 	<template><![CDATA["voucherStyle.jrtx"]]></template>
 	<parameter name="keyfld" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -105,7 +105,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="16" isBold="true" isUnderline="true"/>
 				</textElement>
-				<text><![CDATA[فاتورة اشتراكات]]></text>
+				<text><![CDATA[Sales Invoice]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="labelPara" x="445" y="178" width="101" height="21" uuid="8e60bab8-886c-4475-8992-d895092c5e2c"/>
@@ -113,7 +113,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12"/>
 				</textElement>
-				<text><![CDATA[الرمز والاسم /]]></text>
+				<text><![CDATA[Cust Code]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="labelPara" x="393" y="208" width="52" height="21" uuid="a5c976b6-a29a-41e5-9fca-4d3dda5c276a"/>
@@ -121,7 +121,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12"/>
 				</textElement>
-				<text><![CDATA[هاتف /]]></text>
+				<text><![CDATA[/ Tel]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="labelPara" x="241" y="208" width="52" height="21" uuid="fafdf8c2-16b9-48b4-83a8-2ec781ccfca3"/>
@@ -129,7 +129,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12"/>
 				</textElement>
-				<text><![CDATA[جنسية /]]></text>
+				<text><![CDATA[/ Nation]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
 				<reportElement style="strPara" x="139" y="208" width="102" height="21" uuid="c250e8e0-861e-44b3-9c45-5942565f9542"/>
@@ -161,7 +161,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12"/>
 				</textElement>
-				<text><![CDATA[عمر /]]></text>
+				<text><![CDATA[ / Age]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="labelPara" x="87" y="208" width="52" height="21" uuid="60df7981-75d7-42c0-948f-fbe3e7cc5a75"/>
@@ -193,7 +193,7 @@ c.keyfld=$P{keyfld}]]>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12"/>
 				</textElement>
-				<text><![CDATA[الاشتراك من /Rehab]]></text>
+				<text><![CDATA[Subscription]]></text>
 			</staticText>
 			<textField pattern="yyyy/MM/dd" isBlankWhenNull="true">
 				<reportElement style="strPara" x="311" y="241" width="92" height="21" uuid="a56ccee0-17fe-43e7-89f8-fad2349c32cb"/>

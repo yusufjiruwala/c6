@@ -84,7 +84,21 @@ sap.ui.jsfragment("bin.forms.fitness.drana", {
                 {
                     "descr": "30 Days",
                     "period": 30
+                },
+                {
+                    "descr": "90 Days",
+                    "period": 90
+                },
+                {
+                    "descr": "365 Days",
+                    "period": 365
+                },
+                {
+                    "descr": "180 Days",
+                    "period": 180
                 }
+
+
             ];
             this.subs.period_rehab.setModel(new sap.ui.model.json.JSONModel(mdl));
             UtilGen.setControlValue(this.subs.period_rehab, 7);
@@ -93,7 +107,7 @@ sap.ui.jsfragment("bin.forms.fitness.drana", {
                 editable: true,
                 valueFormat: sett["ENGLISH_DATE_FORMAT"],
                 displayFormat: sett["ENGLISH_DATE_FORMAT"],
-                change:function (e) {
+                change: function (e) {
                     that.calcDate();
                 }
 
@@ -111,13 +125,13 @@ sap.ui.jsfragment("bin.forms.fitness.drana", {
             //     {}, "string");
             var frm = UtilGen.formCreate("{i18n>ses_info}", true,
                 ["{i18n>ses_name}", this.subs._athlet_code,
-                    "PT", this.subs.pt,
-                    "HYDRO", this.subs.hydro,
+                    "YOGA", this.subs.pt,
+                    "NUTRITION", this.subs.hydro,
                     "Fitness", this.subs.fitness,
                     "{i18n>quality}", this.subs.quality,
                     "#{i18n>subscription}",
                     "{i18n>period}", this.subs.period_rehab,
-                    "Rehab", this.subs.rehab,
+                    "Period", this.subs.rehab,
                     "{i18n>sub_subscription}", this.subs.start_date, this.subs.end_date
                 ]);
             frm.addStyleClass("sapUiLargeMarginBottom");
@@ -210,11 +224,11 @@ sap.ui.jsfragment("bin.forms.fitness.drana", {
             var e = new Date();
             var r = UtilGen.getControlValue(this.subs.rehab);
 
-            UtilGen.setControlValue(this.subs.end_date, null);
+            UtilGen.setControlValue(this.subs.end_date, null, null, true);
 
             if (r > 0) {
                 e.setTime((p * (oneDay * r)) + s.getTime());
-                UtilGen.setControlValue(this.subs.end_date, e);
+                UtilGen.setControlValue(this.subs.end_date, e, e, true);
             }
         }
         ,

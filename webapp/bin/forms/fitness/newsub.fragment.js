@@ -132,6 +132,18 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
             layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
         }, "string");
 
+        this.subs.salesp = UtilGen.createControl(sap.m.ComboBox, this.view, "LeadBy", {
+            customData: [{key: ""}],
+            items: {
+                path: "/",
+                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{NO}"}),
+                templateShareable: true
+            },
+            selectionChange: function (event) {
+
+            }
+        }, "string", undefined, undefined, "select NAME,NO from salesp where type='S' order by 1");
+
         this.subs.nationality = UtilGen.createControl(sap.m.ComboBox, this.view, "nationality", {
             customData: [{key: ""}],
             items: {
@@ -190,7 +202,7 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
                 "{i18n>sub_name}", this.subs.athlet_code, this.subs.athlet_name,
                 "{i18n>sub_age_tel}", this.subs.age, this.subs.tel,
                 "{i18n>nationality}", this.subs.nationality,
-                "Civil Id", this.subs.civilid,
+                "Lead By", this.subs.salesp,
                 "{i18n>sub_train_target}", this.subs.training_target,
                 "{i18n>sub_train_stage}", this.subs.training_stage,
                 "{i18n>sub_subscription}", this.subs.start_date, this.subs.end_date,
@@ -392,6 +404,8 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
             if (this.qryStr.length == 0) {
                 var dt = Util.getSQLValue("select trim(TO_CHAR(NVL(max(to_number(CODE)),0)+1,'0000')) from C_YCUST " +
                     "  WHERE PARENTCUSTOMER=nvl(repair.getsetupvalue_2('FT_CUSTOMER'),'1')");
+
+
                 this.subs.athlet_code.setValue(dt);
                 this.subs.athlet_name.setValue("");
                 this.subs.age.setValue("00");
@@ -401,6 +415,8 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
                 this.subs.civilid.setValue("");
                 UtilGen.setControlValue(this.subs.civilid, "");
                 UtilGen.setControlValue(this.subs.nationality, "");
+                UtilGen.setControlValue(this.subs.salesp, "");
+
                 this.subs.start_date.setDateValue(null);
                 this.subs.end_date.setValue(null);
                 this.subs.sport_type.setValue("");
@@ -413,6 +429,7 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
                 var dat = Util.execSQL("select *from ft_contract where keyfld=" + this.qryStr);
                 if (dat.ret == "SUCCESS" && dat.data.length > 0) {
                     var dtx = JSON.parse("{" + dat.data + "}").data;
+                    var sd = Util.getSQLValue("select max(name) from salesp where no=" + dtx[0].SALESP);
                     if (dtx[0].SURGERY_DATE != null)
                         that.vars.surgery_date = new Date(dtx[0].SURGERY_DATE);
                     if (dtx[0].START_DATE != null)
@@ -422,8 +439,8 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
                     (that.vars.rehab == 0 ? that.subs.start_date.setEnabled(false) : null);
                     that.vars.price = dtx[0].AMOUNT;
                     that.vars.rehab = dtx[0].REHAB;
-                    UtilGen.setControlValue(this.subs.location_code, dtx[0].LOCATION_CODE);
-                    UtilGen.setControlValue(this.subs.fileno, dtx[0].FILENO);
+                    UtilGen.setControlValue(this.subs.location_code, dtx[0].LOCATION_CODE, dtx[0].LOCATION_CODE, true);
+                    UtilGen.setControlValue(this.subs.fileno, dtx[0].FILENO, dtx[0].FILENO, true);
                     this.subs.athlet_code.setValue(dtx[0].ATHLET_CODE);
                     this.subs.athlet_name.setValue(dtx[0].ATHLET_NAME);
                     this.subs.athlet_name.getCustomData()[0].getKey(dtx[0].ATHLET_NAME);
@@ -433,6 +450,7 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
                     this.subs.training_target.setValue(dtx[0].TRAINING_TARGET);
                     UtilGen.setControlValue(this.subs.civilid, dtx[0].CIVILID);
                     UtilGen.setControlValue(this.subs.nationality, dtx[0].NATIONALITY);
+                    UtilGen.setControlValue(this.subs.salesp, dtx[0].SALESP, sd, true);
                     this.subs.sport_type.setValue(dtx[0].SPORT_TYPE);
                     this.subs.injury_place.setValue(dtx[0].INJURY_PLACE);
                     this.subs.start_date.setDateValue(this.vars.fromdate);
@@ -567,15 +585,15 @@ sap.ui.jsfragment("bin.forms.fitness.newsub", {
         var that = this;
         var ac = UtilGen.getControlValue(this.subs.athlet_code);
 
-
-        var kf = Util.getSQLValue("select max(keyfld) from ft_contract where athlet_code='"
-            + ac + "'" + (this.qryStr != "" ? " and keyfld!=" + this.qryStr : ""));
-        var flg = Util.getSQLValue("select flag from ft_contract where keyfld='" + kf + "'");
-        if (flg == 1) {
-            sap.m.MessageToast.show("Please CLOSE previous Subscription !");
-            return false;
-        }
-
+        /*
+         var kf = Util.getSQLValue("select max(keyfld) from ft_contract where athlet_code='"
+             + ac + "'" + (this.qryStr != "" ? " and keyfld!=" + this.qryStr : ""));
+         var flg = Util.getSQLValue("select flag from ft_contract where keyfld='" + kf + "'");
+         if (flg == 1) {
+             sap.m.MessageToast.show("Please CLOSE previous Subscription !");
+             return false;
+         }
+         */
         return true;
     },
     closeSub: function () {

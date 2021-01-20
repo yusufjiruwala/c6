@@ -865,7 +865,8 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     for (var ii in sl) {
                         var i = sl[ii];
                         for (var k = 0 + cellAdd; k < cellsCount; k++)
-                            this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass(this.selectedRowStyle);
+                            if (this.getControl().getRows()[i] != undefined)
+                                this.getControl().getRows()[i].getCells()[k - cellAdd].$().parent().parent().addClass(this.selectedRowStyle);
                     }
             }
         };

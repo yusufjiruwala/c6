@@ -140,6 +140,19 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
                 that.load_data();
             }
         }, "string", undefined, undefined, "select code,name from locations order by 1");
+
+        this.salesp = UtilGen.createControl(sap.m.ComboBox, this.view, "salesp", {
+            customData: [{key: ""}],
+            items: {
+                path: "/",
+                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{NO}"}),
+                templateShareable: true
+            },
+            selectionChange: function (event) {
+                that.load_data();
+            }
+        }, "string", undefined, undefined, "select -1 no,'ALL' name from dual union all select no,name from salesp order by 1");
+
         var sqlQry = "select -1 code,'ALL' name from dual union all " +
             " select 10 code, 'Expiry 10 days' name from dual union all " +
             " select 0 code, 'All Expired' name from dual";
@@ -159,6 +172,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
 
         UtilGen.setControlValue(this.locations, sett["USER_LOCATION"]);
         UtilGen.setControlValue(this.query_type, -1);
+        UtilGen.setControlValue(this.salesp, -1);
 
         var bt = new sap.m.Button({
             icon: "sap-icon://print",
@@ -168,7 +182,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         });
 
         this.toolbar = new sap.m.Toolbar({
-            content: [this.locations, this.query_type, this.searchField, bt]
+            content: [this.locations, this.salesp,this.query_type, this.searchField, bt]
         });
         var sc = new sap.m.ScrollContainer();
 
@@ -232,6 +246,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
         var that = this;
         var loc = UtilGen.getControlValue(that.locations);
         var qt = UtilGen.getControlValue(that.query_type);
+        var sp = Util.nvl(UtilGen.getControlValue(that.salesp), -1);
         var sql = "select f.athlet_code,f.athlet_name,f.tel,to_char(f.start_date,'dd/mm/rrrr') start_date," +
             " to_char(f.end_date,'dd/mm/rrrr') end_date," +
             " round(f.end_date-sysdate) expiry_in ," +
@@ -241,6 +256,7 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
             "from ft_contract f,C_CUST_BAL c " +
             "where f.flag=1 and " +
             " (round(f.end_date-sysdate)<=" + qt + " or " + qt + "=-1) and " +
+            " (f.salesp=" + sp + " or " + sp + "=-1) and " +
             " c.code(+)=f.athlet_code and " +
             " f.location_code='" + loc + "'" +
             " order by f.start_date desc";
@@ -261,7 +277,6 @@ sap.ui.jsfragment("bin.forms.fitness.Athlet", {
 
 
             if (dat.data.length > 0) {
-
 
                 for (var jj = 0; jj < that.qv.mLctb.cols.length; jj++)
                     that.qv.mLctb.cols[jj].getMUIHelper().data_type = "STRING";
