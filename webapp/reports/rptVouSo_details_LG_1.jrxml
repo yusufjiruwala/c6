@@ -16,7 +16,9 @@
 	<parameter name="CURRENCY_FORMAT" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CURRENCY" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[select ORDER2.* , NVL(INITCAP(TRIM(ITEMS.DESCRA)),ITEMS.DESCR) DESCR_I,ORD_ALLQTY*(FC_PRICE/ORD_PACK) AMT from order2,ITEMS
+		<![CDATA[select ORDER2.* , NVL(INITCAP(TRIM(ITEMS.DESCRA)),ITEMS.DESCR) DESCR_I,ORD_ALLQTY*(FC_PRICE/ORD_PACK) AMT,
+(select max(name) from salesp where no=order2.lcno) dname
+ from order2,ITEMS
 where ord_code=111 AND ORD_NO=$P{P_ORD}
 AND ITEMS.REFERENCE=ORDER2.ORD_REFER
 ORDER BY ORD_POS]]>
@@ -76,6 +78,7 @@ ORDER BY ORD_POS]]>
 	<field name="VAT_P" class="java.math.BigDecimal"/>
 	<field name="DESCR_I" class="java.lang.String"/>
 	<field name="AMT" class="java.math.BigDecimal"/>
+	<field name="DNAME" class="java.lang.String"/>
 	<columnHeader>
 		<band height="16">
 			<frame>
@@ -88,7 +91,7 @@ ORDER BY ORD_POS]]>
 				</box>
 			</frame>
 			<staticText>
-				<reportElement x="392" y="1" width="60" height="15" uuid="29be1085-c530-422b-ad73-592af237d71e"/>
+				<reportElement x="440" y="0" width="41" height="15" uuid="29be1085-c530-422b-ad73-592af237d71e"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -114,7 +117,7 @@ ORDER BY ORD_POS]]>
 				<text><![CDATA[POS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="92" y="1" width="238" height="15" uuid="e7384a99-da15-4686-a263-5d91c823fbbb"/>
+				<reportElement x="92" y="1" width="204" height="15" uuid="e7384a99-da15-4686-a263-5d91c823fbbb"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -123,7 +126,7 @@ ORDER BY ORD_POS]]>
 				<text><![CDATA[Description]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="452" y="1" width="103" height="15" uuid="1a4b2cd6-fd7d-4d64-889e-f86e5bccdefd"/>
+				<reportElement x="481" y="1" width="74" height="15" uuid="1a4b2cd6-fd7d-4d64-889e-f86e5bccdefd"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -132,13 +135,22 @@ ORDER BY ORD_POS]]>
 				<text><![CDATA[Total Charges]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="330" y="1" width="62" height="15" uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4"/>
+				<reportElement x="388" y="1" width="52" height="15" uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Price]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="296" y="0" width="92" height="15" uuid="989af863-8c49-41cc-b86b-2a7d25054c54"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Done By]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
@@ -171,7 +183,7 @@ ORDER BY ORD_POS]]>
 					<textFieldExpression><![CDATA[$F{ORD_REFER}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="391" y="0" width="60" height="15" uuid="927a6454-d3b8-44fd-81a3-eea2d4965281"/>
+					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="439" y="0" width="41" height="15" uuid="927a6454-d3b8-44fd-81a3-eea2d4965281"/>
 					<box>
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -180,7 +192,7 @@ ORDER BY ORD_POS]]>
 					<textFieldExpression><![CDATA[($F{ORD_ALLQTY}.floatValue() / $F{ORD_PACK}.floatValue())]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="451" y="0" width="103" height="15" uuid="04733140-a991-467d-a862-16d72be5a819"/>
+					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="480" y="0" width="74" height="15" uuid="04733140-a991-467d-a862-16d72be5a819"/>
 					<box rightPadding="4">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -192,7 +204,7 @@ ORDER BY ORD_POS]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<textField>
-					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="329" y="0" width="62" height="15" uuid="e3eab240-8555-406f-aac0-da4ef12bfd20"/>
+					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="387" y="1" width="52" height="15" uuid="e3eab240-8555-406f-aac0-da4ef12bfd20"/>
 					<box rightPadding="5">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -202,7 +214,7 @@ ORDER BY ORD_POS]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="238" height="15" uuid="d4232a84-187f-4290-99a8-6ce4814bca0d"/>
+					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="204" height="15" uuid="d4232a84-187f-4290-99a8-6ce4814bca0d"/>
 					<box leftPadding="2">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -210,10 +222,18 @@ ORDER BY ORD_POS]]>
 					<textElement>
 						<font fontName="DejaVu Sans" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{DESCR_I} +
-($F{ORD_RCPTNO}==null ||
- $F{ORD_RCPTNO}.length()==0?""
- :" - Rcpt No : "+$F{ORD_RCPTNO})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{DESCR_I}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="295" y="1" width="92" height="15" uuid="b83fcce3-891d-4415-8c53-f7abcafde98d"/>
+					<box leftPadding="2">
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement>
+						<font fontName="DejaVu Sans" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{DNAME}]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>

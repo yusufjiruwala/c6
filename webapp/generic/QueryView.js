@@ -1133,7 +1133,8 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             var company = "<div class='company'>" + sett["COMPANY_NAME"] + "</div> " +
                 "<div class='reportTitle'>" + view.reportsData.report_info.report_name +
                 " - " + rep.substr(0, rep.indexOf(" - ")) + "</div>";
-
+            if (Util.nvl(view.reportsData.report_info.report_other, "") != "")
+                company += "<div class='reportTitle'>" + view.reportsData.report_info.report_other + "</div>";
             var dtitle = "";
             var tmp = "";
             var cnt = 0;

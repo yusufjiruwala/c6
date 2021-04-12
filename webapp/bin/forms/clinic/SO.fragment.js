@@ -286,7 +286,8 @@ sap.ui.jsfragment("bin.forms.clinic.SO", {
         var sq = "select order2.*,'' descr2, 0 discp,((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY amount," +
             "(((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate lc_amount , " +
             " (((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY) +vat_add NET_FC,   " +
-            " ((((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate) + (vat_add*ord_fc_rate) NET_LC   " +
+            " ((((FC_PRICE-ORD_DISCAMT)/ORD_PACK)*ORD_ALLQTY)*ord_fc_rate) + (vat_add*ord_fc_rate) NET_LC  ," +
+            " (SELECT MAX(NAME) FROM SALESP WHERE NO=ORDER2.LCNO) DNAME   " +
             " from order2 where ord_no="
             + Util.quoted(this.qryStr)
             + " and ord_code="
@@ -445,7 +446,7 @@ sap.ui.jsfragment("bin.forms.clinic.SO", {
                 defaultValues["ORD_PRICE"] = this.qv.mLctb.getFieldValue(i, "FC_PRICE");
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
 
-                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";");
+                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT","DNAME"], defaultValues, true) + ";");
             }
             k = "begin " + sqCustInsert + " " + k + s1 + " end; ";
         } else {
@@ -466,7 +467,7 @@ sap.ui.jsfragment("bin.forms.clinic.SO", {
                 defaultValues["ORD_PRICE"] = this.qv.mLctb.getFieldValue(i, "FC_PRICE");
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
 
-                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT"], defaultValues, true) + ";");
+                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT","DNAME"], defaultValues, true) + ";");
             }
             k = "begin " + sqCustInsert + " " + k + s1 + " end; ";
         }

@@ -34,7 +34,8 @@
 '' TYPE_DESCR,ORDER1.ORDACC,ORDER1.ORD_DATE,
 ord_reference job_ord_reference,
 (select oname from order1 o1 where ord_code=106 and o1.ord_no=order1.ord_reference) job_oname,
-(select sum(fc_price*ord_allqty) from order2 where order2.ord_no=order1.ord_no and order2.ord_code=order1.ord_code) fc_amount
+(select sum(fc_price*ord_allqty) from order2 where order2.ord_no=order1.ord_no and order2.ord_code=order1.ord_code) fc_amount,
+(select sum(ord_price*ord_allqty) from order2 where order2.ord_no=order1.ord_no and order2.ord_code=order1.ord_code) lc_amount
 ,
 (select MAX(ord_fc_descr) from order2 where order2.ord_no=order1.ord_no and order2.ord_code=order1.ord_code) currency,
 oname PO_ONAME
@@ -54,6 +55,7 @@ AND LOCATIONS.CODE=order1.LOCATION_CODE AND ORDER1.ORD_CODE=103]]>
 	<field name="JOB_ORD_REFERENCE" class="java.math.BigDecimal"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
+	<field name="LC_AMOUNT" class="java.math.BigDecimal"/>
 	<field name="CURRENCY" class="java.lang.String"/>
 	<field name="PO_ONAME" class="java.lang.String"/>
 	<group name="NI" isStartNewPage="true">
@@ -93,7 +95,7 @@ AND LOCATIONS.CODE=order1.LOCATION_CODE AND ORDER1.ORD_CODE=103]]>
 					<textFieldExpression><![CDATA[$F{ORD_DATE}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="strHeader" x="448" y="162" width="107" height="20" uuid="ea0befeb-dd47-47a4-be02-972b5fad7a3a"/>
+					<reportElement style="strHeader" x="448" y="162" width="107" height="40" uuid="ea0befeb-dd47-47a4-be02-972b5fad7a3a"/>
 					<textFieldExpression><![CDATA[$F{ORD_REFNM}]]></textFieldExpression>
 				</textField>
 				<staticText>
@@ -172,6 +174,21 @@ AND LOCATIONS.CODE=order1.LOCATION_CODE AND ORDER1.ORD_CODE=103]]>
 						<font size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{FC_AMOUNT}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<staticText>
+					<reportElement style="labelHeader" x="364" y="52" width="79" height="20" forecolor="#FF0000" uuid="9921549e-f726-4aab-b830-b6d59a0095bc"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[LC Amount]]></text>
+				</staticText>
+				<textField>
+					<reportElement style="numMoney" x="454" y="52" width="88" height="20" forecolor="#FF0000" uuid="a4914cce-e619-49a8-8225-142a0a4bccb0"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{LC_AMOUNT}]]></textFieldExpression>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 			</band>

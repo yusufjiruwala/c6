@@ -682,6 +682,7 @@ public class UserRoute {
 
 		return ret;
 	}
+	
 
 	private String buildJsonGraphQuery(Map<String, String> params) throws Exception {
 		Connection con = instanceInfo.getmDbc().getDbConnection();

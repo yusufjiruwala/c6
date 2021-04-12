@@ -42,8 +42,8 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
         this.frm = this.createViewHeader();
         this.frm.getToolbar().addContent(this.bk);
 
-        Util.destroyID("poCmdSave", this.view);
-        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("poCmdSave"), {
+        Util.destroyID("payCmdSave", this.view);
+        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("payCmdSave"), {
             icon: "sap-icon://save", press: function () {
                 that.save_data();
             }
@@ -51,7 +51,15 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
         Util.destroyID("poCmdPrint", this.view);
         this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("poCmdPrint"), {
             icon: "sap-icon://print", press: function () {
-                that.save_data();
+                if (view.byId("payCmdSave").getEnabled())
+                    that.save_data(true);
+                else that.printInv();
+            }
+        }));
+        Util.destroyID("payCmdInv", this.view);
+        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("payCmdInv"), {
+            icon: "sap-icon://open-folder", text: "Invoice", press: function () {
+                that.openInv();
             }
         }));
 
@@ -66,7 +74,6 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
         var sc = new sap.m.ScrollContainer();
 
         sc.addContent(this.frm);
-
 
         this.mainPage.addContent(sc);
     },
@@ -165,7 +172,7 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
                 }
 
                 if (dtx[0].FLAG != 1) {
-                    that.view.byId("poCmdSave").setEnabled(false);
+                    that.view.byId("payCmdSave").setEnabled(false);
                     that.fa.paid_2_type.setEditable(false);
                     that.fa.paid_1_type.setEditable(false);
                     that.fa.paid_amt_1.setEditable(false);
@@ -204,7 +211,7 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
         return true;
     }
     ,
-    save_data: function () {
+    save_data: function (pritn) {
 
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -253,10 +260,59 @@ sap.ui.jsfragment("bin.forms.clinic.payment", {
             }
 
             sap.m.MessageToast.show("Saved Successfully !");
+            if (pritn)
+                that.printInv();
             that.oController.backFunction(that.oController.oA.getProperty("startDate"));
         });
     },
-});
+    printInv: function () {
+        var that = this;
+        if (Util.nvl(this.qryStr, "") == "")
+            return;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        var plsql = "";
+
+        var oc = 111;
+        var preFileName = "CL";
+        var on = Util.getSQLValue("select ord_no from order1 where ord_code=111 and ord_reference=" + this.qryStr);
+        var fn = Util.nvl(preFileName, "");
+        var sq = "insert into temporary(usernm,idno ,field1) values (:usernm,:idno,:field1);";
+        sq = sq.replace(":usernm", Util.quoted(sett["SESSION_ID"]));
+        sq = sq.replace(":idno", oc);
+        sq = sq.replace(":field1", on);
+        plsql += sq;
+
+        plsql = " begin delete from temporary where idno=" + oc + " and usernm=" + Util.quoted(sett["SESSION_ID"]) + ";" + plsql + " end;";
+        var dt = Util.execSQL(plsql);
+        if (dt.ret = "SUCCESS")
+            Util.doXhr("report?reportfile=rptVou" + fn + oc, true, function (e) {
+                if (this.status == 200) {
+                    var blob = new Blob([this.response], {type: "application/pdf"});
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.target = "_blank";
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+                    link.download = "rptVou" + new Date() + ".pdf";
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            })
+    },
+    openInv: function () {
+        var that = this;
+        if (Util.nvl(this.qryStr, "") == "")
+            return;
+
+        var on = Util.getSQLValue("select nvl(max(ord_no),'') from order1 where ord_code=111 and ord_reference=" + this.qryStr);
+        if (on == "") {
+            sap.m.MessageToast.show("No Invoice Found !");
+            return;
+        }
+        that.oController.openInv();
+    }
+})
+;
 
 
 

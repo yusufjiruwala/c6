@@ -71,6 +71,14 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 that.openMg();
             }
         }));
+        Util.destroyID("mainDaily", this.view);
+        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("mainDaily"), {
+            icon: "sap-icon://action-settings",
+            text: "Daily Report",
+            press: function () {
+                that.openDaily();
+            }
+        }));
 
         Util.destroyID("rPlanCalendar", this.view);
         this.cl = new sap.m.PlanningCalendar(this.view.createId("rPlanCalendar"), {
@@ -154,8 +162,9 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
             }, "date", undefined, this.view);
         var dt = new Date();
-        var fr = new Date(dt.getFullYear(), dt.getMonth(), 1);
-        var to = new Date(dt.getFullYear(), 11, 31);
+        var fr = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()-3);
+
+        var to = new Date(dt.getFullYear(),  dt.getMonth(),  dt.getDate()+5);
 
         UtilGen.setControlValue(this.o1.fromdate, fr);
         UtilGen.setControlValue(this.o1.todate, to);
@@ -166,28 +175,42 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
             },
             layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
         });
+        this.o1._cmdFind = new sap.m.Button({
+            icon: "sap-icon://search",
+            text: "", press: function () {
+                that.findHist();
+            },
+            layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+        });
         fe.push(this.o1._cmdExe);
+        fe.push(this.o1._cmdFind);
         // return UtilGen.formCreate("", true, fe);
         return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
 
     }
     ,
     loadData: function () {
+        var that = this;
+
         var sql1 = "select no,name from salesp  where type='D' and flag=1 order by no";
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
+
+        this.aps = [];
         var sql = "select a.keyfld,a.empno,a.cust_code,a.start_time, a.end_time,a.remarks,s.name emp_name, nvl(y.name,a.cust_name) cust_name , " +
             " decode(a.flag,1,'Type01',2,'Type20') flag ," +
             " y.code ycode " +
             " from cl6_appoint a,salesp s,c_ycust y " +
-            " where y.tel(+)=a.tel and s.no=a.empno " +
+            " where y.code(+)=a.cust_code and s.no=a.empno " +
             " and trunc(a.start_time)>=" + Util.toOraDateString(fr) +
             " and trunc(a.start_time)<=" + Util.toOraDateString(to) +
-            " and a.empno=:DRNO order by a.empno,a.start_time";
+            " and a.empno=:DRNO " +
+            " order by a.empno,a.start_time";
         var sqlDt = "select trunc(nvl(max(a.start_time),SYSDATE)) from cl6_appoint a,c_ycust y where " +
             "  trunc(a.start_time)>=" + Util.toOraDateString(fr) +
             " and trunc(a.start_time)<=" + Util.toOraDateString(to) +
-            " and a.tel=y.tel(+)";
+            " and a.tel=y.tel(+)" +
+            " order by a.empno,a.start_time";
 
         this.mdlData = {};
 
@@ -218,12 +241,13 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                         doc.appointments[j].keyfld = dtxd[j].KEYFLD;
                         doc.appointments[j].tel = dtxd[j].TEL;
                         doc.appointments[j].full_name = dtxd[j].CUST_NAME;
+                        that.aps.push(doc.appointments[j]);
                     }
                 }
 
                 docs.push(doc);
             }
-            var st = new Date(Util.getSQLValue(sqlDt));
+            var st = new Date();
             st.setHours(9);
             this.mdlData.startDate = Util.nvl(this.start_date, st);
             this.mdlData.doctors = docs;
@@ -248,14 +272,29 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
     }
     ,
     _handleEditAppointment: function (oAppointment) {
-        var kf = oAppointment.getCustomData()[0].getKey();
+        var kf, txt, stt, et, nm, typ;
+        if (oAppointment.keyfld != undefined) {
+            kf = oAppointment.keyfld;
+            txt = oAppointment.text;
+            stt = oAppointment.start;
+            et = oAppointment.end;
+            typ = oAppointment.type;
+        }
+        else {
+            kf = oAppointment.getCustomData()[0].getKey();
+            txt = oAppointment.getProperty("text");
+            stt = oAppointment.getProperty("startDate");
+            typ = oAppointment.getProperty("type");
+            et = oAppointment.getProperty("endDate");
+        }
+
         var fe = [];
         var sett = sap.ui.getCore().getModel("settings").getData();
         var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
         var sf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + " h:mm a");
         var that = this;
         var fnm = "", tel = "", code = "";
-        var dt = Util.execSQL("select a.*,nvl(y.name,a.cust_name) name_1 ,y.code from cl6_appoint a,c_ycust y where a.tel=y.tel(+) and a.keyfld=" + Util.quoted(kf));
+        var dt = Util.execSQL("select a.*,nvl(y.name,a.cust_name) name_1 ,y.code from cl6_appoint a,c_ycust y where a.cust_code=y.code(+) and a.keyfld=" + Util.quoted(kf));
         if (dt.ret == "SUCCESS" && dt.data.length > 0) {
             var dtx = JSON.parse("{" + dt.data + "}").data;
             fnm = dtx[0].NAME_1;
@@ -275,7 +314,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
 
         UtilGen.addControl(fe, "Remarks", sap.m.Text, "frmRemarks",
             {
-                text: oAppointment.getProperty("text"),
+                text: txt,
             }, "string", undefined, this.view);
         var st = UtilGen.addControl(fe, "Start Time", sap.m.Text, "frmStartDt",
             {
@@ -290,12 +329,12 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 enabled: false,
             }, "number", sett["FORMAT_MONEY_1"], this.view);
 
-        st.setText(sf.format(oAppointment.getProperty("startDate")));
-        en.setText(sf.format(oAppointment.getProperty("endDate")));
+        st.setText(sf.format(stt));
+        en.setText(sf.format(et));
 
         var oamt = Util.getSQLValue("select nvl(max(ord_amt),0) from order1 where ord_code=111 and ord_reference=" + Util.quoted(kf));
         am.setText(df.format(oamt));
-        var type = oAppointment.getProperty("type");
+        var type = typ;
         var frm = UtilGen.formCreate("", true, fe);
         frm.setSingleContainerFullSize(true);
         frm.setToolbar(undefined);
@@ -362,6 +401,10 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                     st.setHours(9);
                     that.loadData();
                 }
+            },
+            openInv: function () {
+                dlg.close();
+                that.openInvoice(kf, oA);
             },
             qryStr: kf,
             oA: oA
@@ -440,6 +483,10 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                     that.loadData();
                 }
             },
+            openInv: function () {
+                dlg.close();
+                that.openInvoice(kf, oA);
+            },
             qryStr: kf,
             oA: oA
         }, this.view, undefined));
@@ -448,7 +495,25 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
     }
     ,
     postData: function (kf, oA) {
+
         var that = this;
+        var kf, txt, stt, et, nm, typ;
+        if (oAppointment.keyfld != undefined) {
+            kf = oAppointment.keyfld;
+            txt = oAppointment.text;
+            stt = oAppointment.start;
+            et = oAppointment.end;
+            typ = oAppointment.type;
+        }
+        else {
+            kf = oAppointment.getCustomData()[0].getKey();
+            txt = oAppointment.getProperty("text");
+            st = oAppointment.getProperty("startDate");
+            typ = oAppointment.getProperty("type");
+            et = oAppointment.getProperty("endDate");
+        }
+
+
         var sett = sap.ui.getCore().getModel("settings").getData();
         var on = Util.getSQLValue("select ord_no from order1 where ord_code=111 and ord_reference=" + kf);
         if (Util.nvl(on, "") == "") {
@@ -485,7 +550,7 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                     var dt = Util.execSQL("begin " + sql + " end;");
                     if (dt.ret = "SUCCESS") {
                         sap.m.MessageToast.show("POSTED successfully !.. !");
-                        that.oController.backFunction(UtilGen.getControlValue(oA.getProperty("startDate")));
+                        that.oController.backFunction(UtilGen.getControlValue(stt));
                     }
                 }
             },                                       // default
@@ -561,6 +626,62 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         this.pgDetail.addContent(sp);
         this.joApp.to(this.pgDetail, "slide");
 
+    },
+    openDaily: function () {
+        var that = this;
+        var bk = function () {
+            that.joApp.to(that.mainPage, "baseSlide");
+        };
+
+        var sp = UtilGen.openForm("bin.forms.clinic.rp1", undefined, {
+            getView:
+                function () {
+                    return that.view;
+                }
+        });
+        sp.app = this.joApp;
+        sp.backFunction = bk;
+
+        UtilGen.clearPage(this.pgDetail);
+        this.pgDetail.addContent(sp);
+        this.joApp.to(this.pgDetail, "slide");
+
+    },
+    findHist: function () {
+
+        var that = this;
+        var fr = UtilGen.getControlValue(this.o1.fromdate);
+        var to = UtilGen.getControlValue(this.o1.todate);
+
+        var sql = "select a.start_time,a.cust_code,a.cust_name,a.tel,a.remarks ,a.keyfld " +
+            "  from cl6_appoint a where " +
+            "  trunc(a.start_time)>=" + Util.toOraDateString(fr) +
+            " and trunc(a.start_time)<=" + Util.toOraDateString(to) +
+            " order by start_time desc";
+
+        var fnOnSelect = function (data) {
+            if (data != undefined && data.length <= 0)
+                return;
+
+            // UtilGen.setControlValue(that.fa.cust_name, data.TITLE, data.TITLE, true);
+            // UtilGen.setControlValue(that.fa.tel, data.TEL, data.TEL, true);
+            // UtilGen.setControlValue(that.fa.cust_code, data.CODE, data.CODE, true);
+            var dt = new Date(data.START_TIME);
+            dt.setHours(9);
+            that.start_date = dt;
+            that.loadData();
+
+            for (var i in that.aps) {
+                if (that.aps[i].keyfld == data.KEYFLD) {
+                    that.openAppointment(data.KEYFLD, that.aps[i]);
+                    return true;
+                }
+            }
+
+            return true;
+        };
+        Util.show_list(sql, ["CUST_NAME", "CODE", "TEL", "REMARKS"],
+            undefined, fnOnSelect, "100%", "100%", 10, false, undefined);
     }
 
 })

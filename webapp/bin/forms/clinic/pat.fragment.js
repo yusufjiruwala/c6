@@ -183,11 +183,12 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
             sap.m.MessageToast.show("Must enter Tel !");
             return false;
         }
-        var telExist = Util.getSQLValue("select name||'-'||code from c_ycust where code!=" + Util.quoted(code) + " and tel=" + Util.quoted(tel));
-        if (Util.nvl(telExist, "").length > 0) {
-            sap.m.MessageToast.show(telExist + " is TEL NO similar !");
-            return false;
-        }
+
+        // var telExist = Util.getSQLValue("select name||'-'||code from c_ycust where code!=" + Util.quoted(code) + " and tel=" + Util.quoted(tel));
+        // if (Util.nvl(telExist, "").length > 0) {
+        //     sap.m.MessageToast.show(telExist + " is TEL NO similar !");
+        //     return false;
+        // }
         return true;
     }
     ,
@@ -213,12 +214,12 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
             })
             ;
             k = "insert into c_ycust " + k + ";";
-            k += " Update cl6_appoint set cust_code=" + Util.quoted(cod) + ",cust_name=" + Util.quoted(nm) + " where flag=1 and tel=" + Util.quoted(tel) + ";";
+            k += " Update cl6_appoint set cust_code=" + Util.quoted(cod) + ",cust_name=" + Util.quoted(nm) + " where cust_code is null and flag=1 and tel=" + Util.quoted(tel) + ";";
         }
         else {
             k = UtilGen.getSQLUpdateString(this.pa, "C_YCUST", {},
                 "CODE=" + Util.quoted(this.qryStr)) + " ;";
-            k += " Update cl6_appoint set cust_code=" + Util.quoted(cod) + ",cust_name=" + Util.quoted(nm) + " where flag=1 and tel=" + Util.quoted(tel) + ";";
+            k += " Update cl6_appoint set cust_code=" + Util.quoted(cod) + ",cust_name=" + Util.quoted(nm) + " where cust_code is null and flag=1 and tel=" + Util.quoted(tel) + ";";
         }
         k = "begin " + k + " end;";
 

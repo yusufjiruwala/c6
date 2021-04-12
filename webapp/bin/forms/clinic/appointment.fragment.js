@@ -60,6 +60,15 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
                 that.delete_data();
             }
         }));
+
+        this.frm.getToolbar().addContent(new sap.m.ToolbarSpacer());
+        Util.destroyID("appCmdInv", this.view);
+        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("appCmdInv"), {
+            icon: "sap-icon://open-folder", text: "Invoice", press: function () {
+                that.openInv();
+            }
+        }));
+
         // that.createScrollCmds(this.frm.getToolbar());
 
         var sc = new sap.m.ScrollContainer();
@@ -106,9 +115,12 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
             {
                 editable: true,
                 change: function () {
-                    var nm = Util.getSQLValue("select name from c_ycust where tel=" + Util.quoted(UtilGen.getControlValue(that.fa.tel)));
-                    UtilGen.setControlValue(that.fa.cust_name, nm, nm, true);
-
+                    // var dt = Util.execSQL("select name,code from c_ycust where tel=" + Util.quoted(UtilGen.getControlValue(that.fa.tel)));
+                    // if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+                    //     var dtx = JSON.parse("{" + dt.data + "}").data;
+                    //     UtilGen.setControlValue(that.fa.cust_name, dtx[0].NAME, dtx[0].NAME, true);
+                    //     UtilGen.setControlValue(that.fa.cust_code, dtx[0].CODE, dtx[0].CODE, true);
+                    // }
                 },
                 liveChange: function (oEvent) {
                     var _oInput = oEvent.getSource();
@@ -126,6 +138,7 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
                     if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed) {
                         UtilGen.setControlValue(that.fa.cust_name, "", "", true);
                         UtilGen.setControlValue(that.fa.tel, "", "", true);
+                        UtilGen.setControlValue(that.fa.cust_code, "", "", true);
                         return;
                     }
 
@@ -136,6 +149,7 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
                             return;
                         UtilGen.setControlValue(that.fa.cust_name, data.TITLE, data.TITLE, true);
                         UtilGen.setControlValue(that.fa.tel, data.TEL, data.TEL, true);
+                        UtilGen.setControlValue(that.fa.cust_code, data.CODE, data.CODE, true);
                         return true;
                     };
                     Util.show_list(sql, ["TITLE", "CODE", "TEL", "REFERENCE"],
@@ -146,6 +160,10 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
                 }
             }
             , "string", undefined, this.view);
+        this.fa.cust_code = UtilGen.addControl(fe, "Cust Code", sap.m.Input, "apCustCode",
+            {
+                editable: false,
+            }, "string", undefined, this.view);
         this.fa.remarks = UtilGen.addControl(fe, "Remarks", sap.m.Input, "apRemarks",
             {
                 editable: true,
@@ -171,6 +189,7 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
                 UtilGen.setControlValue(this.fa.end_time, dtx[0].END_TIME);
                 UtilGen.setControlValue(this.fa.tel, dtx[0].TEL);
                 UtilGen.setControlValue(this.fa.cust_name, dtx[0].CUST_NAME);
+                UtilGen.setControlValue(this.fa.cust_code, dtx[0].CUST_CODE);
                 UtilGen.setControlValue(this.fa.remarks, dtx[0].REMARKS);
 
                 if (dtx[0].FLAG != 1) {
@@ -190,8 +209,12 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
     }
     ,
     validateSave: function () {
+        var that = this;
         var st = UtilGen.getControlValue(this.fa.start_time);
         var en = UtilGen.getControlValue(this.fa.end_time);
+        var cd = UtilGen.getControlValue(this.fa.cust_code);
+        var tel = UtilGen.getControlValue(that.fa.tel);
+        var nm = UtilGen.getControlValue(that.fa.cust_name);
 
         if (st.getTime() > en.getTime()) {
             sap.m.MessageToast.show("Err !,  Start time more than end time !");
@@ -202,7 +225,23 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
             sap.m.MessageToast.show("Err !,  Invoice is POSTED  / CANCELLED!");
             return false;
         }
+        if (Util.nvl(cd, "") == "") {
+            var dt = Util.execSQL("select name,code from c_ycust where tel=" + Util.quoted(tel));
+            if (dt.ret = "SUCCESS" && dt.data.length > 0) {
+                var dtx = JSON.parse("{" + dt.data + "}").data;
+                if (dtx.length > 1) {
+                    sap.m.MessageToast.show("Tel :  " + tel + " Have many patients, choose from list");
+                    return false;
+                }
+                if (dtx.length == 1 && Util.nvl(dtx[0].NAME, "").length > 0 && dtx[0].NAME != nm) {
+                    sap.m.MessageToast.show(nm + " is not same as patient of CODE # " + dtx[0].CODE);
+                    return false;
+                }
+                if (dtx.length == 1 && Util.nvl(dtx[0].CODE, "").length > 0)
+                    UtilGen.setControlValue(that.fa.cust_code, dtx[0].CODE, dtx[0].CODE, true);
 
+            }
+        }
         return true;
 
     }
@@ -214,12 +253,13 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
         if (!this.validateSave())
             return;
         var k = ""
+        var cd = UtilGen.getControlValue(this.fa.cust_code);
         if (this.qryStr != "") {
             k = UtilGen.getSQLUpdateString(this.fa,
                 "cl6_appoint",
                 {
                     "CUST_NAME": Util.quoted(this.fa.cust_name.getValue()),
-                    "CUST_CODE": "(SELECT CODE FROM C_YCUST WHERE C_YCUST.TEL=" + Util.quoted(UtilGen.getControlValue(this.fa.tel)) + ")"
+                    // "CUST_CODE": Util.quoted(cd),
                 }, " keyfld = " + Util.quoted(this.qryStr), ["keyfld", "cust_name"], true);
         } else {
             k = UtilGen.getSQLInsertString(this.fa, {
@@ -227,7 +267,7 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
                 "KEYFLD": Util.getSQLValue("select nvl(max(keyfld),0)+1 from cl6_appoint"),
                 "BOOKED_BY": Util.quoted(usr),
                 "BOOKED_ON": "SYSDATE",
-                "CUST_CODE": "(SELECT CODE FROM C_YCUST WHERE C_YCUST.TEL=" + Util.quoted(UtilGen.getControlValue(this.fa.tel)) + ")"
+                // "CUST_CODE": Util.quoted(cd),
             }, ["cust_name", "keyfld"], true);
             k = "begin insert into cl6_appoint " + k + "; end;";
         }
@@ -271,6 +311,13 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
             initialFocus: null,                                  // default
             textDirection: sap.ui.core.TextDirection.Inherit     // default
         });
+    },
+    openInv: function () {
+        if (this.qryStr != "") {
+            this.oController.openInv();
+        } else
+            sap.m.MessageToast.show("Err ! , no Appointment created !");
+
     }
 });
 

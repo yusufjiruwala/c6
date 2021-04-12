@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouSO" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.x" value="60"/>
+	<property name="ireport.y" value="313"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -36,7 +36,7 @@ f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and or
 (select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no)) amt_in_word,
 to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat,
 A.START_TIME,A.END_TIME,
-A.TEL CUST_TEL
+A.TEL CUST_TEL,a.paid_amt_1,paid_amt_2,(select nvl(max(name),' ') from c_ycust where a.pay_1_code=code) pay_1, (select nvl(max(name),' ') from c_ycust where a.pay_2_code=code) pay_2
 from order1,CL6_APPOINT A,SALESP P
 where order1.ord_code=111 and
 order1.ORD_no IN (select field1 from temporary where USERNM=$P{SES_ID} AND IDNO=111)
@@ -131,6 +131,10 @@ order by order1.ord_no]]>
 	<field name="START_TIME" class="java.sql.Timestamp"/>
 	<field name="END_TIME" class="java.sql.Timestamp"/>
 	<field name="CUST_TEL" class="java.lang.String"/>
+	<field name="PAID_AMT_1" class="java.math.BigDecimal"/>
+	<field name="PAID_AMT_2" class="java.math.BigDecimal"/>
+	<field name="PAY_1" class="java.lang.String"/>
+	<field name="PAY_2" class="java.lang.String"/>
 	<group name="N1" isStartNewPage="true" keepTogether="true">
 		<groupExpression><![CDATA[$F{ORD_NO}]]></groupExpression>
 		<groupHeader>
@@ -260,7 +264,7 @@ order by order1.ord_no]]>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="202" splitType="Stretch">
+			<band height="228" splitType="Stretch">
 				<staticText>
 					<reportElement style="strHeader" x="1" y="1" width="115" height="24" uuid="26fb5599-c008-4278-ad91-e3959ac52e66"/>
 					<textElement textAlignment="Center">
@@ -273,7 +277,7 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA[$F{AMT_IN_WORD}]]></textFieldExpression>
 				</textField>
 				<textField pattern="">
-					<reportElement style="numQtyCenter" mode="Opaque" x="441" y="1" width="116" height="25" backcolor="#FFFF00" uuid="307d8e2b-c480-4cd0-8585-99d024b8c72b"/>
+					<reportElement style="numQtyCenter" mode="Opaque" x="436" y="1" width="116" height="25" backcolor="#FFFF00" uuid="307d8e2b-c480-4cd0-8585-99d024b8c72b"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -285,25 +289,124 @@ order by order1.ord_no]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<staticText>
-					<reportElement style="strHeader" x="382" y="69" width="95" height="24" uuid="7afd75f0-3baf-4774-a391-4d8e24cf42a3"/>
+					<reportElement style="strHeader" x="341" y="149" width="95" height="24" uuid="7afd75f0-3baf-4774-a391-4d8e24cf42a3"/>
 					<textElement>
 						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Checked By : ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="strHeader" x="93" y="69" width="115" height="24" uuid="953291f5-72a3-45dd-b862-ee0259c332ff"/>
+					<reportElement style="strHeader" x="52" y="149" width="115" height="24" uuid="953291f5-72a3-45dd-b862-ee0259c332ff"/>
 					<textElement>
 						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Approved By :]]></text>
 				</staticText>
 				<line>
-					<reportElement x="93" y="135" width="100" height="1" uuid="acb5c6ff-e801-4850-b220-a44cc193a41a"/>
+					<reportElement x="52" y="215" width="100" height="1" uuid="acb5c6ff-e801-4850-b220-a44cc193a41a"/>
 				</line>
 				<line>
-					<reportElement x="377" y="134" width="100" height="1" uuid="467b2397-de35-445e-8890-bc1fd13732ed"/>
+					<reportElement x="336" y="214" width="100" height="1" uuid="467b2397-de35-445e-8890-bc1fd13732ed"/>
 				</line>
+				<textField pattern="">
+					<reportElement style="labelHeader" mode="Opaque" x="436" y="49" width="116" height="14" backcolor="#FFFFFF" uuid="9eadb6a6-e5a7-47af-b0d4-4b93bc862596">
+						<printWhenExpression><![CDATA[(!$F{PAY_1}.equals(" "))]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PAID_AMT_1}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField pattern="">
+					<reportElement style="labelHeader" mode="Opaque" x="436" y="63" width="116" height="15" backcolor="#FFFFFF" uuid="e7bc889e-c0fe-4988-b62f-0bc730204b57">
+						<printWhenExpression><![CDATA[(!$F{PAY_2}.equals(" "))]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{PAID_AMT_2}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField pattern="">
+					<reportElement style="numQtyCenter" mode="Opaque" x="438" y="81" width="114" height="16" backcolor="#FFFFFF" uuid="17991252-a2ca-43a2-b9e0-102130e3f123">
+						<printWhenExpression><![CDATA[$F{PAID_AMT_1}+$F{PAID_AMT_2}>0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="2.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{PAID_AMT_1}+$F{PAID_AMT_2})]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<line>
+					<reportElement x="441" y="33" width="116" height="1" uuid="a25db288-9273-4428-85ad-6814c12b01b2"/>
+				</line>
+				<textField pattern="">
+					<reportElement style="labelHeader" mode="Opaque" x="325" y="49" width="116" height="14" backcolor="#FFFFFF" uuid="c038f49e-5431-4575-b77e-0895e3af505f">
+						<printWhenExpression><![CDATA[(!$F{PAY_1}.equals(" "))]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Paid In :"+$F{PAY_1}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField pattern="">
+					<reportElement style="labelHeader" mode="Opaque" x="325" y="64" width="116" height="14" backcolor="#FFFFFF" uuid="9207b243-6001-4e39-bfa0-0dd836322c01">
+						<printWhenExpression><![CDATA[(!$F{PAY_2}.equals(" "))]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Paid In :"+$F{PAY_2}]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
+				<textField pattern="">
+					<reportElement mode="Opaque" x="322" y="83" width="116" height="13" backcolor="#FFFFFF" uuid="0823c27b-86f2-4ccd-99bd-88e6e7d3b07a">
+						<printWhenExpression><![CDATA[$F{PAID_AMT_1}+$F{PAID_AMT_2}>0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Total Paid"]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
+				</textField>
 			</band>
 		</groupFooter>
 	</group>

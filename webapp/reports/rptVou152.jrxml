@@ -409,7 +409,7 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA[$P{COMPANY_NAMEA}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement style="labelHeader" x="138" y="40" width="299" height="58" uuid="bae41d42-fc54-4262-9a65-77488879200d"/>
+					<reportElement style="labelHeader" x="2" y="40" width="299" height="58" uuid="bae41d42-fc54-4262-9a65-77488879200d"/>
 					<textElement textAlignment="Left">
 						<font fontName="DejaVu Sans" size="10" isBold="true" isStrikeThrough="false"/>
 					</textElement>
@@ -501,7 +501,7 @@ order by order1.ord_no]]>
 			<band height="217">
 				<image scaleImage="RealSize" hAlign="Center" vAlign="Bottom">
 					<reportElement mode="Opaque" x="62" y="108" width="140" height="92" uuid="b812b5f6-402b-41eb-a338-c07c0d257a8c"/>
-					<imageExpression><![CDATA["sign.jpg"]]></imageExpression>
+					<imageExpression><![CDATA[$P{COMPANY_LOGO}.substring(0,2)+ "_sign.jpg"]]></imageExpression>
 				</image>
 				<staticText>
 					<reportElement style="strHeader" x="1" y="1" width="115" height="24" uuid="26fb5599-c008-4278-ad91-e3959ac52e66"/>
@@ -540,10 +540,6 @@ order by order1.ord_no]]>
 					</textElement>
 					<text><![CDATA[Checked By : ]]></text>
 				</staticText>
-				<textField>
-					<reportElement x="0" y="25" width="414" height="107" uuid="c78fa714-5859-4101-9645-c7f087fe61d7"/>
-					<textFieldExpression><![CDATA[$F{BNK}]]></textFieldExpression>
-				</textField>
 			</band>
 		</groupFooter>
 	</group>
