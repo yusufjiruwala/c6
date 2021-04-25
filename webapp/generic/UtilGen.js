@@ -714,7 +714,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
             ,
             resetDataJson(subs) {
                 for (var key in subs)
-                    this.setControlValue(subs[key], "", false);
+                    this.setControlValue(subs[key], "", "", false);
 
             }
             ,
