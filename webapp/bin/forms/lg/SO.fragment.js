@@ -182,6 +182,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         frm.setToolbar(undefined);
         frm.destroyToolbar();
         sc.addContent(frm);
+
     },
     createViewHeader: function () {
         var that = this;

@@ -608,6 +608,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 }
                 var sett = sap.ui.getCore().getModel("settings").getData();
                 var sdf = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + hma);
+
+                var sdf2 = new simpleDateFormat(sett["ENGLISH_DATE_FORMAT"] + " h mm a");
                 var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
 
 
@@ -641,6 +643,9 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
                         if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() != undefined)
                             val = "to_date('" + sdf.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + ohma + "')";
+                        if (tbl[key] instanceof sap.m.DateTimePicker && tbl[key].getDateValue() != undefined)
+                            val = "to_date('" + sdf2.format(tbl[key].getDateValue()) + "','" + sett["ENGLISH_DATE_FORMAT"] + " HH MI AM" + "')";
+
                         if (tbl[key] instanceof sap.m.DatePicker && tbl[key].getDateValue() == undefined)
                             val = "null";
                         if (tbl[key].field_type != undefined && tbl[key].field_type == "number")
@@ -714,7 +719,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
             ,
             resetDataJson(subs) {
                 for (var key in subs)
-                    this.setControlValue(subs[key], "", "", false);
+                    this.setControlValue(subs[key], "", "", true);
 
             }
             ,

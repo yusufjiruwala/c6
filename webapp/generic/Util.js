@@ -642,7 +642,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             toOraDateString: function (dt) {
                 var sett = sap.ui.getCore().getModel("settings").getData();
-
+                if (Util.nvl(dt, "") == "")
+                    return 'null';
                 if (typeof dt == "string") {
                     return "to_date('" + dt + "','" + sett["ENGLISH_DATE_FORMAT_ORA"] + "')";
                 } else if (dt instanceof Date) {
@@ -659,6 +660,9 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             toOraDateTimeString: function (dt) {
                 var sett = sap.ui.getCore().getModel("settings").getData();
+                if (Util.nvl(dt, "") == "")
+                    return 'null';
+
 
                 if (typeof dt == "string") {
                     return "to_date('" + dt + "','" + Util.nvl(sett["ENGLISH_DATE_FORMAT_ORA"], "DD/MM/RRRR HH24.MI") + "')";
@@ -836,7 +840,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
             showSearchTable: function (sql, container, flcol, fnOnselect, multiSelect) {
 
-                container.removeAllItems();
+                container.removeAllContent();
                 var qv = new QueryView("searchTbl");
                 qv.getControl().setFixedBottomRowCount(0);
                 qv.getControl().addStyleClass("sapUiSizeCondensed");
@@ -868,7 +872,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         binding.filter(filter);
                     }
                 });
-                container.addItem(searchField);
+                container.addHeaderContent(searchField);
                 var dat = {};
                 if (!sql.startsWith("@"))
                     dat = this.execSQL(sql);
@@ -876,7 +880,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 if (dat.ret == "SUCCESS" && dat.data.length > 0) {
                     qv.setJsonStr("{" + dat.data + "}");
                     qv.loadData();
-                    container.addItem(qv.getControl());
+                    container.addContent(qv.getControl());
                     if (!Util.nvl(multiSelect, false)) {
                         qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
                     }
@@ -995,7 +999,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return "";
             },
             show_list: function (sql, cols, retCols, fnSel, width, height, visibleRowCount, multiSelect, fnShowSel) {
-                var vbox = new sap.m.VBox({width: "100%"});
+                var vbox = new sap.m.Page({showHeader: true});
                 var dlg = new sap.m.Dialog({
                     content: [vbox],
                     contentHeight: this.nvl(height, "500px"),
@@ -1032,10 +1036,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 }, Util.nvl(multiSelect, false));
 
                 qv.getControl().addStyleClass("noColumnBorder");
-                if (visibleRowCount != undefined) {
-                    qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
-                    qv.getControl().setVisibleRowCount(this.nvl(visibleRowCount, 6));
-                }
+                // if (visibleRowCount != undefined) {
+                //     qv.getControl().setVisibleRowCountMode(sap.ui.table.VisibleRowCountMode.Fixed);
+                //     qv.getControl().setVisibleRowCount(this.nvl(visibleRowCount, 6));
+                // }
 
                 if (qv == null) return
 

@@ -9,7 +9,12 @@
   <component name="ChangeListManager">
     <list default="true" id="9f841c3c-776c-4ec4-9bac-5115a10a1817" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/bin/forms/lg/SO.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/forms/lg/SO.fragment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/bin/forms/pos/booking.fragment.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/bin/forms/pos/booking.fragment.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/generic/Util.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/generic/Util.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/webapp/generic/UtilGen.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/generic/UtilGen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/i18n/i18n.properties" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/i18n/i18n.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/i18n/i18n_ar.properties" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/i18n/i18n_ar.properties" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -25,12 +30,21 @@
     <favorites_list name="main" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="booking.fragment.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webapp/bin/forms/pos/booking.fragment.js">
+    <leaf>
+      <file leaf-file-name="i18n.properties" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webapp/i18n/i18n.properties">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="271">
-              <caret line="93" column="26" selection-start-line="93" selection-start-column="26" selection-end-line="93" selection-end-column="26" />
+            <state relative-caret-position="375">
+              <caret line="25" selection-start-line="25" selection-end-line="30" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="i18n_ar.properties" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webapp/i18n/i18n_ar.properties">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="345">
+              <caret line="23" column="3" selection-start-line="23" selection-end-line="23" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -47,36 +61,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>loaddata</find>
-      <find>start_date</find>
-      <find>bc6</find>
-      <find>clearcoo</find>
-      <find>coo</find>
-      <find>file</find>
-      <find>this.qv =</find>
-      <find>print</find>
-      <find>reportinfo</find>
-      <find>reportsData</find>
-      <find>reports</find>
-      <find>colData</find>
-      <find>oController</find>
-      <find>o</find>
-      <find>printhtml</find>
-      <find>printhtm</find>
-      <find>report_inf</find>
-      <find>df</find>
-      <find>sdf</find>
-      <find>logon</find>
-      <find>change</find>
-      <find>change pass</find>
-      <find>focus</find>
-      <find>parameter</find>
-      <find>bk</find>
-      <find>load</find>
+      <find>onaddrow</find>
+      <find>footer</find>
+      <find>dos</find>
+      <find>pgd</find>
       <find>loadda</find>
-      <find>ct</find>
-      <find>ctg</find>
-      <find>&quot;XL3 L2 M2 S12&quot;</find>
+      <find>l</find>
+      <find>qryStrBNo</find>
+      <find>save_</find>
+      <find>load</find>
+      <find>loaddagta</find>
+      <find>DATA_TYPE</find>
+      <find>DEFAULTV</find>
+      <find>street</find>
+      <find>ADDR_JEDDA</find>
+      <find>CODE</find>
+      <find>FA.CODE</find>
+      <find>loaddata</find>
+      <find>&quot;list</find>
+      <find>para</find>
+      <find>FOCUSOUT</find>
+      <find>FOCUSOU</find>
+      <find>save</find>
+      <find>she</find>
+      <find>shellbar</find>
+      <find>&quot;save</find>
+      <find>booking_d</find>
+      <find>booki</find>
+      <find>boking</find>
+      <find>booking</find>
+      <find>boo</find>
     </findStrings>
     <replaceStrings>
       <replace>(thatview.sLangu == &quot;AR&quot; ? dtx.parameters[i].PARA_DESCRENG : dtx.parameters[i].PARA_DESCRARB)</replace>
@@ -99,11 +113,12 @@
       <replace>t1</replace>
     </replaceStrings>
     <dirStrings>
-      <dir>$PROJECT_DIR$</dir>
       <dir>$PROJECT_DIR$/webapp</dir>
       <dir>$PROJECT_DIR$/webapp/bin/forms/lg</dir>
-      <dir>$PROJECT_DIR$/webapp/bin</dir>
       <dir>$PROJECT_DIR$/webapp/generic</dir>
+      <dir>$PROJECT_DIR$/webapp/bin/forms</dir>
+      <dir>$PROJECT_DIR$/webapp/bin</dir>
+      <dir>$PROJECT_DIR$</dir>
     </dirStrings>
   </component>
   <component name="Git.Settings">
@@ -112,8 +127,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/webapp/bin/forms/press/TMP.fragment.js" />
-        <option value="$PROJECT_DIR$/webapp/bin/forms/lg/TMP.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/C6P.ini" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/press/Main.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/press/JO.fragment.js" />
@@ -134,7 +147,6 @@
         <option value="$PROJECT_DIR$/webapp/bin/Qd.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/lg/PR.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/lg/SN.fragment.js" />
-        <option value="$PROJECT_DIR$/webapp/bin/forms/lg/SO.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/CL6.ini" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/main.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/lg/PO.fragment.js" />
@@ -148,20 +160,23 @@
         <option value="$PROJECT_DIR$/webapp/bin/forms/fa/faItems.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/lg/SP.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/lg/Req.fragment.js" />
-        <option value="$PROJECT_DIR$/webapp/generic/Util.js" />
         <option value="$PROJECT_DIR$/webapp/bin/Queries.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/Dashboard.view.js" />
         <option value="$PROJECT_DIR$/webapp/bin/searchList.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/pat.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/payment.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/appointment.fragment.js" />
-        <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/SO.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/Main.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/generic/QueryView.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/rp1.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/lg/py.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/pos/booking.js" />
+        <option value="$PROJECT_DIR$/webapp/generic/Util.js" />
+        <option value="$PROJECT_DIR$/webapp/bin/forms/lg/SO.fragment.js" />
+        <option value="$PROJECT_DIR$/webapp/bin/forms/clinic/SO.fragment.js" />
         <option value="$PROJECT_DIR$/webapp/generic/UtilGen.js" />
+        <option value="$PROJECT_DIR$/webapp/i18n/i18n.properties" />
+        <option value="$PROJECT_DIR$/webapp/i18n/i18n_ar.properties" />
         <option value="$PROJECT_DIR$/webapp/bin/forms/pos/booking.fragment.js" />
       </list>
     </option>
@@ -175,7 +190,7 @@
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="y" value="22" />
     <option name="width" value="1280" />
     <option name="height" value="778" />
@@ -219,15 +234,13 @@
               <item name="webapp" type="462c0819:PsiDirectoryNode" />
               <item name="bin" type="462c0819:PsiDirectoryNode" />
               <item name="forms" type="462c0819:PsiDirectoryNode" />
-              <item name="fa" type="462c0819:PsiDirectoryNode" />
+              <item name="pos" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="main" type="b2602c69:ProjectViewProjectNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="webapp" type="462c0819:PsiDirectoryNode" />
-              <item name="bin" type="462c0819:PsiDirectoryNode" />
-              <item name="forms" type="462c0819:PsiDirectoryNode" />
-              <item name="pos" type="462c0819:PsiDirectoryNode" />
+              <item name="i18n" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -287,9 +300,9 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1280" height="778" extended-state="6" />
+    <frame x="0" y="22" width="1280" height="778" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.52863437" visible="true" weight="0.2279587" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.52863437" weight="0.2279587" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32892805" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.31424376" />
@@ -307,25 +320,6 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32892805" />
     </layout>
-    <layout-to-restore>
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.52863437" visible="true" weight="0.2279587" />
-      <window_info id="Structure" order="1" sideWeight="0.47136563" side_tool="true" weight="0.25655282" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32892805" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32892805" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Terminal" order="8" weight="0.37151247" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.31424376" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info id="Favorites" order="2" side_tool="true" weight="0.32962668" />
-    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -377,39 +371,16 @@
           <line>222</line>
           <option name="timeStamp" value="17" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/webapp/bin/forms/lg/JO.fragment.js</url>
+          <line>46</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="22" />
+      <option name="time" value="27" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es5.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="218">
-          <caret line="1279" column="14" selection-start-line="1279" selection-start-column="14" selection-end-line="1279" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/gl/mainGL.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="42" selection-start-line="42" selection-end-line="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/gl/masterGL.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="227" column="9" lean-forward="true" selection-start-line="227" selection-start-column="9" selection-end-line="227" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/Component.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="4" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/Qd.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="49">
@@ -488,20 +459,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/lg/CloseJO.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="233" column="9" lean-forward="true" selection-start-line="233" selection-start-column="9" selection-end-line="233" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/lg/SO.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="200" column="77" lean-forward="true" selection-start-line="200" selection-end-line="200" selection-end-column="77" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/lg/MG.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="195">
@@ -551,20 +508,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/generic/Util.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="559">
-          <caret line="1074" column="35" selection-start-line="1074" selection-start-column="24" selection-end-line="1074" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/SO.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="475" column="26" selection-start-line="475" selection-start-column="26" selection-end-line="475" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/payment.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="409">
@@ -572,31 +515,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/doctors.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="80" column="35" lean-forward="true" selection-start-line="80" selection-start-column="35" selection-end-line="80" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/post.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="281">
           <caret line="254" column="86" selection-start-line="254" selection-start-column="86" selection-end-line="254" selection-end-column="86" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/pat.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="285" column="11" lean-forward="true" selection-start-line="269" selection-end-line="285" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/appointment.fragment.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="454">
-          <caret line="175" column="4" selection-start-line="175" selection-start-column="4" selection-end-line="175" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -611,13 +533,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="604">
           <caret line="296" selection-start-line="296" selection-end-line="296" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/Logon.view.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="150" column="35" lean-forward="true" selection-start-line="150" selection-start-column="35" selection-end-line="150" selection-end-column="35" />
         </state>
       </provider>
     </entry>
@@ -691,45 +606,129 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fa/faItems.fragment.js">
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/pat.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="100">
-          <caret line="58" selection-start-line="58" selection-end-line="58" />
+        <state relative-caret-position="134">
+          <caret line="100" selection-start-line="100" selection-end-line="100" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/lg/JO.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="67" column="12" selection-start-line="67" selection-start-column="12" selection-end-line="67" selection-end-column="43" />
+        <state relative-caret-position="154">
+          <caret line="336" column="67" lean-forward="true" selection-start-line="336" selection-start-column="8" selection-end-line="336" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/lg/CloseJO.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="233" column="9" lean-forward="true" selection-start-line="233" selection-start-column="9" selection-end-line="233" selection-end-column="9" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fa/faCategory.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="21" selection-start-line="15" selection-start-column="21" selection-end-line="15" selection-end-column="21" />
+        <state relative-caret-position="-2">
+          <caret line="99" column="1" selection-start-line="99" selection-start-column="1" selection-end-line="99" selection-end-column="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/generic/UtilGen.js">
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/fa/faItems.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="716" column="67" selection-start-line="716" selection-start-column="67" selection-end-line="716" selection-end-column="67" />
+        <state relative-caret-position="253">
+          <caret line="188" lean-forward="true" selection-start-line="184" selection-end-line="188" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/appointment.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="268" column="39" lean-forward="true" selection-start-line="268" selection-start-column="39" selection-end-line="268" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/doctors.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="424">
+          <caret line="279" lean-forward="true" selection-start-line="273" selection-end-line="279" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/generic/Util.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="906">
+          <caret line="874" column="56" lean-forward="true" selection-start-line="874" selection-start-column="56" selection-end-line="874" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/clinic/SO.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="405" column="20" selection-start-line="405" selection-start-column="20" selection-end-line="405" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/forms/lg/SO.fragment.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="258" column="33" selection-start-line="258" selection-start-column="33" selection-end-line="258" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/Logon.view.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="149" column="6" lean-forward="true" selection-start-line="149" selection-start-column="6" selection-end-line="149" selection-end-column="6" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/Dashboard.view.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="27" column="8" selection-start-line="27" selection-start-column="8" selection-end-line="27" selection-end-column="48" />
+        <state relative-caret-position="1004">
+          <caret line="81" column="15" selection-start-line="81" selection-start-column="15" selection-end-line="81" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/generic/UtilGen.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-495">
+          <caret line="977" column="12" selection-start-line="977" selection-start-column="12" selection-end-line="977" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/bin/Component.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="4" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="29" column="12" lean-forward="true" selection-start-line="29" selection-start-column="12" selection-end-line="29" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/i18n/i18n.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" selection-start-line="25" selection-end-line="30" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webapp/bin/forms/pos/booking.fragment.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="93" column="26" selection-start-line="93" selection-start-column="26" selection-end-line="93" selection-end-column="26" />
+        <state relative-caret-position="128">
+          <caret line="261" column="37" selection-start-line="261" selection-start-column="37" selection-end-line="261" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webapp/i18n/i18n_ar.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" column="3" selection-start-line="23" selection-end-line="23" selection-end-column="3" />
         </state>
       </provider>
     </entry>
