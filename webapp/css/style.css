@@ -1,3 +1,8 @@
+body {
+    overflow-y: hidden; /* Hide vertical scrollbar */
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
 .colorBlack {
     color: black !important;
 }
@@ -498,7 +503,7 @@
     border-bottom-color: #ffffff !important;
     color: #ffffff !important;
     background-color: lightgray !important;
-    min-height: 27px !important;
+    min-height: 45px !important;
     border: none !important;
     border-bottom: 2px solid #ffffff;
 }
@@ -507,12 +512,74 @@
     background-color: #3f5161 !important;
     color: white !important;
     box-shadow: 1px 1px 2px #808888 !important;
+    align-items: center;
+    text-align: center !important;
+    align-content: center;
 
 }
 
 .mytile .sapMPanelContent:hover {
     box-shadow: 0px 0px 0px #888888 !important;
     background: blue !important;
+    cursor: pointer;
+}
+
+.itemTile {
+    padding: 2px;
+}
+
+.itemTile .sapMPanelHdr {
+    border-bottom-color: #ffffff !important;
+    color: black !important;
+    background-color: yellow !important;
+    min-height: 27px !important;
+    border: none !important;
+    border-bottom: 2px solid #ffffff;
+}
+
+.itemTile .sapMPanelContent {
+    background-color: yellow !important;
+    color: white !important;
+    padding: 0.625rem 0.5rem 0.8rem 0.5rem;
+    box-shadow: 1px 1px 2px #808888 !important;
+    text-align: center !important;
+    overflow: hidden;
+    font-size: 1.75rem;
+}
+
+.itemTile .sapMPanelContent:hover {
+    box-shadow: 0px 0px 0px #888888 !important;
+    background: aqua !important;
+    cursor: pointer;
+}
+
+.groupTitle {
+    padding: 2px;
+}
+
+.groupTitle .sapMPanelHdr {
+    border-bottom-color: #ffffff !important;
+    color: black !important;
+    background-color: yellow !important;
+    min-height: 27px !important;
+    border: none !important;
+    border-bottom: 2px solid #ffffff;
+}
+
+.groupTitle .sapMPanelContent {
+    background-color: #65FF15 !important;
+    color: white !important;
+    font-size: 1.75rem;
+    overflow: hidden;
+    padding: 0.625rem 0.5rem 0.8rem 0.5rem;
+    box-shadow: 1px 1px 2px #808888 !important;
+    text-align: center !important;
+
+}
+
+.groupTitle .sapMPanelContent:hover {
+    box-shadow: 0px 0px 0px #888888 !important;
+    background: aqua !important;
     cursor: pointer;
 }
 
@@ -583,6 +650,10 @@
 }
 
 .redText {
+    color: red !important;
+}
+
+.redText .sapMInputBaseInner {
     color: red !important;
 }
 

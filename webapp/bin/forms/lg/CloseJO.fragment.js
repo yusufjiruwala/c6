@@ -266,7 +266,8 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
 
         for (var i in this.ordNos) {
             var flg = Util.getSQLValue("select nvl(max(ord_no),-1) " +
-                " from order1 where ord_code in (111,103,141,151,152) and ord_flag!=2 and ord_reference=" + this.ordNos[i])
+                " from order1 where ord_code in (111,103,151,152) and ord_flag!=2 and ord_reference=" + this.ordNos[i])
+                // " from order1 where ord_code in (111,103,141,151,152) and ord_flag!=2 and ord_reference=" + this.ordNos[i])
             if (flg != -1) {
                 sap.m.MessageToast.show("Order is not posted # " + flg);
                 return;

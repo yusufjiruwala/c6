@@ -71,8 +71,9 @@ sap.ui.jsview('bin.Dashboard', {
 
         this.pg = new sap.m.Page({
             showHeader: true,
+            showFooter: false,
             customHeader: this.custBar,
-
+            height: "50%",
             content: []
         });
 
@@ -87,7 +88,7 @@ sap.ui.jsview('bin.Dashboard', {
 
 //this.pg.addContent();
 
-        var app = new sap.m.App({pages: [this.pg]});
+        var app = new sap.m.App({pages: [this.pg], height: "99%", width: "100%"});
         return app;
 
     },

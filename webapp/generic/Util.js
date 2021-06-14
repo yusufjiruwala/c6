@@ -881,10 +881,12 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     qv.setJsonStr("{" + dat.data + "}");
                     qv.loadData();
                     container.addContent(qv.getControl());
+
                     if (!Util.nvl(multiSelect, false)) {
                         qv.getControl().setSelectionMode(sap.ui.table.SelectionMode.Single);
                     }
                     qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
+                    qv.getControl().setFirstVisibleRow(0);
                     return qv;
                 }
 
@@ -1088,6 +1090,37 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 if (no > sp.length || no < 1)
                     return '';
                 return sp[no - 1];
+            },
+            navEnter: function (flds) {
+                if (flds == undefined || flds.length <= 0) return;
+                var fldsids = [];
+                var flds2 = [];
+                for (var i in flds)
+                    if (typeof flds[i].getId === 'function' && flds[i].dontEnterFocus == undefined) {
+                        fldsids.push(flds[i].getId());
+                        flds2.push(flds[i]);
+                    }
+
+                for (var i = 0; i < flds2.length; i++) {
+                    flds2[i].addEventDelegate({
+                        onsapenter: function (event) {
+                            var cf = fldsids.indexOf(event.currentTarget.id);
+                            if (cf < 0) return;
+                            var nx = (cf + 1 >= flds2.length ? 0 : cf + 1);
+                            var pr = (cf - 1 < 0 ? flds2.length - 1 : cf - 1);
+                            // var cntrl=($(event.currentTarget).find("input")[0]);
+                            setTimeout(function () {
+                                flds2[nx].focus();
+                                (flds2[nx].$().find("input")[0]).select();
+                                // cntrl.select();
+                            });
+                        }
+                    });
+
+                    // flds2[i].$().on("keydown", function (event) {
+                    //
+                    // });
+                }
             }
 
         };

@@ -106,7 +106,8 @@ sap.ui.jsview('bin.Logon', {
                                     }).addStyleClass("blackwhiteText sapUiSmallMargin"),
                                     new sap.m.CheckBox(this.createId("chkAuto"), {
                                         width: "7em",
-                                        selected: false
+                                        selected: false,
+                                        enabled: false,
                                     }).addStyleClass("blackwhiteText sapUiSmallMargin")
 
                                 ]
@@ -167,7 +168,7 @@ sap.ui.jsview('bin.Logon', {
                     var pwd = Util.nvl(Util.cookieGet("password"))
                     var lst = Util.nvl(Util.cookieGet("file"));
 
-                    that.byId('chkAuto').setSelected(true);
+                    that.byId('chkAuto').setSelected(ckA);
                     that.byId("txtUser").setValue(user);
                     that.byId("txtPassword").setValue(pwd);
 

@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -921,6 +922,9 @@ public class UserRoute {
 				mp.put(key.replace("_para_", ""), params.get(key));
 				if (params.get(key).startsWith("@"))
 					mp.put(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
+				if (params.get(key).startsWith("--"))
+					mp.put(key.replace("_para_", ""), (new BigDecimal(params.get(key).substring(2))));
+				
 			}
 		}
 		mp.put("COMPANY_NAME", instanceInfo.getMmapVar().get("COMPANY_NAME"));

@@ -708,8 +708,10 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
             }
             ,
-            loadDataFromJson(subs, dtx, executeChange) {
+            loadDataFromJson(subs, dtx, executeChange, exclude) {
                 for (var key in subs) {
+                    if (exclude != undefined && exclude.indexOf(key.toUpperCase()) > -1)
+                        continue;
                     var vl = dtx[key.toUpperCase()];
                     if (subs[key] != undefined && vl != undefined)
                         this.setControlValue(subs[key], vl, vl, this.nvl(executeChange, false));
@@ -717,9 +719,12 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 }
             }
             ,
-            resetDataJson(subs) {
-                for (var key in subs)
+            resetDataJson(subs, exclude) {
+                for (var key in subs) {
+                    if (exclude != undefined && exclude.indexOf(key.toUpperCase()) > -1)
+                        continue;
                     this.setControlValue(subs[key], "", "", true);
+                }
 
             }
             ,

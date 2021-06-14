@@ -66,6 +66,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                         alignText: "center", text: "Contracts"
                     }).addStyleClass("whiteText")
                 ],
+
                 layoutData: new sap.ui.layout.GridData({
                     span: spn
                 })
