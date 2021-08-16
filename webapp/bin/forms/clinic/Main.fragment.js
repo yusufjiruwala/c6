@@ -73,10 +73,18 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         }));
         Util.destroyID("mainDaily", this.view);
         this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("mainDaily"), {
-            icon: "sap-icon://action-settings",
+            icon: "sap-icon://print",
             text: "Daily Report",
             press: function () {
                 that.openDaily();
+            }
+        }));
+        Util.destroyID("itemsReport", this.view);
+        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("itemsReport"), {
+            icon: "sap-icon://print",
+            text: "Items Report",
+            press: function () {
+                that.openItems();
             }
         }));
 
@@ -162,9 +170,9 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
             }, "date", undefined, this.view);
         var dt = new Date();
-        var fr = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()-3);
+        var fr = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() - 3);
 
-        var to = new Date(dt.getFullYear(),  dt.getMonth(),  dt.getDate()+5);
+        var to = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 5);
 
         UtilGen.setControlValue(this.o1.fromdate, fr);
         UtilGen.setControlValue(this.o1.todate, to);
@@ -634,6 +642,26 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         };
 
         var sp = UtilGen.openForm("bin.forms.clinic.rp1", undefined, {
+            getView:
+                function () {
+                    return that.view;
+                }
+        });
+        sp.app = this.joApp;
+        sp.backFunction = bk;
+
+        UtilGen.clearPage(this.pgDetail);
+        this.pgDetail.addContent(sp);
+        this.joApp.to(this.pgDetail, "slide");
+
+    },
+    openItems: function () {
+        var that = this;
+        var bk = function () {
+            that.joApp.to(that.mainPage, "baseSlide");
+        };
+
+        var sp = UtilGen.openForm("bin.forms.clinic.rp2", undefined, {
             getView:
                 function () {
                     return that.view;

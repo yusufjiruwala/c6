@@ -697,7 +697,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     ret: "NONE",
                     data: null
                 };
-                if (typeof sq == "string")
+                if (typeof sq == "string" && !sq.startsWith("@"))
                     this.doAjaxJson("sqldata", sq2, (async == undefined ? false : async)).done(function (data) {
                         if (data.ret != "SUCCESS") {
                             sap.m.MessageToast.show(data.ret);
@@ -726,6 +726,18 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         if (combo.getItems().length > 0)
                             combo.setSelectedItem(combo.getItems()[0]);
                     });
+                if (typeof sq == "string" && sq.startsWith("@")) {
+                    var dtxx = [];
+                    var spt = sq.substring(1).split(",");
+                    for (var i1 in spt) {
+                        var dttt = {CODE: "", NAME: ""};
+                        var sx = spt[i1].split("/");
+                        dttt.CODE = "" + sx[0];
+                        dttt.NAME = "" + sx[1];
+                        dtxx.push(dttt);
+                    }
+                    combo.setModel(new sap.ui.model.json.JSONModel(dtxx));
+                }
                 if (typeof sq == "object") {
                     var dtx = sq;
                     var f1 = "", f2 = "", cnt = -1;

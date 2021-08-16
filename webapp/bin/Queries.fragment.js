@@ -137,6 +137,8 @@ sap.ui.jsfragment("bin.Queries", {
         this.qv = new QueryView("menus");
         this.qv.switchType("list");
         this.qv.getControl().addStyleClass("sapContrast");
+        this.qv.getControl().addStyleClass("sapUiSizeCompact");
+
         this.qv.setCallBackListSelect(function (str2) {
             var splitApp = sap.ui.getCore().byId("reportApp");
             splitApp.toDetail(view.pgQuery);

@@ -208,9 +208,8 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
             {editable: false}, "number");
 
         return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
-
-
     },
+
     loadData: function () {
         var that = this;
         var view = this.view;

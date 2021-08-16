@@ -1,4 +1,4 @@
-sap.ui.jsfragment("bin.forms.clinic.rp1", {
+sap.ui.jsfragment("bin.forms.clinic.rp2", {
 
     createContent: function (oController) {
         var that = this;
@@ -41,7 +41,7 @@ sap.ui.jsfragment("bin.forms.clinic.rp1", {
         var fe = [];
         this.frm = this.createViewHeader();
         this.frm.getToolbar().addContent(this.bk);
-        var tit = new sap.m.Text({text: "Daily Report"}).addStyleClass("titleFont");
+        var tit = new sap.m.Text({text: "Items Report"}).addStyleClass("titleFont");
         this.frm.getToolbar().addContent(tit);
 
 
@@ -51,6 +51,8 @@ sap.ui.jsfragment("bin.forms.clinic.rp1", {
         this.qv.getControl().setSelectionBehavior(sap.ui.table.SelectionBehavior.Row);
         this.qv.getControl().setAlternateRowColors(false);
         this.qv.getControl().setFixedBottomRowCount(1);
+        // this.qv.getControl().setEnableCellFilter(true);
+
 
         // var sc = new sap.m.ScrollContainer();
 
@@ -59,23 +61,37 @@ sap.ui.jsfragment("bin.forms.clinic.rp1", {
         this.mainPage.addContent(this.frm);
         this.mainPage.addContent(this.qv.getControl());
 
+
     },
     createViewHeader: function () {
         var that = this;
         var fe = [];
         this.o1 = {};
         var tl = "XL3 L2 M2 S12";
+
         this.o1.fromdate = UtilGen.addControl(fe, "Begin Date", sap.m.DatePicker, "dayFromDate",
             {
                 enabled: true,
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
             }, "date", undefined, this.view);
-        this.o1.todate = UtilGen.addControl(fe, "End Date", sap.m.DatePicker, "dayToDate",
+        this.o1.todate = UtilGen.addControl(fe, "@End Date", sap.m.DatePicker, "dayToDate",
             {
                 enabled: true,
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
             }, "date", undefined, this.view);
 
+        this.o1.empno = UtilGen.addControl(fe, "Done By", sap.m.ComboBox, "apEmpno",
+            {
+                items: {
+                    path: "/",
+                    template: new sap.ui.core.ListItem({text: "{NAME}", key: "{NO}"}),
+                    templateShareable: true
+
+                },
+                value: -1
+            }, "string", undefined, this.view, undefined, "select -1 NO,'ALL' NAME from dual union all select no,name from salesp where type='D'  order by 1");
+
+        UtilGen.setControlValue(this.o1.empno, -1, -1, true);
         var dt = new Date();
         var fr = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
         var to = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
@@ -108,15 +124,18 @@ sap.ui.jsfragment("bin.forms.clinic.rp1", {
 
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
+        var db = this.o1.empno.getValue();
 
-        var sq = "select keyfld,NVL(TO_CHAR(ORD_NO),'NOT_INVOICED') REFERENCE,day_appoint,status, REMARKS," +
-            " amount," +
-            " decode(paid_1_type,1,paid_amt_1,0) + decode(paid_2_type,1,paid_amt_2,0) total_cash," +
-            " decode(paid_1_type,2,paid_amt_1,0) + decode(paid_2_type,2,paid_amt_2,0) total_knet" +
-            " from v_cl6_appoint" +
-            " where trunc(start_time)>=" + Util.toOraDateString(fr) +
-            " and trunc(start_time)<=" + Util.toOraDateString(to) +
-            " order by keyfld ";
+        var sq = "select * from (SELECT TO_CHAR(ORD_DATE,'DD/MM/RRRR') ORD_DATE, ORD_NO INVOICE_NO, ord_ref File_no, ORD_REFNM CUST_NAME, " +
+            "DESCR,   ORD_ALLQTY/ORD_PACK QTY,    ORD_PRICE, " +
+            "(ORD_ALLQTY/ORD_PACK)*ORD_PRICE AMOUNT, " +
+            "(SELECT MAX(NAME) FROM SALESP WHERE NO=nvl(LCNO,(select max(empno) from cl6_appoint where cl6_appoint.keyfld=ord_reference))) DONE_BY " +
+            "FROM JOINED_ORDER " +
+            " where trunc(ord_date)>=" + Util.toOraDateString(fr) +
+            " and trunc(ord_date)<=" + Util.toOraDateString(to)
+            + " and ord_code=111 "
+            + " order by ord_no,ord_pos) cx where " + Util.quoted(db) + "='ALL' or cx.done_by=" + Util.quoted(db);
+
         this.qv.getControl().setEditable(true);
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
             if (data.ret == "SUCCESS") {
@@ -126,13 +145,17 @@ sap.ui.jsfragment("bin.forms.clinic.rp1", {
                 that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
                 that.qv.mLctb.getColByName("AMOUNT").mSummary = "SUM";
 
-                c = that.qv.mLctb.getColPos("TOTAL_CASH");
+                var c = that.qv.mLctb.getColPos("ORD_PRICE");
                 that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-                that.qv.mLctb.getColByName("TOTAL_CASH").mSummary = "SUM";
 
-                var c = that.qv.mLctb.getColPos("TOTAL_KNET");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-                that.qv.mLctb.getColByName("TOTAL_KNET").mSummary = "SUM";
+
+                var c = that.qv.mLctb.getColPos("QTY");
+                that.qv.mLctb.cols[c].getMUIHelper().display_width = 70;
+                that.qv.mLctb.cols[c].getMUIHelper().display_align = "center";
+
+                var c = that.qv.mLctb.getColPos("INVOICE_NO");
+                that.qv.mLctb.cols[c].getMUIHelper().display_align = "center";
+                that.qv.mLctb.cols[c].getMUIHelper().display_width = 100;
 
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 that.qv.loadData();

@@ -115,7 +115,11 @@ sap.ui.jsfragment("bin.forms.clinic.appointment", {
             {
                 editable: true,
                 change: function () {
-                    // var dt = Util.execSQL("select name,code from c_ycust where tel=" + Util.quoted(UtilGen.getControlValue(that.fa.tel)));
+                    // var dt        this.o1.todate = UtilGen.addControl(fe, "@End Date", sap.m.DatePicker, "dayToDate",
+                    //             {
+                    //                 enabled: true,
+                    //                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
+                    //             }, "date", undefined, this.view); = Util.execSQL("select name,code from c_ycust where tel=" + Util.quoted(UtilGen.getControlValue(that.fa.tel)));
                     // if (dt.ret = "SUCCESS" && dt.data.length > 0) {
                     //     var dtx = JSON.parse("{" + dt.data + "}").data;
                     //     UtilGen.setControlValue(that.fa.cust_name, dtx[0].NAME, dtx[0].NAME, true);

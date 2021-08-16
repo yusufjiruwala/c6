@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVou152" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="150"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -30,9 +30,10 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select decode((select ord_type from order1 o where o.ord_code=106 and o.ord_no=order1.ord_reference),2,lg_info.lg_s_mbl,3,lg_info.LG_A_MAWB) bl,     order1.* ,lg_info.*,f_words_2(order1.ord_amt-order1.ord_discamt,ORDER1.ORD_FC_DESCR) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
+		<![CDATA[select decode((select ord_type from order1 o where o.ord_code=106 and o.ord_no=order1.ord_reference),2,lg_info.lg_s_mbl,3,lg_info.LG_A_MAWB) bl,     order1.* ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=152 and ord_no=order1.ord_no),(select max(ord_fc_descr) from order2 where ord_code=152 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
 (select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
+(select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=152 and ord_no=order1.ord_no) FC_AMOUNT,
 (select max(payterm) from order1 o where ord_code=106 and ord_no=order1.ord_reference) payterm_1,
 (select max(attn) from order1 o where ord_code=106 and ord_no=order1.ord_reference) attn_1,
 (select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,y.email,ORDER1.ONAME,
@@ -114,6 +115,16 @@ order by order1.ord_no]]>
 	<field name="ORD_FC_MAIN_RATE" class="java.math.BigDecimal"/>
 	<field name="ORD_FC_MAIN_DESCR" class="java.lang.String"/>
 	<field name="ONM" class="java.math.BigDecimal"/>
+	<field name="EMAILS" class="java.lang.String"/>
+	<field name="ORD_TXT_WODATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_WOVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDVAL" class="java.math.BigDecimal"/>
+	<field name="ORD_TXT_IIDINVNO" class="java.lang.String"/>
+	<field name="ORD_TXT_IIDINVDATE" class="java.sql.Timestamp"/>
+	<field name="ORD_TXT_IIDINVVAL" class="java.math.BigDecimal"/>
+	<field name="TOT_VAT_AMT" class="java.math.BigDecimal"/>
+	<field name="TOT_VAT_P" class="java.math.BigDecimal"/>
 	<field name="LG_KIND" class="java.lang.String"/>
 	<field name="LG_PERMANENT_EXEMPTION" class="java.lang.String"/>
 	<field name="LG_TEMPORARY_IMPORT" class="java.lang.String"/>
@@ -154,6 +165,7 @@ order by order1.ord_no]]>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
 	<field name="PARENT_NAME" class="java.lang.String"/>
+	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
 	<field name="PAYTERM_1" class="java.lang.String"/>
 	<field name="ATTN_1" class="java.lang.String"/>
 	<field name="CUST_REF" class="java.lang.String"/>
@@ -523,7 +535,7 @@ order by order1.ord_no]]>
 						<rightPen lineWidth="0.5"/>
 					</box>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression><![CDATA[$F{ORD_AMT} -  $F{ORD_DISCAMT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{FC_AMOUNT}]]></textFieldExpression>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<staticText>
