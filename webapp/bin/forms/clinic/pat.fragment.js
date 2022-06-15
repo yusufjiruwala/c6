@@ -246,7 +246,6 @@ sap.ui.jsfragment("bin.forms.clinic.pat", {
     show_list: function () {
         var that = this;
         var sql = "select code,name title,tel,reference civil_id from c_ycust where iscust='Y' and childcount=0  and code like '1%' order by code";
-
         var fnOnSelect = function (data) {
             if (data != undefined && data.length <= 0)
                 return;

@@ -87,6 +87,14 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
                 that.openItems();
             }
         }));
+        Util.destroyID("patReport", this.view);
+        this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("patReport"), {
+            icon: "sap-icon://print",
+            text: "Patients List",
+            press: function () {
+                that.openPatRep();
+            }
+        }));
 
         Util.destroyID("rPlanCalendar", this.view);
         this.cl = new sap.m.PlanningCalendar(this.view.createId("rPlanCalendar"), {
@@ -662,6 +670,26 @@ sap.ui.jsfragment("bin.forms.clinic.Main", {
         };
 
         var sp = UtilGen.openForm("bin.forms.clinic.rp2", undefined, {
+            getView:
+                function () {
+                    return that.view;
+                }
+        });
+        sp.app = this.joApp;
+        sp.backFunction = bk;
+
+        UtilGen.clearPage(this.pgDetail);
+        this.pgDetail.addContent(sp);
+        this.joApp.to(this.pgDetail, "slide");
+
+    },
+    openPatRep: function () {
+        var that = this;
+        var bk = function () {
+            that.joApp.to(that.mainPage, "baseSlide");
+        };
+
+        var sp = UtilGen.openForm("bin.forms.clinic.rp3", undefined, {
             getView:
                 function () {
                     return that.view;

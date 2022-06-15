@@ -793,6 +793,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         qv.mLctb.cols[col].mHideCol = true;
                     for (var col in dtx) {
                         var cx = qv.mLctb.getColByName(dtx[col].ITEM_NAME);
+                        if (cx==undefined) continue;
                         if (dtx[col].DISPLAY_TYPE != "INVISIBLE") {
                             cx.mHideCol = false;
                             visibleCol.push(cx);

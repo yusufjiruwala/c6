@@ -23,7 +23,7 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
             var callId = url.searchParams.get("caller");
             if (callId != undefined)
                 that.qryStr = callId;
-            // this.pgDetail = new sap.m.Page({showHeader: false});
+            this.pgDetail = new sap.m.Page({showHeader: false});
             //
             // this.bk = new sap.m.Button({
             //     icon: "sap-icon://nav-back",
@@ -50,7 +50,7 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
             this.joApp.addPage(this.mainPage);
 
             // this.joApp.addMasterPage(this.itemsPage);
-            // this.joApp.addDetailPage(this.pgDetail);
+            this.joApp.addPage(this.pgDetail);
             this.joApp.to(this.mainPage, "show");
             return this.joApp;
         },
@@ -132,6 +132,16 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
                 enabled: (Util.nvl(sett["POS_CC_CREATE_INVOICE"], "FALSE") == "FALSE" ? false : true),
                 press: function () {
                     that.save_data(true);
+                }
+            }))
+            ;
+            Util.destroyID("poCmdRep", this.view);
+            this.frm.getToolbar().addContent(new sap.m.Button(this.view.createId("poCmdRep"), {
+                text: "Report",
+                icon: "sap-icon://customer-history",
+                enabled: true,
+                press: function () {
+                    that.openRep();
                 }
             }))
             ;
@@ -248,6 +258,9 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
             spx.addContentArea(this.scCtg);
             spx.addContentArea(this.scItems);
 
+            Util.destroyID("cmdShowInfo", this.view);
+
+            this.sc.addContent();
 
             this.sc.addContent(this.frm);
 
@@ -284,6 +297,25 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
                 that.scCtg.$().css("background-color", "lightgray");
             }, 500);
 
+        },
+        openRep: function () {
+            var that = this;
+            var bk = function () {
+                that.joApp.to(that.mainPage, "baseSlide");
+            };
+
+            var sp = UtilGen.openForm("bin.forms.pos.rp2", undefined, {
+                getView:
+                    function () {
+                        return that.view;
+                    }
+            });
+            sp.app = this.joApp;
+            sp.backFunction = bk;
+
+            UtilGen.clearPage(this.pgDetail);
+            this.pgDetail.addContent(sp);
+            this.joApp.to(this.pgDetail, "slide");
         },
         createViewFooter: function (sc) {
             var that = this;
@@ -359,6 +391,44 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
             var t1 = "XL3 L1 M1 S12";
             var t2 = "XL3 L3 M3 S12";
             var sett = sap.ui.getCore().getModel("settings").getData();
+
+            var btx = new sap.m.Button(this.view.createId("cmdSHowInfo"), {
+                text: "Show Info",
+                icon: "sap-icon://customer-history",
+                enabled: true,
+                width: "150px",
+                press: function () {
+                    var mnus = [];
+                    var txt = that.fa._location_code.getValue();
+                    var m1 = new sap.m.MenuItem({
+                        text: "Today Orders : " + txt,
+                        icon: "sap-icon://menu2",
+                        customData: {key: "listToday"},
+                        press: function () {
+                            var cd = this.getCustomData()[0].getKey();
+                            that.showTodayOrds();
+                        }
+                    });
+                    mnus.push(m1);
+                    var tl = that.fa.code.getValue();
+                    var m2 = new sap.m.MenuItem({
+                        text: "Customer history : " + tl,
+                        icon: "sap-icon://menu2",
+                        customData: {key: "listPrevOrder"},
+                        press: function () {
+                            var cd = this.getCustomData()[0].getKey();
+                            that.showCustOrders();
+                        }
+                    });
+                    mnus.push(m2);
+                    var mnu = new sap.m.Menu({
+                        title: "Reports",
+                        items: mnus
+                    });
+                    mnu.openBy(this);
+                }
+            });
+            fe.push(btx);
             this.fa.code = UtilGen.addControl(fe, "{i18n>tel}", sap.m.Input, "custTel",
                 {
                     enabled: true,
@@ -531,6 +601,80 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
 
         }
         ,
+        showCustOrders: function () {
+            var that = this;
+            this.fa.name.focus();
+            var lc = UtilGen.getControlValue(this.fa.code);
+            var sq = "select l.name location_name , p.b_no," +
+                "p.cust_reference tel,p.cust_name,p.b_date," +
+                "p.keyfld from pos_onpur1 p,locations l  " +
+                "where " +
+                " l.code=p.location_code " +
+                " and cust_reference=" + Util.quoted(lc) +
+                " order by b_date desc,keyfld desc ";
+            var fnOnSelect = function (data) {
+                if (data != undefined && data.length <= 0)
+                    return;
+                that.showOrdDetails(data.KEYFLD);
+                return true;
+            }
+            Util.show_list(sq, ["CUST_NAME", "TEL"],
+                undefined, fnOnSelect, "100%", "100%", 10, false, undefined);
+
+        },
+        showTodayOrds: function () {
+            var that = this;
+            this.fa.name.focus();
+            var dtx = "sysdate";
+            var lc = UtilGen.getControlValue(this.fa._location_code);
+
+            var dt = UtilGen.getControlValue(this.fa._dlv_time);
+            if (dt != null || dt != undefined) {
+                dtx = Util.toOraDateString(dt);
+            }
+            var sq = "select l.name location_name , p.b_no," +
+                "p.cust_reference tel,p.cust_name,p.DELIVERY_DATETIME," +
+                "(select sum(price*(allqty/pack)) from pos_onpur2 where pos_onpur2.keyfld=p.keyfld ) amount, " +
+                "p.keyfld from pos_onpur1 p,locations l  " +
+                "where " +
+                " p.b_date=trunc(" + dtx + ") and " +
+                " l.code=p.location_code " +
+                " and location_code=" + Util.quoted(lc) +
+                " order by b_date desc,keyfld desc ";
+            var fnOnSelect = function (data) {
+                if (data != undefined && data.length <= 0)
+                    return;
+                that.showOrdDetails(data.KEYFLD);
+                return true;
+            };
+
+            Util.show_list(sq, ["CUST_NAME", "TEL"],
+                undefined, fnOnSelect, "100%", "100%", 10, false, undefined);
+        },
+        showOrdDetails: function (kfld) {
+            var that = this;
+            var sett = sap.ui.getCore().getModel("settings").getData();
+            var df = new DecimalFormat(sett["FORMAT_MONEY_1"]);
+            var sq = "select REFER,i.descr,P.PRICE,p.allqty qty,p.price*(p.allqty/p.pack) amount,p.itm_remarks from pos_onpur2 p,items i " +
+                "where p.keyfld=" +
+                Util.quoted(kfld) +
+                " and p.refer=i.reference "
+                + " order by itempos";
+            var fnOnSelect = function (data) {
+                if (data != undefined && data.length <= 0)
+                    return;
+                return true;
+            };
+            var t1 = df.format(parseFloat(Util.getSQLValue("select nvl(sum(price*(allqty/pack)),0) from pos_onpur2 where keyfld=" + Util.quoted(kfld))));
+            var t2 = Util.getSQLValue("select nvl(count(*),0) from pos_onpur2 where keyfld=" + Util.quoted(kfld));
+
+            var tt = "No Of Items # " + t2 + " , Amount=" + t1;
+
+            Util.show_list(sq, ["DESCR", "REFER"],
+                undefined, fnOnSelect, "100%", "100%", 10, false, undefined);
+            sap.m.MessageToast.show(tt);
+
+        },
         loadData: function () {
             var view = this.view;
             var that = this;

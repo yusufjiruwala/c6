@@ -108,7 +108,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 })
 
             }).addStyleClass("mytile");
-        
+
         (this.view.byId("layout") != undefined ? this.view.byId("layout").destroy() : null);
         var layout = new sap.ui.layout.Grid(this.view.createId("layout"), {
             content: [
@@ -242,7 +242,17 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         var typ = Util.nvl(UtilGen.getControlValue(this.query_type), -1);
 
         var sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
-            "ORD_REFNM,  ORD_DATE, ORD_SHIP, " +
+            "ORD_REFNM,  " +
+            "jo_type," +
+            "trans_type," +
+            "cost_center," +
+            "no_of_trucks," +
+            "origin," +
+            "destination," +
+            "cust_ref," +
+            "cust_ref2," +
+            "cust_inv," +
+            "ORD_DATE, ORD_SHIP, " +
             "REFERENCE, ORD_FLAG, NO_OF_SO," +
             " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE,TOTAL_PRETURN, TOTAL_CN, COST_IN_HAND " +
             "from v_lg_jo where ord_flag=2 " +
@@ -252,7 +262,17 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
 
         if (typ == "0" || typ == 0) {
             sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
-                "ORD_REFNM,  ORD_DATE, ORD_SHIP, " +
+                "ORD_REFNM, " +
+                "jo_type," +
+                "trans_type," +
+                "cost_center," +
+                "no_of_trucks," +
+                "origin," +
+                "destination," +
+                "cust_ref," +
+                "cust_ref2," +
+                "cust_inv," +
+                " ORD_DATE, ORD_SHIP, " +
                 "REFERENCE, ORD_FLAG, NO_OF_SO," +
                 " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE,TOTAL_PRETURN, TOTAL_CN, COST_IN_HAND " +
                 "from v_lg_jo where ord_flag=1 " +

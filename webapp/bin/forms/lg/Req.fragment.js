@@ -50,6 +50,12 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         var view = this.view;
         var sett = sap.ui.getCore().getModel("settings").getData();
 
+        this.cmdPrD = new sap.m.Button({
+            icon: "sap-icon://print", text: "Draft", press: function () {
+                that.printD();
+            }
+        });
+
         this.cmdPrDr = new sap.m.Button({
             icon: "sap-icon://print", text: "DR Note", press: function () {
                 that.printDRNote();
@@ -58,6 +64,22 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.cmdPrTx = new sap.m.Button({
             icon: "sap-icon://print", text: "Tx Inv", press: function () {
                 that.printTaxInv();
+            }
+        });
+        this.cmdPrTlc = new sap.m.Button({
+            icon: "sap-icon://print", text: "TLC Inv", press: function () {
+                that.printTLCInv();
+            }
+        });
+        this.cmdPrTlcDN = new sap.m.Button({
+            icon: "sap-icon://print", text: "TLC DN", press: function () {
+                that.printTLCDn();
+            }
+        });
+
+         this.cmdPrTlcD = new sap.m.Button({
+            icon: "sap-icon://print", text: "TLC Draft", press: function () {
+                that.printTLCD();
             }
         });
 
@@ -336,12 +358,20 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             view.byId("reqCmdPost").setEnabled(false);
 
         if (typ == 111) {
+            tb2.addContent(this.cmdPrD);
             tb2.addContent(this.cmdPrDr);
             tb2.addContent(this.cmdPrTx);
+            tb2.addContent(this.cmdPrTlc);
+            tb2.addContent(this.cmdPrTlcDN);
+            tb2.addContent(this.cmdPrTlcD);
         }
         else {
+            tb2.removeContent(this.cmdPrD);
             tb2.removeContent(this.cmdPrDr);
             tb2.removeContent(this.cmdPrTx);
+            tb2.removeContent(this.cmdPrTlc);
+            tb2.removeContent(this.cmdPrTlcDN);
+            tb2.removeContent(this.cmdPrTlcD);
         }
     }
 
@@ -649,6 +679,18 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
     },
     printTaxInv: function () {
         this.printSel("T");
+    },
+    printTLCInv: function () {
+        this.printSel("tlc");
+    },
+    printTLCDn: function () {
+        this.printSel("tlcDN");
+    },
+    printD: function () {
+        this.printSel("D");
+    },
+    printTLCD: function () {
+        this.printSel("TlcD");
     },
     showOnstartup: function () {
         var that = this;

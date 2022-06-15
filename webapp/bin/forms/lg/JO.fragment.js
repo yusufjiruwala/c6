@@ -77,6 +77,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             UtilGen.setControlValue(this.jo.lg_no_of_container, 0, 0, true);
             UtilGen.setControlValue(this.jo.lg_no_of_trucks, 0, 0, true);
             UtilGen.setControlValue(this.jo.lg_no_of_package, 0, 0, true);
+
             UtilGen.setControlValue(this.jo.lg_container_size_1, 0, 0, true);
             UtilGen.setControlValue(this.jo.lg_container_size_2, 0, 0, true);
             UtilGen.setControlValue(this.jo.lg_container_size_3, 0, 0, true);
@@ -179,7 +180,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 that.fill_cc();
             },
             layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
-        }, "string", undefined, undefined, "@01/Import,02/Export,03/Transport,04/Local,05/Third Party");
+        }, "string", undefined, undefined, "@o");
         //JO No, ORD_NO
         this.jo.ord_no = UtilGen.createControl(sap.m.Input, this.view, "ord_no", {
             change: function () {
@@ -239,7 +240,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     return;
                 }
 
-                var sq = "select code,name title from c_ycust where iscust='Y' and childcount=0 order by code";
+                var sq = "select code,name title from c_ycust where iscust='Y' and childcount=0 and descr like '  order by code";
                 Util.showSearchList(sq, "TITLE", "CODE", function (valx, val) {
                     UtilGen.setControlValue(that.jo.ord_ref, val, valx, true);
                 });
@@ -300,6 +301,11 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         this.jo.lg_no_of_package = UtilGen.createControl(sap.m.Input, this.view, "lg_no_of_package", {}, "number");
         // lg_no_of_trucks,------------------------------------------------------------
         this.jo.lg_no_of_trucks = UtilGen.createControl(sap.m.Input, this.view, "lg_no_of_trucks", {}, "number");
+        // lg_measures,------------------------------------------------------------
+        this.jo.lg_measures = UtilGen.createControl(sap.m.Input, this.view, "lg_measures", {}, "string");
+        // lg_no_of_weight,------------------------------------------------------------
+        this.jo.lg_no_of_weight = UtilGen.createControl(sap.m.Input, this.view, "lg_no_of_weight", {}, "string");
+
         this.jo.lg_no_of_container.setEditable(false);
         this.jo.lg_no_of_trucks.setEditable(false);
 
@@ -392,6 +398,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     "Container.", this.jo.lg_no_of_container,
                     "Packages", this.jo.lg_no_of_package,
                     "Trucks", this.jo.lg_no_of_trucks,
+                    "Measures", this.jo.lg_measures,
+                    "No of Weight Ctg", this.jo.lg_no_of_weight,
                     "#Containers:",
                     "Type 1", this.jo.lg_container_type_1,
                     "@Size", this.jo.lg_container_size_1,
@@ -677,6 +685,9 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
         // 1/Land
         if (ord_type == "1") {
+            // LG_A_MAWB, MAWB #
+            this.joDet1.lg_a_mawb = this.addControl(frmElements, "AWB", sap.m.Input, "detmwb", {selected: false}, "string");
+
             // LG_END_USER_TYPE,  End User Type
             this.joDet1.lg_end_user_type = this.createListBox2("lg_end_user_type", frmElements, "End User Type", true);
             // LG_VENDOR_NAME, Vendor/Driver Name
@@ -688,8 +699,15 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             // LG_NOTES,  Remark
             this.joDet1.lg_notes = this.createListBox2("lg_notes", frmElements, "Remark", false);
 
+
+
             frmElements.push(new sap.ui.core.Title({text: "Other info"}));
 
+
+
+            // LG_L_CLEARANCE_DATE, Clearance Date
+            this.joDet1.lg_l_clearance_date = UtilGen.addControl(frmElements, "Clearance Date", sap.m.DatePicker, "jo_",
+                {}, "date", undefined, this.view);
 
             // LG_L_ARRIVAL_DATE ,  Arrival Date
             this.joDet1.lg_l_arrival_date = UtilGen.addControl(frmElements, "Arrival Date", sap.m.DatePicker, "jo_",
@@ -700,7 +718,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 {}, "date", undefined, this.view);
 
             // LG_CROSS_LOAD,  Cross Loading Date
-            this.joDet1.lg_crossload = UtilGen.addControl(frmElements, "Cross Loading Date", sap.m.DatePicker, "jo_",
+            this.joDet1.lg_cross_load = UtilGen.addControl(frmElements, "Cross Loading Date", sap.m.DatePicker, "jo_",
                 {}, "date", undefined, this.view);
 
             // LG_L_DELIVERY_DATE,  Delivery Date
@@ -835,7 +853,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         }
         // 4/LCB
         if (ord_type == "4") {
-
+            // LG_A_MAWB, MAWB #
+            this.joDet1.lg_a_mawb = this.addControl(frmElements, "AWB", sap.m.Input, "detmwb", {selected: false}, "string");
             // LG_VENDOR_NAME, Vendor/Driver Name
             this.joDet1.lg_vendor_name = this.createListBox2("lg_vendor_name", frmElements, "Vendor/Driver Name", false);
             // LG_VENDOR_CONTACT ,  Vendor/Driver   Contact Number
@@ -848,6 +867,9 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             frmElements.push(new sap.ui.core.Title({text: "Other info"}));
 
 
+            // LG_L_CLEARANCE_DATE, Clearance Date
+            this.joDet1.lg_l_clearance_date = UtilGen.addControl(frmElements, "Clearance Date", sap.m.DatePicker, "jo_",
+                {}, "date", undefined, this.view);
             // LG_LOADING_DATE, Loading at Site
             this.joDet1.lg_loading_date = UtilGen.addControl(frmElements, "Loading Date", sap.m.DatePicker, "jo_",
                 {}, "date", undefined, this.view);
@@ -869,7 +891,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 {}, "date", undefined, this.view);
 
             // LG_CROSS_LOAD,  Cross Loading date
-            this.joDet1.lg_crossload = UtilGen.addControl(frmElements, "Cross Loading", sap.m.DatePicker, "jo_",
+            this.joDet1.lg_cross_load = UtilGen.addControl(frmElements, "Cross Loading", sap.m.DatePicker, "jo_",
                 {}, "date", undefined, this.view);
 
             // LG_L_OFFLOAD_DATE, Offloading Date

@@ -255,8 +255,8 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
 
         if (UtilGen.getControlValue(this.o1.totvar) == "" || UtilGen.getControlValue(this.o1.totvar) == "" ||
             UtilGen.getControlValue(this.o1.totvar) < 0) {
-            sap.m.MessageToast.show("Variance must not negative  !");
-            return;
+            sap.m.MessageToast.show("WARNING Variance is not negative  !");
+            // return;
         }
 
         var k = "";
@@ -286,8 +286,8 @@ sap.ui.jsfragment("bin.forms.lg.CloseJO", {
             var defaultValues = {KEYFLD: kf};
             for (var i = 0; i < this.qv.mLctb.rows.length; i++) {
                 if (this.qv.mLctb.getFieldValue(i, "TOTAL_COST") < 0) {
-                    sap.m.MessageToast.show('Negative cost cant be closed ! ' + this.qv.mLctb.getFieldValue(i, "COST_ITEM"));
-                    return;
+                    sap.m.MessageToast.show('Warning ! Negative cost  , Force Closed  ! ' + this.qv.mLctb.getFieldValue(i, "COST_ITEM"));
+                    // return;
                 }
                 defaultValues["POS"] = i;
                 s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "LG_CLOSE_O2", i,

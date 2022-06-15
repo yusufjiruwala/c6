@@ -1,4 +1,4 @@
-sap.ui.jsfragment("bin.forms.clinic.rp2", {
+sap.ui.jsfragment("bin.forms.pos.rp2", {
 
     createContent: function (oController) {
         var that = this;
@@ -41,7 +41,7 @@ sap.ui.jsfragment("bin.forms.clinic.rp2", {
         var fe = [];
         this.frm = this.createViewHeader();
         this.frm.getToolbar().addContent(this.bk);
-        var tit = new sap.m.Text({text: "Items Report"}).addStyleClass("titleFont");
+        var tit = new sap.m.Text({text: "Customer Report"}).addStyleClass("titleFont");
         this.frm.getToolbar().addContent(tit);
 
 
@@ -80,16 +80,16 @@ sap.ui.jsfragment("bin.forms.clinic.rp2", {
                 layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
             }, "date", undefined, this.view);
 
-        this.o1.empno = UtilGen.addControl(fe, "Done By", sap.m.ComboBox, "apEmpno",
+        this.o1.empno = UtilGen.addControl(fe, "Location By", sap.m.ComboBox, "apEmpno",
             {
                 items: {
                     path: "/",
-                    template: new sap.ui.core.ListItem({text: "{NAME}", key: "{NO}"}),
+                    template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
                     templateShareable: true
 
                 },
                 value: -1
-            }, "string", undefined, this.view, undefined, "select -1 NO,'ALL' NAME from dual union all select no,name from salesp where type='D'  order by 1");
+            }, "string", undefined, this.view, undefined, "select '-1' code,'ALL' NAME from dual union all select code,name from locations order by 1");
 
         UtilGen.setControlValue(this.o1.empno, -1, -1, true);
         var dt = new Date();
@@ -124,43 +124,37 @@ sap.ui.jsfragment("bin.forms.clinic.rp2", {
 
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
-        var db = this.o1.empno.getValue();
+        var db = UtilGen.getControlValue(this.o1.empno);
 
-        var sq = "select * from (SELECT TO_CHAR(ORD_DATE,'DD/MM/RRRR') ORD_DATE, ORD_NO INVOICE_NO, ord_ref File_no, ORD_REFNM CUST_NAME, " +
-            "DESCR,   ORD_ALLQTY/ORD_PACK QTY,    ORD_PRICE, " +
-            "(ORD_ALLQTY/ORD_PACK)*ORD_PRICE AMOUNT, " +
-            "(SELECT MAX(NAME) FROM SALESP WHERE NO=nvl(LCNO,(select max(empno) from cl6_appoint where cl6_appoint.keyfld=ord_reference))) DONE_BY " +
-            "FROM JOINED_ORDER " +
-            " where trunc(ord_date)>=" + Util.toOraDateString(fr) +
-            " and trunc(ord_date)<=" + Util.toOraDateString(to)
-            + " and ord_code=111 "
-            + " order by ord_no,ord_pos) cx where " + Util.quoted(db) + "='ALL' or cx.done_by=" + Util.quoted(db);
+        // var sq = "select * from (SELECT TO_CHAR(ORD_DATE,'DD/MM/RRRR') ORD_DATE, ORD_NO INVOICE_NO, ord_ref File_no, ORD_REFNM CUST_NAME, " +
+        //     "DESCR,   ORD_ALLQTY/ORD_PACK QTY,    ORD_PRICE, " +
+        //     "(ORD_ALLQTY/ORD_PACK)*ORD_PRICE AMOUNT, " +
+        //     "(SELECT MAX(NAME) FROM SALESP WHERE NO=nvl(LCNO,(select max(empno) from cl6_appoint where cl6_appoint.keyfld=ord_reference))) DONE_BY " +
+        //     "FROM JOINED_ORDER " +
+        //     " where trunc(ord_date)>=" + Util.toOraDateString(fr) +
+        //     " and trunc(ord_date)<=" + Util.toOraDateString(to)
+        //     + " and ord_code=111 "
+        //     + " order by ord_no,ord_pos) cx where " + Util.quoted(db) + "='ALL' or cx.done_by=" + Util.quoted(db);
+
+        var sq = "select l.name location_name , p.b_no," +
+            " p.cust_reference tel,p.cust_name,p.b_date," +
+            " p.keyfld ,inv_amt amount from pos_onpur1 p,locations l" +
+            " where trunc(b_date)>=" + Util.toOraDateString(fr) +
+            " and trunc(b_date)<=" + Util.toOraDateString(to) +
+            " and (p.location_code=" + Util.quoted(db) + " or " + Util.quoted(db) + "='-1') " +
+            " and l.code=p.location_code order by b_date desc,keyfld desc";
 
         this.qv.getControl().setEditable(true);
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
-            if (data.ret == "SUCCESS" && UtilGen.nvl(data.data, "") != "") {
+            if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
 
                 var c = that.qv.mLctb.getColPos("AMOUNT");
                 that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
                 that.qv.mLctb.getColByName("AMOUNT").mSummary = "SUM";
 
-                var c = that.qv.mLctb.getColPos("ORD_PRICE");
-                that.qv.mLctb.cols[c].getMUIHelper().display_format = "MONEY_FORMAT";
-
-
-                var c = that.qv.mLctb.getColPos("QTY");
-                that.qv.mLctb.cols[c].getMUIHelper().display_width = 70;
-                that.qv.mLctb.cols[c].getMUIHelper().display_align = "center";
-
-                var c = that.qv.mLctb.getColPos("INVOICE_NO");
-                that.qv.mLctb.cols[c].getMUIHelper().display_align = "center";
-                that.qv.mLctb.cols[c].getMUIHelper().display_width = 100;
-
                 that.qv.mLctb.parse("{" + data.data + "}", true);
                 that.qv.loadData();
-                // view.byId("poOpenInv").setEnabled(true);
-
 
             }
         });

@@ -295,7 +295,9 @@ sap.ui.jsfragment("bin.forms.clinic.SO", {
             + " order by ord_pos";
         this.qv.getControl().setEditable(true);
         Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
-            if (data.ret == "SUCCESS") {
+            if (data.ret == "SUCCESS" ) {
+                if (data.data.length<=0)
+                    that.qv.addRow();
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
                 UtilGen.applyCols("C6L.SO1", that.qv, that);
                 that.qv.mLctb.parse("{" + data.data + "}", true);
@@ -446,7 +448,7 @@ sap.ui.jsfragment("bin.forms.clinic.SO", {
                 defaultValues["ORD_PRICE"] = this.qv.mLctb.getFieldValue(i, "FC_PRICE");
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
 
-                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT","DNAME"], defaultValues, true) + ";");
+                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT", "DNAME"], defaultValues, true) + ";");
             }
             k = "begin " + sqCustInsert + " " + k + s1 + " end; ";
         } else {
@@ -467,7 +469,7 @@ sap.ui.jsfragment("bin.forms.clinic.SO", {
                 defaultValues["ORD_PRICE"] = this.qv.mLctb.getFieldValue(i, "FC_PRICE");
                 defaultValues["ORD_ALLQTY"] = this.qv.mLctb.getFieldValue(i, "ORD_PKQTY");
 
-                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT","DNAME"], defaultValues, true) + ";");
+                s1 += (UtilGen.getInsertRowString(this.qv.mLctb, "order2", i, ["AMOUNT", "DESCR2", "DISCP", "LC_AMOUNT", "DNAME"], defaultValues, true) + ";");
             }
             k = "begin " + sqCustInsert + " " + k + s1 + " end; ";
         }

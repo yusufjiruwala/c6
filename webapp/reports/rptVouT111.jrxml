@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouT" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="400"/>
+	<property name="ireport.y" value="0"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -30,7 +30,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select decode((select ord_type from order1 o where o.ord_code=106 and o.ord_no=order1.ord_reference),2,lg_info.lg_s_mbl,3,lg_info.LG_A_MAWB) bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
+		<![CDATA[select lg_info.LG_A_MAWB bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
 (select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 (select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no) FC_AMOUNT ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no),(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
@@ -39,7 +39,7 @@ y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentc
 (select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,(select emails from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) email,ORDER1.ONAME,
 (select bank_details from currency_master where code=(select max(ord_fc_descr) from order2 where order2.ord_no=order1.ord_no and ord_code=111)) bnk,
 order1.ord_txt_wo,order1.ord_txt_iid,
-(select nvl(sum(vat_add),0) from order2 where ord_code=111 and ord_no=order1.ord_no ) vat_tot
+(select nvl(sum(vat_add),0) from order2 where ord_code=111 and ord_no=order1.ord_no ) vat_tot,y.addr,y.reference
 from order1,lg_info,c_ycust y
 where order1.ord_code=111 and order1.ORD_no IN (select field1 from temporary where USERNM=$P{SES_ID} AND IDNO=111)
 and y.code=order1.ord_ref
@@ -126,6 +126,35 @@ order by order1.ord_no]]>
 	<field name="ORD_TXT_IIDINVVAL" class="java.math.BigDecimal"/>
 	<field name="TOT_VAT_AMT" class="java.math.BigDecimal"/>
 	<field name="TOT_VAT_P" class="java.math.BigDecimal"/>
+	<field name="LG_CUST_REF_2" class="java.lang.String"/>
+	<field name="LG_CARGO_TYPE_1" class="java.lang.String"/>
+	<field name="LG_CARGO_TYPE_2" class="java.lang.String"/>
+	<field name="LG_NO_OF_CONTAINER" class="java.math.BigDecimal"/>
+	<field name="LG_NO_OF_PACKAGE" class="java.math.BigDecimal"/>
+	<field name="LG_NO_OF_TRUCKS" class="java.math.BigDecimal"/>
+	<field name="LG_CONTAINER_TYPE_1" class="java.lang.String"/>
+	<field name="LG_CONTAINER_TYPE_2" class="java.lang.String"/>
+	<field name="LG_CONTAINER_TYPE_3" class="java.lang.String"/>
+	<field name="LG_TRUCK_TYPE_1" class="java.lang.String"/>
+	<field name="LG_TRUCK_TYPE_2" class="java.lang.String"/>
+	<field name="LG_TRUCK_TYPE_3" class="java.lang.String"/>
+	<field name="LG_EQP_TYPE_1" class="java.lang.String"/>
+	<field name="LG_EQP_TYPE_2" class="java.lang.String"/>
+	<field name="LG_EQP_TYPE_3" class="java.lang.String"/>
+	<field name="LG_EQP_CAP_1" class="java.lang.String"/>
+	<field name="LG_EQP_CAP_2" class="java.lang.String"/>
+	<field name="LG_EQP_CAP_3" class="java.lang.String"/>
+	<field name="LG_CONTAINER_NO_1" class="java.math.BigDecimal"/>
+	<field name="LG_CONTAINER_NO_2" class="java.math.BigDecimal"/>
+	<field name="LG_CONTAINER_NO_3" class="java.math.BigDecimal"/>
+	<field name="LG_TRUCK_NO_1" class="java.math.BigDecimal"/>
+	<field name="LG_TRUCK_NO_2" class="java.math.BigDecimal"/>
+	<field name="LG_TRUCK_NO_3" class="java.math.BigDecimal"/>
+	<field name="LG_CONTAINER_SIZE_1" class="java.math.BigDecimal"/>
+	<field name="LG_CONTAINER_SIZE_2" class="java.math.BigDecimal"/>
+	<field name="LG_CONTAINER_SIZE_3" class="java.math.BigDecimal"/>
+	<field name="LG_MEASURES" class="java.lang.String"/>
+	<field name="LG_NO_OF_WEIGHT" class="java.lang.String"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
@@ -164,6 +193,20 @@ order by order1.ord_no]]>
 	<field name="LG_DESCRIPTION" class="java.lang.String"/>
 	<field name="LG_NOTES" class="java.lang.String"/>
 	<field name="LG_L_ARRIVAL_DATE" class="java.sql.Timestamp"/>
+	<field name="LG_END_USER_TYPE" class="java.lang.String"/>
+	<field name="LG_VENDOR_NAME" class="java.lang.String"/>
+	<field name="LG_VENDOR_CONTACT" class="java.lang.String"/>
+	<field name="LG_CROSS_LOAD" class="java.sql.Timestamp"/>
+	<field name="LG_RELEASE" class="java.sql.Timestamp"/>
+	<field name="LG_START_CUST_CLEARANCE" class="java.sql.Timestamp"/>
+	<field name="LG_COMPLETE_CUSTOM" class="java.sql.Timestamp"/>
+	<field name="LG_RELEASE_FROM_BORDER" class="java.sql.Timestamp"/>
+	<field name="LG_CARGO_TYPE" class="java.lang.String"/>
+	<field name="LG_CBMS" class="java.lang.String"/>
+	<field name="LG_CARGO_IN" class="java.sql.Timestamp"/>
+	<field name="LG_CARGO_OUT" class="java.sql.Timestamp"/>
+	<field name="LG_CLOSING" class="java.sql.Timestamp"/>
+	<field name="LG_DEPARTURE" class="java.sql.Timestamp"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
@@ -199,8 +242,8 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA["TAX INVOICE"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="strHeader" x="5" y="99" width="242" height="40" uuid="f7b326a7-dc97-482b-8234-122bd540ac88"/>
-					<textFieldExpression><![CDATA["Cust# "+$F{PARENT_CODE}+"-"+$F{PARENT_NAME}]]></textFieldExpression>
+					<reportElement style="strHeader" x="5" y="99" width="242" height="84" uuid="f7b326a7-dc97-482b-8234-122bd540ac88"/>
+					<textFieldExpression><![CDATA["Bill To: "+$F{ORD_REF}+"-"+$F{ORD_REFNM}+"\nAddress:"+$F{ADDR}+" Trn: "+$F{REFERENCE}]]></textFieldExpression>
 				</textField>
 				<rectangle>
 					<reportElement x="248" y="95" width="306" height="109" uuid="f2463cde-b6a7-49c3-b0e8-910079d58adf"/>
@@ -429,13 +472,6 @@ order by order1.ord_no]]>
 						<font fontName="DejaVu Sans" size="10" isBold="true" isUnderline="false" isStrikeThrough="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{COMPANY_SPECS}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement style="strHeader" x="5" y="139" width="242" height="44" uuid="f816b49a-72e7-444b-ad7f-5be742220809"/>
-					<textElement>
-						<font size="10"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{ORD_REF}+"-"+$F{ORD_REFNM}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement style="strHeader" x="5" y="183" width="48" height="20" uuid="b90942a3-7cfd-4897-afbb-d23fd227ffc4"/>
