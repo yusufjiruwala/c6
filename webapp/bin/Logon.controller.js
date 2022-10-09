@@ -25,7 +25,7 @@ sap.ui.controller('bin.Logon', {
         var a = this.getView().byId("chkAuto");
         var l = this.getView().sLangu;
 
-        var pth = "login?user=" + u.getValue() + "&password=" + p.getValue() + "&file=" + f.getSelectedKey()+"&language="+l;
+        var pth = "login?user=" + u.getValue() + "&password=" + p.getValue() + "&file=" + f.getSelectedKey() + "&language=" + l;
 
         var dt = null;
         Util.doAjaxGet(pth, "", false).done(function (data) {
@@ -39,7 +39,9 @@ sap.ui.controller('bin.Logon', {
             sap.m.MessageToast.show(dt.errorMsg);
             return;
         }
+
         pth = "exe?command=get-profile-list";
+
         Util.doAjaxGet(pth, "", false).done(function (data) {
             if (data != undefined) {
                 var dt = JSON.parse(data);
@@ -59,14 +61,14 @@ sap.ui.controller('bin.Logon', {
         var s = "";
         for (var i in s1) {
             var ss = s1[i].split("=");
-            if (ss[0] != "file" && ss[0] != "user" && ss[0] != "password" && ss[0] != "clearCookies" )
+            if (ss[0] != "file" && ss[0] != "user" && ss[0] != "password" && ss[0] != "clearCookies")
                 s = s + (s.length > 0 ? "&" : "") + (s1[i]);
         }
         if (a.getSelected()) {
-            Util.cookieSet("user",u.getValue(),7);
-            Util.cookieSet("password",p.getValue(),7);
-            Util.cookieSet("file",f.getSelectedKey(),7);
-            Util.cookieSet("autoLogon",a.getSelected(),7);
+            Util.cookieSet("user", u.getValue(), 7);
+            Util.cookieSet("password", p.getValue(), 7);
+            Util.cookieSet("file", f.getSelectedKey(), 7);
+            Util.cookieSet("autoLogon", a.getSelected(), 7);
         } else
             Util.cookiesClear();
 

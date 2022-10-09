@@ -109,6 +109,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 } else {
                     this.fill_cc(false);
                     this.fill_trans_type(false);
+                    this.controlTruck();
                 }
 
             }
@@ -126,6 +127,24 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             this.frmJO.destroyContent();
         }
         this.jo = {};
+
+        var fnSearchLoc = function (e, cnt) {
+
+            if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed) {
+                UtilGen.setControlValue(cnt, "", "", true);
+                return;
+            }
+            if (Util.nvl(cnt.getValue(), "") == "") {
+                sap.m.MessageToast.show("Enter any value in field to search !");
+                return;
+            }
+            var sq = "select country||','||state||','||city title from lg_regions where upper(country||','||state||','||city) like " +
+                "'%'||'" + cnt.getValue().toUpperCase() + "'||'%'   order by country,state,city";
+            Util.showSearchList(sq, "TITLE", "TITLE", function (valx, val) {
+                UtilGen.setControlValue(cnt, val, valx, true);
+            });
+        };
+
         // location code
         this.jo.location_code = UtilGen.createControl(sap.m.ComboBox, this.view, "location_code", {
             customData: [{key: ""}],
@@ -180,7 +199,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 that.fill_cc();
             },
             layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
-        }, "string", undefined, undefined, "@o");
+        }, "string", undefined, undefined, "@01/Import,02/Export,03/Transport,04/Local,05/Third Party");
         //JO No, ORD_NO
         this.jo.ord_no = UtilGen.createControl(sap.m.Input, this.view, "ord_no", {
             change: function () {
@@ -220,7 +239,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             },
             selectedKey: "1001",
             selectionChange: function () {
-
+                that.controlTruck();
             },
             layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
         }, "string", undefined, undefined, "select code,title from accostcent1 where childcount=0 order by path");
@@ -240,7 +259,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     return;
                 }
 
-                var sq = "select code,name title from c_ycust where iscust='Y' and childcount=0 and descr like '  order by code";
+                var sq = "select code,name title from c_ycust where iscust='Y' and childcount=0 order by code";
                 Util.showSearchList(sq, "TITLE", "CODE", function (valx, val) {
                     UtilGen.setControlValue(that.jo.ord_ref, val, valx, true);
                 });
@@ -284,6 +303,20 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         }, "string");
         this.jo.payterm = UtilGen.createControl(sap.m.Input, this.view, "jopayterm", {
             layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+        }, "string");
+
+
+        this.jo.lg_depart_loc = UtilGen.createControl(sap.m.SearchField, this.view, "joDepartLoc", {
+            // layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            search: function (e) {
+                fnSearchLoc(e, this);
+            }
+        }, "string");
+        this.jo.lg_arrival_loc = UtilGen.createControl(sap.m.SearchField, this.view, "joArrivalLoc", {
+            // layoutData: new sap.ui.layout.GridData({span: "XL4 L6 M6 S6"}),
+            search: function (e) {
+                fnSearchLoc(e, this);
+            }
         }, "string");
 
 
@@ -391,6 +424,8 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     "Cust Inv NO", this.jo.adjust_descr,
                     "Origin", this.jo.attn,
                     "Destination", this.jo.payterm,
+                    "Depart. Loc.", this.jo.lg_depart_loc,
+                    "Arrival Loc.", this.jo.lg_arrival_loc,
                     "#Cargo",
                     "Type 1", this.jo.lg_cargo_type_1,
                     "Type 2", this.jo.lg_cargo_type_2,
@@ -417,7 +452,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     "@No", this.jo.lg_truck_no_2,
                     "Type 3", this.jo.lg_truck_type_3,
                     "@No", this.jo.lg_truck_no_3,
-                    "#Equpments:",
+                    "#Handling Equpments:",
                     "Type 1", this.jo.lg_eqp_type_1,
                     "@Cap", this.jo.lg_eqp_cap_1,
                     "Type 2", this.jo.lg_eqp_type_2,
@@ -527,7 +562,35 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
     },
 
+    controlTruck: function () {
+        var cc = Util.nvl(UtilGen.getControlValue(this.jo.costcent), "");
+        if (cc != "") {
+            var yn = Util.getSQLValue("select allow_trucks from accostcent1 where code=" + Util.quoted(cc));
+            if (yn == "N") {
+                UtilGen.setControlValue(this.jo.lg_truck_no_1, 0, 0, true);
+                UtilGen.setControlValue(this.jo.lg_truck_no_2, 0, 0, true);
+                UtilGen.setControlValue(this.jo.lg_truck_no_3, 0, 0, true);
+                UtilGen.setControlValue(this.jo.lg_truck_type_1, "", "", true);
+                UtilGen.setControlValue(this.jo.lg_truck_type_2, "", "", true);
+                UtilGen.setControlValue(this.jo.lg_truck_type_3, "", "", true);
+                this.jo.lg_truck_type_1.setEnabled(false);
+                this.jo.lg_truck_type_2.setEnabled(false);
+                this.jo.lg_truck_type_3.setEnabled(false);
+                this.jo.lg_truck_no_1.setEnabled(false);
+                this.jo.lg_truck_no_2.setEnabled(false);
+                this.jo.lg_truck_no_3.setEnabled(false);
+            } else {
+                this.jo.lg_truck_type_1.setEnabled(true);
+                this.jo.lg_truck_type_2.setEnabled(true);
+                this.jo.lg_truck_type_3.setEnabled(true);
+                this.jo.lg_truck_no_1.setEnabled(true);
+                this.jo.lg_truck_no_2.setEnabled(true);
+                this.jo.lg_truck_no_3.setEnabled(true);
 
+            }
+
+        }
+    },
     fill_cc: function (pSetVal) {
         var setVal = Util.nvl(pSetVal, true);
         var jt = Util.nvl(UtilGen.getControlValue(this.jo.ord_type), "");
@@ -664,6 +727,37 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 new sap.m.Button({
                     icon: "sap-icon://nav-back",
                     press: function () {
+                        if (that.joDet1.lg_departure != undefined && that.joDet1.lg_departure != undefined &&
+                            that.joDet1.lg_departure.getValue() != null &&
+                            Util.nvl(that.joDet1.lg_departure.getValue(), "") != "") {
+                            var dt = UtilGen.getControlValue(that.joDet1.lg_departure);
+                            var at = UtilGen.getControlValue(that.joDet1.lg_l_arrival_date);
+                            if (at == null || at == undefined) {
+                                sap.m.MessageToast.show("Arrival date must be entered as departure date is entered !");
+                                return false;
+                            }
+
+                            if (dt.getTime() > at.getTime()) {
+                                sap.m.MessageToast.show("arrival date must be greater than departure date !");
+                                return false;
+                            }
+                        }
+
+                        if (that.joDet1.lg_etd != undefined &&
+                            that.joDet1.lg_etd.getValue() != null &&
+                            Util.nvl(that.joDet1.lg_etd.getValue(), "") != "") {
+                            var dt = UtilGen.getControlValue(that.joDet1.lg_etd);
+                            var at = UtilGen.getControlValue(that.joDet1.lg_eta);
+                            if (at == null || at == undefined) {
+                                sap.m.MessageToast.show("ETA must be entered as ETD  is entered !");
+                                return false;
+                            }
+                            if (dt.getTime() > at.getTime()) {
+                                sap.m.MessageToast.show("ETA  must be greater than ETD date !");
+                                return false;
+                            }
+                        }
+
                         that.joApp.to(that.mainPage, "flip");
                     }
                 }),
@@ -675,11 +769,6 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         });
 
         this.addUptoDutyPaid(frmElements);
-
-        this.joDet1.lg_l_re_export = this.addControl(frmElements,
-            "Re Export", sap.m.CheckBox, "detReExp",
-            {selected: false}, "boolean");
-        this.joDet1.lg_l_re_export.trueValues = ["Y", "N"]; // true value , false value;
 
         // 1/Land,2/Sea,3/Air,4/LCB,5/WH
 
@@ -700,9 +789,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             this.joDet1.lg_notes = this.createListBox2("lg_notes", frmElements, "Remark", false);
 
 
-
             frmElements.push(new sap.ui.core.Title({text: "Other info"}));
-
 
 
             // LG_L_CLEARANCE_DATE, Clearance Date
@@ -753,6 +840,13 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
             frmElements.push(new sap.ui.core.Title({text: "Other info"}));
 
+            // LG_ETD,etd
+            this.joDet1.lg_etd = UtilGen.addControl(frmElements, "ETD", sap.m.DatePicker, "jo_",
+                {}, "date", undefined, this.view);
+
+            // LG_ETA, eta
+            this.joDet1.lg_eta = UtilGen.addControl(frmElements, "ETA", sap.m.DatePicker, "jo_",
+                {}, "date", undefined, this.view);
 
             // LG_DEPARTURE,Departure Date
             this.joDet1.lg_departure = UtilGen.addControl(frmElements, "Departure Date", sap.m.DatePicker, "jo_",
@@ -807,6 +901,14 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
             frmElements.push(new sap.ui.core.Title({text: "Other info"}));
 
+            // LG_ETD,etd
+            this.joDet1.lg_etd = UtilGen.addControl(frmElements, "ETD", sap.m.DatePicker, "jo_",
+                {}, "date", undefined, this.view);
+
+            // LG_ETA, eta
+            this.joDet1.lg_eta = UtilGen.addControl(frmElements, "ETA", sap.m.DatePicker, "jo_",
+                {}, "date", undefined, this.view);
+
             // LG_DEPARTURE,Departure Date
             this.joDet1.lg_departure = UtilGen.addControl(frmElements, "Departure Date", sap.m.DatePicker, "jo_",
                 {}, "date", undefined, this.view);
@@ -814,6 +916,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             // LG_L_ARRIVAL_DATE, Arrival Date
             this.joDet1.lg_l_arrival_date = UtilGen.addControl(frmElements, "Arrival Date", sap.m.DatePicker, "jo_",
                 {}, "date", undefined, this.view);
+
 
             // LG_L_CLEARANCE_DATE, Clearance Date
             this.joDet1.lg_l_clearance_date = UtilGen.addControl(frmElements, "Clearance Date", sap.m.DatePicker, "jo_",
@@ -953,20 +1056,53 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
     }
     ,
     addUptoDutyPaid: function (frmElements) {
+        var that = this;
+        var sel = function (e, cnt) {
+            UtilGen.setControlValue(that.joDet1.lg_permanent_exemption, "N", "N", false);
+            UtilGen.setControlValue(that.joDet1.lg_temporary_import, "N", "N", false);
+            UtilGen.setControlValue(that.joDet1.lg_duty_paid, "N", "N", false);
+            UtilGen.setControlValue(that.joDet1.lg_l_re_export, "N", "N", false);
+            UtilGen.setControlValue(cnt, "Y", "Y", false);
+        };
+
         // LG_PERMANENT_EXEMPTION checkbox ,  LG_NO_OF_PCS
         this.joDet1.lg_permanent_exemption = this.addControl(frmElements,
             "Perm. Exempt", sap.m.CheckBox, "detPExmpt",
-            {selected: false}, "boolean");
+            {
+                selected: true,
+                select: function (e) {
+                    sel(e, this);
+                }
+            }, "boolean");
         this.joDet1.lg_permanent_exemption.trueValues = ["Y", "N"];
         // LG_TEMPORARY_IMPORT checkbox  , LG_WEIGHT
         this.joDet1.lg_temporary_import = this.addControl(frmElements, "Temp. Import", sap.m.CheckBox, "detTmpImp",
-            {selected: false}, "boolean");
+            {
+                selected: false, select: function (e) {
+                    sel(e, this);
+                }
+            }, "boolean");
         this.joDet1.lg_temporary_import.trueValues = ["Y", "N"]; // true value , false value;
 
         // LG_DUTY_PAID  checkbox ,  LG_MEASUREMENT
         this.joDet1.lg_duty_paid = this.addControl(frmElements, "Duty Paid",
-            sap.m.CheckBox, "detDutyPaid", {selected: false}, "boolean");
+            sap.m.CheckBox, "detDutyPaid", {
+                selected: false, select: function (e) {
+                    sel(e, this);
+                }
+            }, "boolean");
         this.joDet1.lg_duty_paid.trueValues = ["Y", "N"]; // true value , false value;
+
+
+        this.joDet1.lg_l_re_export = this.addControl(frmElements,
+            "Re Export", sap.m.CheckBox, "detReExp",
+            {
+                selected: false, select: function (e) {
+                    sel(e, this);
+                }
+            }, "boolean");
+        this.joDet1.lg_l_re_export.trueValues = ["Y", "N"]; // true value , false value;
+
 
         // this.joDet1.lg_no_of_pcs = this.addControl(frmElements, new sap.m.Text({
         //     text: "No Of Pcs",
@@ -1021,6 +1157,46 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             sap.m.MessageToast.show("Err !,This JO is closed !!");
             return false;
         }
+        var cc = Util.nvl(UtilGen.getControlValue(this.jo.costcent), "");
+        if (cc != "") {
+            var yn = Util.getSQLValue("select allow_trucks from accostcent1 where code=" + Util.quoted(cc));
+            if (yn == "Y") {
+                var nof = UtilGen.getControlValue(this.jo.lg_no_of_trucks);
+                if (nof == 0) {
+                    sap.m.MessageToast.show(this.jo.costcent.getValue() + " assigned as must have no of truck > 0 ");
+                    return false;
+                }
+            }
+        }
+        if (this.joDet1.lg_departure != undefined && this.joDet1.lg_departure.getValue() != null && Util.nvl(this.joDet1.lg_departure.getValue(), "") != "") {
+            var dt = UtilGen.getControlValue(this.joDet1.lg_departure);
+            var at = UtilGen.getControlValue(this.joDet1.lg_l_arrival_date);
+            if (at == null || at == undefined) {
+                sap.m.MessageToast.show("Arrival date must be entered as departure date is entered !");
+                return false;
+            }
+
+            if (dt.getTime() > at.getTime()) {
+                sap.m.MessageToast.show("arrival date must be greater than departure date !");
+                return false;
+            }
+        }
+
+        if (this.joDet1.lg_etd != undefined &&
+            this.joDet1.lg_etd.getValue() != null && Util.nvl(this.joDet1.lg_etd.getValue(), "") != "") {
+            var dt = UtilGen.getControlValue(this.joDet1.lg_etd);
+            var at = UtilGen.getControlValue(this.joDet1.lg_eta);
+            if (at == null || at == undefined) {
+                sap.m.MessageToast.show("ETA must be entered as ETD  is entered !");
+                return false;
+            }
+
+            if (dt.getTime() > at.getTime()) {
+                sap.m.MessageToast.show("ETA  must be greater than ETD date !");
+                return false;
+            }
+        }
+
         return true;
     }
     ,

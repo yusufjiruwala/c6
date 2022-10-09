@@ -11,6 +11,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
         this.pgDN = new sap.m.Page({
             showHeader: false
         });
+
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
@@ -208,8 +209,9 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
             {editable: false}, "number");
 
         return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
-    },
 
+
+    },
     loadData: function () {
         var that = this;
         var view = this.view;
@@ -336,6 +338,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
         }
         for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
             var rn = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_RCPTNO"), "");
+            var rfr = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_REFER"), "");
 
             if (rn == "") {
                 sap.m.MessageToast.show("Must  Receipt No have value .. !");
@@ -349,6 +352,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
             // check if recipt already sold and have not in qty in hand..
             var rcp = Util.getSQLValue("select (ord_allqty+saleret_qty)-(issued_qty+purret_qty) from joined_order where ord_code=103 " +
                 " and ord_reference=" + that.qryStr +
+                " and ord_refer=" + Util.quoted(rfr) +
                 " and ord_rcptno=" + Util.quoted(rn));
             if (rcp > 0) {
                 sap.m.MessageToast.show("Receipt # " + rn + " , NOT sold..");
@@ -358,6 +362,7 @@ sap.ui.jsfragment("bin.forms.lg.CN", {
 
             var rcp = Util.getSQLValue("select (ord_allqty) from joined_order where ord_code in(" + that.vars.ord_code + ",111) " +
                 " and ord_reference=" + that.qryStr + " and ord_no!=" + Util.quoted(Util.nvl(that.qryStrPO, "-.1")) +
+                " and ord_refer=" + Util.quoted(rfr) +
                 " and ord_flag=1 and ord_rcptno=" + Util.quoted(rn));
             if (rcp > 0) {
                 sap.m.MessageToast.show("Receipt # " + rn + " , Already sold/Dr.Note in UN-POSTED....");

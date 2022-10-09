@@ -185,6 +185,20 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             }
         }, "string", undefined, undefined, "@-1/All,30/Last 1 Month,90/Last 3 Months,180/Last 6 months,0/Closed");
 
+        this.ofromdate = UtilGen.createControl(sap.m.DatePicker, this.view, "ofromdate", {
+                change: function () {
+                    that.load_data();
+                }
+            }
+            , "date", undefined, undefined, undefined);
+
+        this.otodate = UtilGen.createControl(sap.m.DatePicker, this.view, "otodate", {
+                change: function () {
+                    that.load_data();
+                }
+            }
+            , "date", undefined, undefined, undefined);
+
         this.qv.getControl().attachRowSelectionChange(null, function (evt) {
             var idx = that.qv.getControl().getSelectedIndex()
             if (idx <= -1) {
@@ -200,7 +214,7 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             }
         });
 
-        //UtilGen.setControlValue(this.locations, sett["DEFAULT_LOCATION"]);
+//UtilGen.setControlValue(this.locations, sett["DEFAULT_LOCATION"]);
         UtilGen.setControlValue(this.query_type, -1);
 
         var bt = new sap.m.Button({
@@ -215,13 +229,13 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         });
 
         this.toolbar = new sap.m.Toolbar({
-            content: [this.locations, this.query_type, this.searchField, bt]
+            content: [this.locations, this.query_type, this.ofromdate, this.otodate, this.searchField, bt]
         }).addStyleClass("sapUiSizeCondensed");
         var sc = new sap.m.ScrollContainer();
 
         sc.addContent(this.qv.getControl());
-        // layout.setAlignItems("Center");
-        //layout.setJustifyContent("Center");
+// layout.setAlignItems("Center");
+//layout.setJustifyContent("Center");
         ly2.setAlignItems("Center");
         ly2.setJustifyContent("Center");
 
@@ -240,6 +254,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         // var loc = UtilGen.getControlValue(that.locations);
         // var qt = UtilGen.getControlValue(that.query_type);
         var typ = Util.nvl(UtilGen.getControlValue(this.query_type), -1);
+        var fd = Util.nvl(UtilGen.getControlValue(this.ofromdate), new Date("01/01/2000"));
+        var td = Util.nvl(UtilGen.getControlValue(this.otodate), new Date("12/31/2029"));
 
         var sql = "select FULL_ORD_NO, ORD_NO, ORD_REF, " +
             "ORD_REFNM,  " +
@@ -256,8 +272,10 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             "REFERENCE, ORD_FLAG, NO_OF_SO," +
             " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE,TOTAL_PRETURN, TOTAL_CN, COST_IN_HAND " +
             "from v_lg_jo where ord_flag=2 " +
-            "and (:TYP=-1 OR ORD_DATE<=SYSDATE - :TYP )" +
-            "  ORDER BY ORD_DATE desc";
+            "and (:TYP=-1 OR ORD_DATE<=SYSDATE - :TYP ) " +
+            " and ord_date>=" + Util.toOraDateString(fd) +
+            " and ord_date<= " + Util.toOraDateString(td) +
+            " ORDER BY ORD_DATE desc";
         sql = sql.replace(/:TYP/g, typ);
 
         if (typ == "0" || typ == 0) {
@@ -276,6 +294,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
                 "REFERENCE, ORD_FLAG, NO_OF_SO," +
                 " NO_OF_PO, TOTAL_SALES, TOTAL_PURCHASE,TOTAL_PRETURN, TOTAL_CN, COST_IN_HAND " +
                 "from v_lg_jo where ord_flag=1 " +
+                " and ord_date>=" + Util.toOraDateString(fd) +
+                " and ord_date<= " + Util.toOraDateString(td) +
                 "  ORDER BY ORD_DATE desc";
         }
 
@@ -336,7 +356,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
             }
 
         }
-    },
+    }
+    ,
 
     openForm: function (frag, frm, ocAdd) {
         var that = this;
@@ -373,7 +394,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         UtilGen.clearPage(frm);
         frm.addContent(sp);
         this.app.to(frm, "slide");
-    },
+    }
+    ,
     doBack: function () {
         var that = this;
         that.app.to(that.mainPage, "show");
@@ -381,7 +403,8 @@ sap.ui.jsfragment("bin.forms.lg.Main", {
         that.qv.getControl().setSelectedIndex(that.lastIndexSelected);
         that.qv.getControl().setFirstVisibleRow(that.lastFirstRow);
     }
-});
+})
+;
 
 
 
