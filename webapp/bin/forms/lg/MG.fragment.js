@@ -113,17 +113,17 @@ sap.ui.jsfragment("bin.forms.lg.MG", {
             "M1.PARENT_MENUCODE LIST_GROUP_CODE," +
             artit2 +
             " M1.TYPE_OF_EXEC,M1.EXEC_LINE FROM C6_MAIN_MENUS M1,C6_MAIN_MENUS M2 " +
-            "WHERE M2.MENU_CODE=M1.PARENT_MENUCODE AND " +
+            " WHERE M2.MENU_CODE=M1.PARENT_MENUCODE AND " +
             " M1.GROUP_CODE='" + cod + "' AND " +
-            "M1.PARENT_MENUCODE IS NOT NULL " +
-            "ORDER BY M1.MENU_PATH"
+            " M1.PARENT_MENUCODE IS NOT NULL " +
+            " ORDER BY M1.MENU_PATH "
         }, false).done(function (data) {
             //var no = JSON.parse("{" + data.data + "}")
             //sap.m.MessageToast.show(no);
             that.qv.setJsonStr("{" + data.data + "}");
             that.qv.switchType("list");
             that.qv.loadData();
-
+            
             (view.byId("searchField") != undefined ? view.byId("searchField").destroy() : "");
             that.filterBox.addItem(new sap.m.SearchField(view.createId("searchField"), {
                     placeholder: "Search..",

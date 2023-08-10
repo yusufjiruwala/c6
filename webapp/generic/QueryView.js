@@ -85,8 +85,8 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
             this.mJsonString = "";
             this.mLctb = new LocalTableData();
-//            this.mLctb.parse();
-//            this.mJsonObject = JSON.parse(jsonStr);
+            //            this.mLctb.parse();
+            //            this.mJsonObject = JSON.parse(jsonStr);
         }
 
         QueryView.create = function (tableId, jsonStr) {
@@ -281,7 +281,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 },
                 title: "{TITLE}",
                 active: true,
-                customData: [{key: "{CODE} "}, {key: ss}]
+                customData: [{ key: "{CODE} " }, { key: ss }]
 
             });
             // if (this.mList.getModel() != undefined)
@@ -449,7 +449,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     if (cc.mSearchSQL.startsWith("@")) {
                         var spt = cc.mSearchSQL.substring(1).split(",");
                         for (var i1 in spt) {
-                            var dttt = {CODE: "", TITLE: ""};
+                            var dttt = { CODE: "", TITLE: "" };
                             var sx = spt[i1].split("/");
                             dttt.CODE = "" + sx[0];
                             dttt.TITLE = "" + sx[1];
@@ -542,7 +542,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
 
                 }
 
-// object for adding multiLabel or Label
+                // object for adding multiLabel or Label
                 var l = {
                     template: o,
                     width: (cc.getMUIHelper().display_width) + "px",
@@ -556,7 +556,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                     text: Util.getLangDescrAR(cc.mTitle, cc.mTitleAr),
                     wrapping: true
                 })];
-// if multilabel then add objects for multiLabel
+                // if multilabel then add objects for multiLabel
                 if (Util.nvl(cc.mTitleParent, "").length > 0) {
                     l["multiLabels"] = [
                         new sap.ui.commons.TextView({
@@ -609,7 +609,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             }, 1000);
 
         }
-        ;
+            ;
 
         QueryView.prototype._sort = function (pCol, updateMR) {
             this.mLctb.rows.sort(function (a, b) {
@@ -848,7 +848,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             return o;
 
         };
-//tree buildjson data
+        //tree buildjson data
 
         QueryView.prototype.buildJsonDataTree = function () {
 
@@ -1098,7 +1098,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             }
 
         }
-        ;
+            ;
         QueryView.prototype.reset = function () {
             this.getControl().removeAllRows();
             this.getControl().removeAllColumns();
@@ -1224,7 +1224,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 "<table>" + h + dt + "</table>"
             var newWin = window.open("");
             newWin.document.write(h);
-            $("<link>", {rel: "stylesheet", href: "css/print.css"}).appendTo(newWin.document.head);
+            $("<link>", { rel: "stylesheet", href: "css/print.css" }).appendTo(newWin.document.head);
             setTimeout(function () {
                 newWin.print();
             }, 1000);
@@ -1345,7 +1345,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 "<table>" + h + dt + "</table>"
             var newWin = window.open("");
             newWin.document.write(h);
-            $("<link>", {rel: "stylesheet", href: "css/print.css"}).appendTo(newWin.document.head);
+            $("<link>", { rel: "stylesheet", href: "css/print.css" }).appendTo(newWin.document.head);
             setTimeout(function () {
                 newWin.print();
             }, 1000);
@@ -1558,7 +1558,6 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             }
 
             var lst = new sap.m.List({});
-
             var oTempl = new sap.m.StandardListItem({
                 type: "Navigation",
                 press: function (e) {
@@ -1570,7 +1569,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 },
                 title: "{DISPLAY}",
                 active: true,
-                customData: {key: "{FILTER_STRING}"}
+                customData: { key: "{FILTER_STRING}" }
             });
 
             lst.setModel(new sap.ui.model.json.JSONModel(o));
@@ -1580,18 +1579,17 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
                 press: function () {
                     that.mViewSettings["filterStr"] = null;
                     that.loadData();
-
                 }
             }));
             this.filterBox.addItem(new sap.m.SearchField({
-                    placeholder: "filter..",
-                    liveChange: function (event) {
-                        var val = event.getParameter("newValue");
-                        var filter = new sap.ui.model.Filter("DISPLAY", sap.ui.model.FilterOperator.Contains, val);
-                        var binding = lst.getBinding("items");
-                        binding.filter(filter);
-                    }
+                placeholder: "filter..",
+                liveChange: function (event) {
+                    var val = event.getParameter("newValue");
+                    var filter = new sap.ui.model.Filter("DISPLAY", sap.ui.model.FilterOperator.Contains, val);
+                    var binding = lst.getBinding("items");
+                    binding.filter(filter);
                 }
+            }
             ));
             this.filterBox.addItem(lst);
             return true;
@@ -1606,12 +1604,20 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             for (var i = 0; i < qv.mLctb.cols.length; i++) {
 
                 (view.byId("txtflt" + i) != undefined ? view.byId("txtflt" + i).destroy() : null);
+                var l1 = new sap.m.Text({ width: "200px", text: Util.nvl(qv.mLctb.cols[i].mTitle, qv.mLctb.cols[i].mColName) });
+                (view.byId("chkCol" + i) != undefined ? view.byId("chkCol" + i).destroy() : null);
+                var a1 = new sap.m.CheckBox(view.createId("chkCol" + i), {}).addStyleClass("sapUiTinyMarginBegin");
+                if (qv.mLctb.cols[i].mHideCol)
+                    a1.setSelected(false);
+                else
+                    a1.setSelected(true);
                 var t = new sap.m.Input(view.createId("txtflt" + i), {
                     width: "100%",
                     placeholder: "Filter for field # " + Util.getLangDescrAR(qv.mLctb.cols[i].mTitle, qv.mLctb.cols[i].mTitleAr),
                     value: Util.nvl(view.filterData[qv.mLctb.cols[i].mColName], "")
                 });
-                txts.push(t);
+                var hb = new sap.m.HBox({ width: "100%", items: [a1, l1, t] });
+                txts.push(hb);
             }
 
 
@@ -1635,46 +1641,68 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
             var dlg = new sap.m.Dialog({
                 title: "Filtering data..",
                 content: [flexMain],
-                buttons: [new sap.m.Button({
-                    text: "Filter",
-                    press: function () {
-                        var str = "";
-                        for (var i = 0; i < qv.mLctb.cols.length; i++) {
-                            var s = view.byId("txtflt" + i).getValue();
-                            var op = "%%";
-                            op = (s.startsWith("=") ? "=" :
-                                s.startsWith("!=") ? "!=" :
-                                    s.startsWith("<>") ? "<>" :
-                                        s.startsWith(">=") ? ">=" :
-                                            s.startsWith("<=") ? "<=" :
-                                                s.startsWith(">") ? ">" :
-                                                    s.startsWith("<") ? "<" : "%%");
-                            if (s.startsWith(op)) {
-                                s = s.substring(op.length);
-                            }
-                            view.filterData[qv.mLctb.cols[i].mColName] = null;
-                            if (s != undefined && s.length > 0) {
-                                if (s.indexOf("&&")) {
-                                    var ss = Util.splitString(s, ["&&"]);
-                                    for (var x in ss) {
-                                        if (x == 0) {
-                                            str += (str.length > 0 ? " && " : "") + qv.mLctb.cols[i].mColName + op + ss[0];
-                                            view.filterData[qv.mLctb.cols[i].mColName] = (op == "%%" ? "" : op) + s;
-                                        } else
-                                            str += (str.length > 0 ? " && " : "") + qv.mLctb.cols[i].mColName + ss[x];
-                                    }
-                                }
-                                else {
-                                    str += (str.length > 0 ? " && " : "") + qv.mLctb.cols[i].mColName + op + s;
-                                    view.filterData[qv.mLctb.cols[i].mColName] = (op == "%%" ? "" : op) + s;
-                                }
+                buttons: [
+                    new sap.m.Button({
+                        text: "Check All", press: function () {
+                            for (var i = 0; i < qv.mLctb.cols.length; i++) {
+                                if (view.byId("chkCol" + i) != undefined)
+                                    view.byId("chkCol" + i).setSelected(true);
                             }
                         }
-                        qv.mViewSettings["filterStr"] = str;
-                        qv.loadData();
-                        dlg.close();
-                    }
-                }),
+                    }),
+                    new sap.m.Button({
+                        text: "Un-Check All", press: function () {
+                            for (var i = 0; i < qv.mLctb.cols.length; i++) {
+                                if (view.byId("chkCol" + i) != undefined)
+                                    view.byId("chkCol" + i).setSelected(false);
+                            }
+                        }
+                    }),
+                    new sap.m.Button({
+                        text: "Filter",
+                        press: function () {
+                            var str = "";
+                            for (var i = 0; i < qv.mLctb.cols.length; i++) {
+                                var s = view.byId("txtflt" + i).getValue();
+                                var c = view.byId("chkCol" + i);
+                                if (c != undefined && (!c.getSelected()))
+                                    qv.mLctb.cols[i].mHideCol = true;
+                                else
+                                    qv.mLctb.cols[i].mHideCol = false;
+                                var op = "%%";
+                                op = (s.startsWith("=") ? "=" :
+                                    s.startsWith("!=") ? "!=" :
+                                        s.startsWith("<>") ? "<>" :
+                                            s.startsWith(">=") ? ">=" :
+                                                s.startsWith("<=") ? "<=" :
+                                                    s.startsWith(">") ? ">" :
+                                                        s.startsWith("<") ? "<" : "%%");
+                                if (s.startsWith(op)) {
+                                    s = s.substring(op.length);
+                                }
+                                view.filterData[qv.mLctb.cols[i].mColName] = null;
+                                if (s != undefined && s.length > 0) {
+                                    if (s.indexOf("&&")) {
+                                        var ss = Util.splitString(s, ["&&"]);
+                                        for (var x in ss) {
+                                            if (x == 0) {
+                                                str += (str.length > 0 ? " && " : "") + qv.mLctb.cols[i].mColName + op + ss[0];
+                                                view.filterData[qv.mLctb.cols[i].mColName] = (op == "%%" ? "" : op) + s;
+                                            } else
+                                                str += (str.length > 0 ? " && " : "") + qv.mLctb.cols[i].mColName + ss[x];
+                                        }
+                                    }
+                                    else {
+                                        str += (str.length > 0 ? " && " : "") + qv.mLctb.cols[i].mColName + op + s;
+                                        view.filterData[qv.mLctb.cols[i].mColName] = (op == "%%" ? "" : op) + s;
+                                    }
+                                }
+                            }
+                            qv.mViewSettings["filterStr"] = str;
+                            qv.loadData();
+                            dlg.close();
+                        }
+                    }),
                     new sap.m.Button({
                         text: "Clear filter",
                         press: function () {
@@ -1701,7 +1729,7 @@ sap.ui.define("sap/ui/ce/generic/QueryView", ["./LocalTableData", "./DataFilter"
         return QueryView;
     }
 )
-;
+    ;
 
 
 

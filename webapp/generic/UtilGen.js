@@ -3,26 +3,26 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
         "use strict";
         var UtilGen = {
             chartHtmlText: '  <style type="text/css"> ' +
-            '#chart-container { ' +
-            'position: absolute; ' +
-            'top: 10%; ' +
-            'padding-left: 20vw;!important;' +
-//            'left:20%; ' +
-            'height: auto; ' +
-            'transform: translate(-50%, -50%)' +
-//        'width: calc(100% - 80px); ' +
-            'z-index: 1; ' +
-            'border-color: rgba(217, 83, 79, 0.9); ' +
-            '}' +
-            '.orgchart {' +
-            'background: rgba(255,255,255,0.75);' +
-            '}' +
-            '@media screen and (max-width: 400px) { ' +
-            ' #chart-container {' +
-            'padding-left: 20px;' +
-            '}' +
-            '</style>' +
-            ' <div id="chart-container"></div>'
+                '#chart-container { ' +
+                'position: absolute; ' +
+                'top: 10%; ' +
+                'padding-left: 20vw;!important;' +
+                //            'left:20%; ' +
+                'height: auto; ' +
+                'transform: translate(-50%, -50%)' +
+                //        'width: calc(100% - 80px); ' +
+                'z-index: 1; ' +
+                'border-color: rgba(217, 83, 79, 0.9); ' +
+                '}' +
+                '.orgchart {' +
+                'background: rgba(255,255,255,0.75);' +
+                '}' +
+                '@media screen and (max-width: 400px) { ' +
+                ' #chart-container {' +
+                'padding-left: 20px;' +
+                '}' +
+                '</style>' +
+                ' <div id="chart-container"></div>'
             ,
             ajaxPre: "",
             createToolbar: function () {
@@ -35,14 +35,14 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                             document.location.href = "/?clearCookies=true";
                         }
                     }),
-                        new sap.m.Button({
-                            icon: "sap-icon://product",
-                            text: "",
-                            press: function () {
-                                that.showApps();
-                            }
+                    new sap.m.Button({
+                        icon: "sap-icon://product",
+                        text: "",
+                        press: function () {
+                            that.showApps();
+                        }
 
-                        }),
+                    }),
                     ],
                     contentMiddle: [new sap.m.Label({
                         text: "{selectedP>/name}",
@@ -150,7 +150,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var oModel = new sap.ui.model.json.JSONModel();
                 oModel.setData(data);
                 view.setModel(oModel);
-                view.txt = new sap.m.Label({text: ""});
+                view.txt = new sap.m.Label({ text: "" });
 
                 var oList = new sap.m.List({
                     headerText: "Product Lists",
@@ -165,7 +165,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 var actionListItem = new sap.m.ActionListItem("action",
                     {
                         text: "{name}",
-                        customData: [{key: "{code}"}],
+                        customData: [{ key: "{code}" }],
                         press: function (oControlEvent) {
                             view.splitApp.to("detailPage", "slide");
                             var oPressedItem = view.getModel().getProperty(this.getBindingContext().getPath());
@@ -244,7 +244,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
                     }
                 });
-                var flRight = new sap.m.FlexBox({direction: sap.m.FlexDirection.Row, items: [b]});
+                var flRight = new sap.m.FlexBox({ direction: sap.m.FlexDirection.Row, items: [b] });
                 var flLeft = new sap.m.FlexBox({
                     direction: sap.m.FlexDirection.Row, items: [new sap.m.Button({
                         icon: "sap-icon://arrow-left",
@@ -337,7 +337,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         var _oInput = oEvent.getSource();
                         var val = _oInput.getValue();
                         if (_oInput.getCustomData().length == 0)
-                            _oInput.addCustomData(new sap.ui.core.CustomData({key: val}))
+                            _oInput.addCustomData(new sap.ui.core.CustomData({ key: val }))
                         else
                             _oInput.getCustomData()[0].setKey(val);
 
@@ -350,7 +350,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         val = val.replace(/[^\d\.-]/g, '');
                         //_oInput.setValue(val);
                         if (_oInput.getCustomData().length == 0)
-                            _oInput.addCustomData(new sap.ui.core.CustomData({key: val}))
+                            _oInput.addCustomData(new sap.ui.core.CustomData({ key: val }))
                         else
                             _oInput.getCustomData()[0].setKey(parseFloat(val));
                     });
@@ -373,7 +373,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         var dtxx = [];
                         var spt = sqlStr.substring(1).split(",");
                         for (var i1 in spt) {
-                            var dttt = {CODE: "", NAME: ""};
+                            var dttt = { CODE: "", NAME: "" };
                             var sx = spt[i1].split("/");
                             dttt.CODE = "" + sx[0];
                             dttt.NAME = "" + sx[1];
@@ -391,7 +391,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
 
                 if (c.getCustomData().length == 0
                 )
-                    c.addCustomData(new sap.ui.core.CustomData({key: ""}));
+                    c.addCustomData(new sap.ui.core.CustomData({ key: "" }));
 
                 if (c instanceof sap.m.DatePicker) {
                     var sett = sap.ui.getCore().getModel("settings").getData();
@@ -440,7 +440,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 if (comp.field_type != undefined && comp.field_type == "number") {
                     val = val.replace(/[^\d\.-]/g, '');
                     if (comp.getCustomData().length == 0)
-                        comp.addCustomData(new sap.ui.core.CustomData({key: val}))
+                        comp.addCustomData(new sap.ui.core.CustomData({ key: val }))
                     else
                         comp.getCustomData()[0].setKey(parseFloat(val));
                     comp.setValue(val);
@@ -452,7 +452,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     comp.setValue(val);
                     // if (customVal.length > 0)
                     if (comp.getCustomData().length == 0)
-                        comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                        comp.addCustomData(new sap.ui.core.CustomData({ key: customVal }))
                     else
                         comp.getCustomData()[0].setKey(customVal);
                     if (comp instanceof sap.m.InputBase && executeChange)
@@ -462,7 +462,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 if (comp instanceof sap.m.ComboBoxBase) {
                     comp.setSelectedItem(this.getIndexByKey(comp, val));
                     if (comp.getCustomData().length == 0)
-                        comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                        comp.addCustomData(new sap.ui.core.CustomData({ key: customVal }))
                     else
                         comp.getCustomData()[0].setKey(customVal);
 
@@ -474,7 +474,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     comp.setText(val);
                     // if (customVal.length > 0)
                     if (comp.getCustomData().length == 0)
-                        comp.addCustomData(new sap.ui.core.CustomData({key: customVal}))
+                        comp.addCustomData(new sap.ui.core.CustomData({ key: customVal }))
                     else
                         comp.getCustomData()[0].setKey(customVal);
 
@@ -494,8 +494,8 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                 if (comp instanceof sap.m.CheckBox) {
                     if (comp.trueValues != undefined)
                         (val == comp.trueValues[0] ? comp.setSelected(true) : comp.setSelected(false));
-                    if (executeChange)
-                        comp.fireSelect();
+                    // if (executeChange)
+                    //     comp.fireSelect();
 
                 }
 
@@ -527,20 +527,20 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     }
                     if (typeof content[i] === "string" && !content[i].startsWith("@") &&
                         !content[i].startsWith("#")) {
-                        var setx = {text: content[i]};
+                        var setx = { text: content[i] };
                         if (prev_span != "")
-                            setx["layoutData"] = new sap.ui.layout.GridData({span: prev_span});
+                            setx["layoutData"] = new sap.ui.layout.GridData({ span: prev_span });
 
                         cnt.push(new sap.m.Label(setx));
                     }
                     else if (typeof content[i] === "string" && content[i].startsWith("@")) {
-                        var setx = {text: content[i].substr(1), textAlign: sap.ui.core.TextAlign.Right};
+                        var setx = { text: content[i].substr(1), textAlign: sap.ui.core.TextAlign.Right };
                         if (prev_span != "")
-                            setx["layoutData"] = new sap.ui.layout.GridData({span: prev_span});
+                            setx["layoutData"] = new sap.ui.layout.GridData({ span: prev_span });
                         cnt.push(new sap.m.Text(setx));
                     }
                     else if (typeof content[i] === "string" && content[i].startsWith("#"))
-                        cnt.push(new sap.ui.core.Title({text: content[i].substr(1)}));
+                        cnt.push(new sap.ui.core.Title({ text: content[i].substr(1) }));
                     else
                         cnt.push(content[i]);
                     // if (cnt[cnt.length - 1].getLayoutData() != undefined)
@@ -567,7 +567,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                     content: cnt,
                     toolbar: new sap.m.Toolbar({
                         content: [
-                            new sap.m.Title({text: title, level: "H4", titleStyle: "H4"}),
+                            new sap.m.Title({ text: title, level: "H4", titleStyle: "H4" }),
                         ]
                     })
                 });
@@ -590,7 +590,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
             }
             ,
             formAddItem(frm, label, controls) {
-                frm.addContent(new sap.m.Label({text: label}));
+                frm.addContent(new sap.m.Label({ text: label }));
                 if (controls instanceof Array)
                     for (var i in controls)
                         frm.addContent(controls[i]);
@@ -793,7 +793,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         qv.mLctb.cols[col].mHideCol = true;
                     for (var col in dtx) {
                         var cx = qv.mLctb.getColByName(dtx[col].ITEM_NAME);
-                        if (cx==undefined) continue;
+                        if (cx == undefined) continue;
                         if (dtx[col].DISPLAY_TYPE != "INVISIBLE") {
                             cx.mHideCol = false;
                             visibleCol.push(cx);
@@ -897,7 +897,7 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                                         var rts = rt[i].split("=");
                                         oModel.setProperty(currentRowoIndexContext.sPath + "/" + rts[0], data[rts[1]], undefined, true);
                                         if (cx.mColName == rts[0])
-                                            input.fireChange({value: data[rts[1]]});
+                                            input.fireChange({ value: data[rts[1]] });
                                     }
                                     return true;
                                 }, "100%", "100%", 10, false);
@@ -1053,12 +1053,39 @@ sap.ui.define("sap/ui/ce/generic/UtilGen", [],
                         frm.getContent()[i].setEnabled(b);
 
                 }
+            },
+            isJODatesInput: function (ordNo) {
+                return true;
+                var ord_dates = {
+                    1: ["lg_l_clearance_date", "lg_l_arrival_date", "lg_loading_date", "lg_cross_load", "lg_l_delivery_date", "lg_l_offload_date", "lg_closing"],
+                    2: ["lg_etd", "lg_eta", "lg_departure", "lg_l_arrival_date", "lg_l_clearance_date", "lg_release", "lg_loading_date", "lg_l_offload_date", "lg_l_delivery_date", "lg_closing"],
+                    3: ["lg_etd", "lg_eta", "lg_departure", "lg_l_arrival_date", "lg_l_clearance_date", "lg_release", "lg_loading_date", "lg_l_offload_date", "lg_l_delivery_date", "lg_closing"],
+                    4: ["lg_l_clearance_date", "lg_loading_date", "lg_release", "lg_start_cust_clearance", "lg_complete_custom", "lg_release_from_border", "lg_cross_load", "lg_l_offload_date", "lg_l_delivery_date", "lg_closing"],
+                    5: ["lg_cargo_in", "lg_cargo_out"]
+                };
+                var dt = Util.execSQL("select *from lg_info where ord_code=106 and ord_no=" + Util.quoted(ordNo));
+                if (dt.ret == "SUCCESS") {
+                    var dtx = JSON.parse("{" + dt.data + "}").data;
+                    if (dtx.length <= 0) {
+                        sap.m.MessageToast.show("No calendar schedule found !");
+                        return false;
+                    }
+                    var ot = Util.getSQLValue("select ord_type from order1 where ord_code=106 and ord_no=" + Util.quoted(ordNo));
+                    var tmpa = ord_dates[ot];
+                    for (var i in tmpa)
+                        if (Util.nvl(dtx[0][tmpa[i].toUpperCase()], "") == "") {
+                            sap.m.MessageToast.show("Err !, " + tmpa[i] + " must have value !");
+                            return false;
+                        }
+                    return true;
+                } else
+                    return false;
             }
         };
 
 
         return UtilGen;
     })
-;
+    ;
 
 

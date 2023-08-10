@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVou152" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVou152" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isIgnorePagination="true" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="92"/>
+	<property name="ireport.y" value="80"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
 	<parameter name="COMPANY_NAME" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="COMPANY_NAMEA" class="java.lang.String" isForPrompting="false"/>
@@ -30,7 +30,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select lg_info.LG_A_MAWB bl,     order1.* ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=152 and ord_no=order1.ord_no),(select max(ord_fc_descr) from order2 where ord_code=152 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
+		<![CDATA[select lg_info.LG_A_MAWB bl,     order1.* ,lg_info.*,(select max(ord_fc_descr) from order2 where ord_code=152 and ord_no=order1.ord_no) max_currency,(select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=152 and ord_no=order1.ord_no) FC_AMOUNT ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=152 and ord_no=order1.ord_no),(select max(SUBSTR(ord_fc_descr,1,3)) from order2 where ord_code=152 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
 (select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
 (select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=152 and ord_no=order1.ord_no) FC_AMOUNT,
@@ -157,6 +157,9 @@ order by order1.ord_no]]>
 	<field name="LG_CONTAINER_SIZE_3" class="java.math.BigDecimal"/>
 	<field name="LG_MEASURES" class="java.lang.String"/>
 	<field name="LG_NO_OF_WEIGHT" class="java.lang.String"/>
+	<field name="LG_DEPART_LOC" class="java.lang.String"/>
+	<field name="LG_ARRIVAL_LOC" class="java.lang.String"/>
+	<field name="LG_END_CONSIGN_NAME" class="java.lang.String"/>
 	<field name="LG_KIND" class="java.lang.String"/>
 	<field name="LG_PERMANENT_EXEMPTION" class="java.lang.String"/>
 	<field name="LG_TEMPORARY_IMPORT" class="java.lang.String"/>
@@ -206,12 +209,16 @@ order by order1.ord_no]]>
 	<field name="LG_CARGO_OUT" class="java.sql.Timestamp"/>
 	<field name="LG_CLOSING" class="java.sql.Timestamp"/>
 	<field name="LG_DEPARTURE" class="java.sql.Timestamp"/>
+	<field name="LG_ETD" class="java.sql.Timestamp"/>
+	<field name="LG_ETA" class="java.sql.Timestamp"/>
+	<field name="LG_SHIPING_LINE_NAME" class="java.lang.String"/>
+	<field name="MAX_CURRENCY" class="java.lang.String"/>
+	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
 	<field name="PARENT_NAME" class="java.lang.String"/>
-	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
 	<field name="PAYTERM_1" class="java.lang.String"/>
 	<field name="ATTN_1" class="java.lang.String"/>
 	<field name="CUST_REF" class="java.lang.String"/>
@@ -223,7 +230,7 @@ order by order1.ord_no]]>
 	<field name="LG_MEASURES_O1" class="java.lang.String"/>
 	<field name="LG_NO_OF_PACKAGE_O1" class="java.math.BigDecimal"/>
 	<field name="LG_NO_OF_WEIGHT_O1" class="java.lang.String"/>
-	<group name="N1">
+	<group name="N1" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{ORD_NO}]]></groupExpression>
 		<groupHeader>
 			<band height="398">
@@ -242,8 +249,8 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA[$P{VOU_TITLE}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="strHeader" x="5" y="122" width="242" height="68" uuid="f7b326a7-dc97-482b-8234-122bd540ac88"/>
-					<textFieldExpression><![CDATA["Bill To : "+$F{PARENT_CODE}+"-"+$F{PARENT_NAME}]]></textFieldExpression>
+					<reportElement style="strHeader" x="5" y="122" width="242" height="40" uuid="f7b326a7-dc97-482b-8234-122bd540ac88"/>
+					<textFieldExpression><![CDATA["Cust# "+$F{PARENT_CODE}+"-"+$F{PARENT_NAME}]]></textFieldExpression>
 				</textField>
 				<rectangle>
 					<reportElement x="248" y="118" width="306" height="109" uuid="f2463cde-b6a7-49c3-b0e8-910079d58adf"/>
@@ -259,26 +266,26 @@ order by order1.ord_no]]>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Invoice No #]]></text>
+					<text><![CDATA[CN No #]]></text>
 				</staticText>
 				<staticText>
 					<reportElement style="strHeader" x="261" y="162" width="100" height="20" uuid="4ad3aa4a-22da-44ce-831d-efbc80144f49"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Invoice Date  #]]></text>
+					<text><![CDATA[Transaction Date  #]]></text>
 				</staticText>
 				<staticText>
 					<reportElement style="strHeader" x="261" y="197" width="100" height="20" uuid="0713a877-99e2-47bb-b3cc-c7abd8f090c0"/>
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[Inv Ref #]]></text>
+					<text><![CDATA[ Ref #]]></text>
 				</staticText>
 				<textField>
-					<reportElement style="strHeader" x="350" y="129" width="204" height="20" uuid="db2fead9-9b7a-4046-b12d-ac809cbf1ca8"/>
+					<reportElement style="strHeader" x="344" y="131" width="159" height="20" uuid="db2fead9-9b7a-4046-b12d-ac809cbf1ca8"/>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression><![CDATA[$F{JOB_ONAME} +" - "+ $F{ONAME}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{ORD_NO}+"-"+ $F{ONAME}]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd/MM/yyyy">
 					<reportElement style="strHeader" x="335" y="162" width="218" height="20" uuid="2c3130a6-9e18-4e57-8896-467e45b8b434"/>
@@ -481,6 +488,13 @@ order by order1.ord_no]]>
 					<textElement textAlignment="Center" verticalAlignment="Middle"/>
 					<textFieldExpression><![CDATA[$F{LG_DESCRIPTION}]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement style="strHeader" x="5" y="162" width="242" height="44" uuid="f816b49a-72e7-444b-ad7f-5be742220809"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{ORD_REF}+"-"+$F{ORD_REFNM}]]></textFieldExpression>
+				</textField>
 				<staticText>
 					<reportElement style="strHeader" x="17" y="206" width="48" height="20" uuid="b90942a3-7cfd-4897-afbb-d23fd227ffc4"/>
 					<textElement>
@@ -549,20 +563,23 @@ order by order1.ord_no]]>
 					</textElement>
 					<text><![CDATA[IID]]></text>
 				</staticText>
+				<textField>
+					<reportElement style="strHeader" x="503" y="131" width="53" height="20" uuid="29ff8412-3bab-4aa4-87de-d5a5bc592109"/>
+					<textElement textAlignment="Center">
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{MAX_CURRENCY}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="217">
-				<image scaleImage="RealSize" hAlign="Center" vAlign="Bottom">
-					<reportElement mode="Opaque" x="62" y="108" width="140" height="92" uuid="b812b5f6-402b-41eb-a338-c07c0d257a8c"/>
-					<imageExpression><![CDATA[$P{COMPANY_LOGO}.substring(0,2)+ "_sign.jpg"]]></imageExpression>
-				</image>
 				<staticText>
 					<reportElement style="strHeader" x="1" y="1" width="115" height="24" uuid="26fb5599-c008-4278-ad91-e3959ac52e66"/>
 					<textElement textAlignment="Center">
 						<font fontName="Arial" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Sales Invoice Amount:]]></text>
+					<text><![CDATA[C.N. Amount:]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="116" y="1" width="311" height="24" uuid="cc1f6b5c-f04a-4bb8-b009-659b56282d99"/>

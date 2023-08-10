@@ -1,0 +1,76 @@
+
+
+ord_type=1
+
+"lg_l_clearance_date
+lg_l_arrival_date
+lg_loading_date
+lg_cross_load
+lg_l_delivery_date
+lg_l_offload_date
+lg_closing
+
+2
+lg_etd
+lg_eta
+lg_departure
+lg_l_arrival_date
+lg_l_clearance_date
+lg_release
+lg_loading_date
+lg_l_offload_date
+lg_l_delivery_date
+lg_closing
+
+3
+lg_etd
+lg_eta
+lg_departure
+lg_l_arrival_date
+lg_l_clearance_date
+lg_release
+lg_loading_date
+lg_l_offload_date
+lg_l_delivery_date
+lg_closing
+
+4
+lg_l_clearance_date
+lg_loading_date
+lg_release
+lg_start_cust_clearance
+lg_complete_custom
+lg_release_from_border
+lg_cross_load
+lg_l_offload_date
+lg_l_delivery_date
+lg_closing
+
+5
+
+lg_cargo_in
+lg_cargo_out
+
+
+
+
+
+","lg_l_clearance_date","lg_l_arrival_date","lg_loading_date","lg_cross_load","lg_l_delivery_date","lg_l_offload_date","lg_closing","","2","lg_etd","lg_eta","lg_departure","lg_l_arrival_date","lg_l_clearance_date","lg_release","lg_loading_date","lg_l_offload_date","lg_l_delivery_date","lg_closing","","3","lg_etd","lg_eta","lg_departure","lg_l_arrival_date","lg_l_clearance_date","lg_release","lg_loading_date","lg_l_offload_date","lg_l_delivery_date","lg_closing","","4","lg_l_clearance_date","lg_loading_date","lg_release","lg_start_cust_clearance","lg_complete_custom","lg_release_from_border","lg_cross_load","lg_l_offload_date","lg_l_delivery_date","lg_closing","","5","","lg_cargo_in","lg_cargo_out","
+
+
+
+            validateJOTransaction: function (ordNo) {
+
+                var ord_dates = {
+                    1: ["lg_l_clearance_date", "lg_l_arrival_date", "lg_loading_date", "lg_cross_load", "lg_l_delivery_date", "lg_l_offload_date", "lg_closing"],
+                    2: ["lg_etd", "lg_eta", "lg_departure", "lg_l_arrival_date", "lg_l_clearance_date", "lg_release", "lg_loading_date", "lg_l_offload_date", "lg_l_delivery_date", "lg_closing"],
+                    3: ["lg_etd", "lg_eta", "lg_departure", "lg_l_arrival_date", "lg_l_clearance_date", "lg_release", "lg_loading_date", "lg_l_offload_date", "lg_l_delivery_date", "lg_closing"],
+                    4: ["lg_l_clearance_date", "lg_loading_date", "lg_release", "lg_start_cust_clearance", "lg_complete_custom", "lg_release_from_border", "lg_cross_load", "lg_l_offload_date", "lg_l_delivery_date", "lg_closing"],
+                    5: ["lg_cargo_in", "lg_cargo_out"]
+                }
+                var dt = Util.execSQL("select *from lg_info where ord_code=106 and ord_no=" + Util.quoted(ordNo));
+                if (dt.ret == "SUCCESS") {
+                    var dtx = JSON.parse("{" + dt.data + "}").data;
+                }
+
+            }

@@ -30,13 +30,15 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select lg_info.LG_A_MAWB bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
+		<![CDATA[select nvl(lg_info.LG_A_MAWB,lg_info.lg_s_mbl) bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
 (select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 (select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no) FC_AMOUNT ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no),(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
 (select max(payterm) from order1 o where ord_code=106 and ord_no=order1.ord_reference) payterm_1,
 (select max(attn) from order1 o where ord_code=106 and ord_no=order1.ord_reference) attn_1,
-(select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,y.email,ORDER1.ONAME,
+(select max(ORD_SHIP) from order1 o where ord_code=106 and ord_no=order1.ord_reference) CUST_REF,y.addr,y.tel,y.reference,
+(select emails from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) email
+,ORDER1.ONAME,
 (select bank_details from currency_master where code=(select max(ord_fc_descr) from order2 where order2.ord_no=order1.ord_no and ord_code=111)) bnk,
 (select lg_measures from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) lg_measures_o1,
 (select lg_no_of_package from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) lg_no_of_package_o1,
@@ -157,6 +159,8 @@ order by order1.ord_no]]>
 	<field name="LG_CONTAINER_SIZE_3" class="java.math.BigDecimal"/>
 	<field name="LG_MEASURES" class="java.lang.String"/>
 	<field name="LG_NO_OF_WEIGHT" class="java.lang.String"/>
+	<field name="LG_DEPART_LOC" class="java.lang.String"/>
+	<field name="LG_ARRIVAL_LOC" class="java.lang.String"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
@@ -209,6 +213,8 @@ order by order1.ord_no]]>
 	<field name="LG_CARGO_OUT" class="java.sql.Timestamp"/>
 	<field name="LG_CLOSING" class="java.sql.Timestamp"/>
 	<field name="LG_DEPARTURE" class="java.sql.Timestamp"/>
+	<field name="LG_ETD" class="java.sql.Timestamp"/>
+	<field name="LG_ETA" class="java.sql.Timestamp"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>

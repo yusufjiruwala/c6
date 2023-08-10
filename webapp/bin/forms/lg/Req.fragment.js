@@ -12,13 +12,13 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.ordType = this.oController.ordType;
         this.ordNo = this.oController.ordNo;
 
-        this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
+        this.joApp = new sap.m.SplitApp({ mode: sap.m.SplitAppMode.HideMode });
 
 
-        this.pgPO = new sap.m.Page({showHeader: false});
-        this.pgSO = new sap.m.Page({showHeader: false});
-        this.pgDN = new sap.m.Page({showHeader: false});
-        this.pgPI = new sap.m.Page({showHeader: false});
+        this.pgPO = new sap.m.Page({ showHeader: false });
+        this.pgSO = new sap.m.Page({ showHeader: false });
+        this.pgDN = new sap.m.Page({ showHeader: false });
+        this.pgPI = new sap.m.Page({ showHeader: false });
 
         this.bk = new sap.m.Button({
             icon: "sap-icon://nav-back",
@@ -77,7 +77,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             }
         });
 
-         this.cmdPrTlcD = new sap.m.Button({
+        this.cmdPrTlcD = new sap.m.Button({
             icon: "sap-icon://print", text: "TLC Draft", press: function () {
                 that.printTLCD();
             }
@@ -87,10 +87,10 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
 
 
         this.types = UtilGen.createControl(sap.m.ComboBox, this.view, "req_types", {
-            customData: [{key: ""}],
+            customData: [{ key: "" }],
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{CODE}" }),
                 templateShareable: true
             },
             selectionChange: function (event) {
@@ -200,7 +200,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
                         that.printSel();
                     }
                 }),
-                new sap.m.Title({text: "JO # " + that.qryStr}),
+                new sap.m.Title({ text: "JO # " + that.qryStr }),
                 // Post as selected.
                 new sap.m.Button(view.createId("reqCmdPost"), {
                     icon: "sap-icon://accept",
@@ -232,7 +232,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         this.qv.getControl().setAlternateRowColors(false);
 
 
-//        var sc = new sap.m.ScrollContainer({height: "100%"});
+        //        var sc = new sap.m.ScrollContainer({height: "100%"});
 
         //      sc.addContent(this.qv.getControl());
 
@@ -643,7 +643,7 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
         if (dt.ret = "SUCCESS")
             Util.doXhr("report?reportfile=rptVou" + fn + oc, true, function (e) {
                 if (this.status == 200) {
-                    var blob = new Blob([this.response], {type: "application/pdf"});
+                    var blob = new Blob([this.response], { type: "application/pdf" });
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
                     link.target = "_blank";
@@ -815,107 +815,107 @@ sap.ui.jsfragment("bin.forms.lg.Req", {
             }
         );
         var dlg = new sap.m.Dialog({
-                content: [vb],
-                title: "Update info",
-                buttons: [
-                    new sap.m.Button({
-                        text: "Cancel",
-                        press: function () {
-                            dlg.close();
+            content: [vb],
+            title: "Update info",
+            buttons: [
+                new sap.m.Button({
+                    text: "Cancel",
+                    press: function () {
+                        dlg.close();
+
+                    }
+                }),
+                new sap.m.Button({
+                    text: "Pay All",
+                    press: function () {
+                        for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
+                            var oa = qvDt.mLctb.getFieldValue(i, "ORD_AMT");
+                            Util.setCellColValue(qvDt.getControl(), i, "PAID_AMT", oa);
+                        }
+                    }
+                }),
+                new sap.m.Button({
+                    text: "Update",
+                    press: function () {
+                        var sq = "update order1 " +
+                            "set ord_txt_wo=:wo , " +
+                            "ord_txt_wodate=:wodate , " +
+                            "ord_txt_woval=:woval , " +
+                            "ord_txt_iiddate=:iiddate ," +
+                            "ord_txt_iidval=:iidval ," +
+                            "ord_txt_iidinvno=:iidinvno ," +
+                            "ord_txt_iidinvdate=:iidinvdate ," +
+                            "ord_txt_iidinvval=:iidinvval ,  " +
+                            "ord_txt_iid=:iid ," +
+                            "ord_txt_paid_amt=:paid_amt ," +
+                            "ord_txt_paid_date=:paid_date ," +
+                            "ord_txt_PAID_REF=:paid_ref  " +
+                            "where ord_no=:on and ord_code=" + oc + ";";
+                        var sqs = "";
+                        for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
+                            var wo = Util.getCellColValue(qvDt.getControl(), i, "WO");
+                            var wodate = Util.getCellColValue(qvDt.getControl(), i, "WODATE");
+                            var woval = Util.getCellColValue(qvDt.getControl(), i, "WOVAL");
+                            var iid = Util.getCellColValue(qvDt.getControl(), i, "IID");
+                            var iiddate = Util.getCellColValue(qvDt.getControl(), i, "IIDDATE");
+                            var iidval = Util.getCellColValue(qvDt.getControl(), i, "IIDVAL");
+                            var iidinvno = Util.getCellColValue(qvDt.getControl(), i, "IIDINVNO");
+                            var iidinvdate = Util.getCellColValue(qvDt.getControl(), i, "IIDINVDATE");
+                            var iidinvval = Util.getCellColValue(qvDt.getControl(), i, "IIDINVVAL");
+                            var paid_amt = Util.getCellColValue(qvDt.getControl(), i, "PAID_AMT");
+                            var paid_date = Util.getCellColValue(qvDt.getControl(), i, "PAID_DATE");
+                            var paid_ref = Util.getCellColValue(qvDt.getControl(), i, "PAID_REF");
+
+
+                            var on = Util.getCellColValue(qvDt.getControl(), i, "ORD_NO");
+                            var s = sq.replace(/:wodate/g, Util.toOraDateString(wodate));
+                            s = s.replace(/:woval/g, Util.quoted(woval));
+                            s = s.replace(/:wo/g, Util.quoted(wo));
+
+                            s = s.replace(/:iiddate/g, Util.toOraDateString(iiddate));
+                            s = s.replace(/:iidval/g, Util.quoted(iidval));
+                            s = s.replace(/:iidinvno/g, Util.quoted(iidinvno));
+                            s = s.replace(/:iidinvdate/g, Util.toOraDateString(iidinvdate));
+                            s = s.replace(/:iidinvval/g, Util.quoted(iidinvval));
+                            s = s.replace(/:paid_amt/g, Util.quoted(paid_amt));
+                            s = s.replace(/:paid_ref/g, Util.quoted(paid_ref));
+                            s = s.replace(/:paid_date/g, Util.toOraDateString(paid_date));
+
+                            s = s.replace(/:iid/g, Util.quoted(iid));
+
+                            s = s.replace(/:on/g, Util.quoted(on));
+
+                            sqs += s;
+                        }
+                        if (sqs.length > 0) {
+                            sqs = "begin " + sqs + " end;";
+                            var oSql = {
+                                "sql": sqs,
+                                "ret": "NONE",
+                                "data": null
+                            };
+                            Util.doAjaxJson("sqlexe", oSql, false).done(function (data) {
+                                console.log(data);
+                                if (data == undefined) {
+                                    sap.m.MessageToast.show("Error: unexpected, check server admin");
+                                    return;
+                                }
+                                if (data.ret != "SUCCESS") {
+                                    sap.m.MessageToast.show("Error :" + data.ret);
+                                    return;
+                                }
+
+                                sap.m.MessageToast.show("Updated Successfully !");
+
+                            });
 
                         }
-                    }),
-                    new sap.m.Button({
-                        text: "Pay All",
-                        press: function () {
-                            for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
-                                var oa = qvDt.mLctb.getFieldValue(i, "ORD_AMT");
-                                Util.setCellColValue(qvDt.getControl(), i, "PAID_AMT", oa);
-                            }
-                        }
-                    }),
-                    new sap.m.Button({
-                        text: "Update",
-                        press: function () {
-                            var sq = "update order1 " +
-                                "set ord_txt_wo=:wo , " +
-                                "ord_txt_wodate=:wodate , " +
-                                "ord_txt_woval=:woval , " +
-                                "ord_txt_iiddate=:iiddate ," +
-                                "ord_txt_iidval=:iidval ," +
-                                "ord_txt_iidinvno=:iidinvno ," +
-                                "ord_txt_iidinvdate=:iidinvdate ," +
-                                "ord_txt_iidinvval=:iidinvval ,  " +
-                                "ord_txt_iid=:iid ," +
-                                "ord_txt_paid_amt=:paid_amt ," +
-                                "ord_txt_paid_date=:paid_date ," +
-                                "ord_txt_PAID_REF=:paid_ref  " +
-                                "where ord_no=:on and ord_code=" + oc + ";";
-                            var sqs = "";
-                            for (var i = 0; i < qvDt.mLctb.rows.length; i++) {
-                                var wo = Util.getCellColValue(qvDt.getControl(), i, "WO");
-                                var wodate = Util.getCellColValue(qvDt.getControl(), i, "WODATE");
-                                var woval = Util.getCellColValue(qvDt.getControl(), i, "WOVAL");
-                                var iid = Util.getCellColValue(qvDt.getControl(), i, "IID");
-                                var iiddate = Util.getCellColValue(qvDt.getControl(), i, "IIDDATE");
-                                var iidval = Util.getCellColValue(qvDt.getControl(), i, "IIDVAL");
-                                var iidinvno = Util.getCellColValue(qvDt.getControl(), i, "IIDINVNO");
-                                var iidinvdate = Util.getCellColValue(qvDt.getControl(), i, "IIDINVDATE");
-                                var iidinvval = Util.getCellColValue(qvDt.getControl(), i, "IIDINVVAL");
-                                var paid_amt = Util.getCellColValue(qvDt.getControl(), i, "PAID_AMT");
-                                var paid_date = Util.getCellColValue(qvDt.getControl(), i, "PAID_DATE");
-                                var paid_ref = Util.getCellColValue(qvDt.getControl(), i, "PAID_REF");
-
-
-                                var on = Util.getCellColValue(qvDt.getControl(), i, "ORD_NO");
-                                var s = sq.replace(/:wodate/g, Util.toOraDateString(wodate));
-                                s = s.replace(/:woval/g, Util.quoted(woval));
-                                s = s.replace(/:wo/g, Util.quoted(wo));
-
-                                s = s.replace(/:iiddate/g, Util.toOraDateString(iiddate));
-                                s = s.replace(/:iidval/g, Util.quoted(iidval));
-                                s = s.replace(/:iidinvno/g, Util.quoted(iidinvno));
-                                s = s.replace(/:iidinvdate/g, Util.toOraDateString(iidinvdate));
-                                s = s.replace(/:iidinvval/g, Util.quoted(iidinvval));
-                                s = s.replace(/:paid_amt/g, Util.quoted(paid_amt));
-                                s = s.replace(/:paid_ref/g, Util.quoted(paid_ref));
-                                s = s.replace(/:paid_date/g, Util.toOraDateString(paid_date));
-
-                                s = s.replace(/:iid/g, Util.quoted(iid));
-
-                                s = s.replace(/:on/g, Util.quoted(on));
-
-                                sqs += s;
-                            }
-                            if (sqs.length > 0) {
-                                sqs = "begin " + sqs + " end;";
-                                var oSql = {
-                                    "sql": sqs,
-                                    "ret": "NONE",
-                                    "data": null
-                                };
-                                Util.doAjaxJson("sqlexe", oSql, false).done(function (data) {
-                                    console.log(data);
-                                    if (data == undefined) {
-                                        sap.m.MessageToast.show("Error: unexpected, check server admin");
-                                        return;
-                                    }
-                                    if (data.ret != "SUCCESS") {
-                                        sap.m.MessageToast.show("Error :" + data.ret);
-                                        return;
-                                    }
-
-                                    sap.m.MessageToast.show("Updated Successfully !");
-
-                                });
-
-                            }
-                            dlg.close();
-                        }
-                    })
-                ]
-            })
-        ;
+                        dlg.close();
+                    }
+                })
+            ]
+        })
+            ;
         dlg.open();
     }
 });

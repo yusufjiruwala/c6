@@ -30,7 +30,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select lg_info.LG_A_MAWB bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
+		<![CDATA[select nvl(lg_info.LG_A_MAWB,lg_info.lg_s_mbl) bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
 (select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 (select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no) FC_AMOUNT ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no),(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
@@ -158,6 +158,8 @@ order by order1.ord_no]]>
 	<field name="LG_CONTAINER_SIZE_3" class="java.math.BigDecimal"/>
 	<field name="LG_MEASURES" class="java.lang.String"/>
 	<field name="LG_NO_OF_WEIGHT" class="java.lang.String"/>
+	<field name="LG_DEPART_LOC" class="java.lang.String"/>
+	<field name="LG_ARRIVAL_LOC" class="java.lang.String"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
@@ -210,6 +212,8 @@ order by order1.ord_no]]>
 	<field name="LG_CARGO_OUT" class="java.sql.Timestamp"/>
 	<field name="LG_CLOSING" class="java.sql.Timestamp"/>
 	<field name="LG_DEPARTURE" class="java.sql.Timestamp"/>
+	<field name="LG_ETD" class="java.sql.Timestamp"/>
+	<field name="LG_ETA" class="java.sql.Timestamp"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
@@ -466,7 +470,7 @@ order by order1.ord_no]]>
 					<textElement>
 						<font fontName="DejaVu Sans" size="14" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["TRANS LOGITICS COMPANY KUWAIT"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["TRANS-LOGISTICS COMPANY KUWAIT"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement style="labelHeader" x="5" y="25" width="299" height="58" uuid="bae41d42-fc54-4262-9a65-77488879200d"/>
@@ -574,10 +578,6 @@ order by order1.ord_no]]>
 		</groupHeader>
 		<groupFooter>
 			<band height="202" splitType="Stretch">
-				<image scaleImage="RealSize" hAlign="Center" vAlign="Bottom">
-					<reportElement mode="Opaque" x="62" y="108" width="140" height="92" uuid="b812b5f6-402b-41eb-a338-c07c0d257a8c"/>
-					<imageExpression><![CDATA["co_sign.jpg"]]></imageExpression>
-				</image>
 				<staticText>
 					<reportElement style="strHeader" x="1" y="1" width="115" height="24" uuid="26fb5599-c008-4278-ad91-e3959ac52e66"/>
 					<textElement textAlignment="Center">

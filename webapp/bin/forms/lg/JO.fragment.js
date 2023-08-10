@@ -2,17 +2,18 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
     createContent: function (oController) {
         var that = this;
+        jQuery.sap.require("sap.m.MessageBox");
         this.oController = oController;
         this.view = oController.getView();
         this.qryStr = "";
-        this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
+        this.joApp = new sap.m.SplitApp({ mode: sap.m.SplitAppMode.HideMode });
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
             ord_code: 106,
             onm: ""
         };
-        this.pgDetail = new sap.m.Page({showHeader: false});
+        this.pgDetail = new sap.m.Page({ showHeader: false });
 
         this.bk = new sap.m.Button({
             icon: "sap-icon://nav-back",
@@ -64,8 +65,9 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         this.jo.ord_date.setEditable(true);
         this.jo.ordacc.setEnabled(true);
         this.jo.costcent.setEnabled(true);
-        this.fill_cc();
         this.fill_trans_type();
+        this.fill_cc();
+
 
         if (this.qryStr.length == 0) {
             UtilGen.resetDataJson(this.jo);
@@ -99,26 +101,55 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 UtilGen.setControlValue(this.jo.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
                 var cnt = Util.getSQLValue("select nvl(count(*),0) from order1 where ord_code!=103 and ord_reference=" + dtx[0].ORD_NO);
                 if (cnt > 0) {
-                    this.fill_cc();
                     this.fill_trans_type();
+                    this.fill_cc();
                     this.jo.ord_ref.setEnabled(false);
                     this.jo.ord_date.setEditable(false);
                     this.jo.ordacc.setEnabled(false);
                     this.jo.ord_type.setEnabled(false);
                     this.jo.costcent.setEnabled(false);
+                    this.controlTruck();
                 } else {
-                    this.fill_cc(false);
                     this.fill_trans_type(false);
+                    this.fill_cc(false);
                     this.controlTruck();
                 }
-
+            UtilGen.setControlValue(this.jo.costcent, dtx[0].COSTCENT, dtx[0].COSTCENT, true);
+            this.controlTruck();             
             }
 
         }
         //that.generate_jo_no();
     },
 
+    delete_data: function () {
+        var that = this;
+        if (Util.nvl(that.qryStr, "") == "")
+            return;
+        var cnt = Util.getSQLValue("select nvl(count(*),0) from order1 where ord_reference=" + Util.quoted(that.qryStr));
+        if (cnt > 0) {
+            sap.m.MessageToast.show("This JO have transactions !, delete first to delete this JO #" + that.qryStr);
+            return;
+        }
+        sap.m.MessageBox.confirm("Are you sure DELETE this JO # " + that.qryStr + " ? ", {
+            title: "Confirm",                                    // default
+            onClose: function (oAction) {
+                if (oAction == sap.m.MessageBox.Action.OK) {
+                    var sq = "begin delete from order1 where ord_code=106 and ord_no=" + Util.quoted(that.qryStr) + "; " +
+                        " delete from lg_info where ord_code=106 and ord_no=" + Util.quoted(that.qryStr) + "; end; ";
+                    var dt = Util.execSQL(sq);
+                    if (dt.ret == "SUCCESS") {
+                        sap.m.MessageToast.show("Deleted successfully");
+                        that.joApp.backFunction();
+                    }
 
+                }
+            },                                       // default
+            styleClass: "",                                      // default
+            initialFocus: null,                                  // default
+            textDirection: sap.ui.core.TextDirection.Inherit     // default
+        });
+    },
     createViewJOControls: function (addForm, pg) {
         var that = this;
         var sett = sap.ui.getCore().getModel("settings").getData();
@@ -147,10 +178,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
         // location code
         this.jo.location_code = UtilGen.createControl(sap.m.ComboBox, this.view, "location_code", {
-            customData: [{key: ""}],
+            customData: [{ key: "" }],
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{CODE}" }),
                 templateShareable: true
             },
             selectionChange: function (event) {
@@ -160,10 +191,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
         // company no (lcno)
         this.jo.lcno = UtilGen.createControl(sap.m.ComboBox, this.view, "company", {
-            customData: [{key: ""}],
+            customData: [{ key: "" }],
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{CODE}" }),
                 templateShareable: true
             },
             selectionChange: function (event) {
@@ -172,10 +203,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         }, "string", undefined, undefined, "select code,name from company order by 1");
         // ord_type air/land/marines
         this.jo.ord_type = UtilGen.createControl(sap.m.ComboBox, this.view, "ord_type", {
-            customData: [{key: ""}],
+            customData: [{ key: "" }],
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{CODE} - {NAME}", key: "{CODE}"}),
+                template: new sap.ui.core.ListItem({ text: "{CODE} - {NAME}", key: "{CODE}" }),
                 templateShareable: true
             },
             selectedKey: "1",
@@ -190,7 +221,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         this.jo.ordacc = UtilGen.createControl(sap.m.ComboBox, this.view, "ORDACC", {
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{CODE} - {NAME}", key: "{CODE}"}),
+                template: new sap.ui.core.ListItem({ text: "{CODE} - {NAME}", key: "{CODE}" }),
                 templateShareable: true
             },
             selectedKey: "01",
@@ -198,7 +229,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 that.generate_jo_no();
                 that.fill_cc();
             },
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string", undefined, undefined, "@01/Import,02/Export,03/Transport,04/Local,05/Third Party");
         //JO No, ORD_NO
         this.jo.ord_no = UtilGen.createControl(sap.m.Input, this.view, "ord_no", {
@@ -206,25 +237,25 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 that.generate_jo_no();
             },
             enabled: false,
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
 
         }, "number");
 
         //JO NO Full  ONAME,
         this.jo.oname = UtilGen.createControl(sap.m.Input, this.view, "oname", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
             editable: false
         }, "string");
         // emails
         this.jo.emails = UtilGen.createControl(sap.m.TextArea, this.view, "joemails", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
             // editable: false
         }, "string");
         // button for emails.
         (this.view.byId("joCmdEmails") != undefined ? this.view.byId("joCmdEmails").destroy() : null);
         this.jo._cmdEmails = new sap.m.Button(this.view.createId("joCmdEmails"),
             {
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S4"}),
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S4" }),
                 text: "Emails",
                 press: function () {
                     that.get_emails_sel();
@@ -234,14 +265,14 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         this.jo.costcent = UtilGen.createControl(sap.m.ComboBox, this.view, "costcent", {
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{TITLE}-{CODE}", key: "{CODE}"}),
+                template: new sap.ui.core.ListItem({ text: "{TITLE}-{CODE}", key: "{CODE}" }),
                 templateShareable: true
             },
             selectedKey: "1001",
             selectionChange: function () {
                 that.controlTruck();
             },
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string", undefined, undefined, "select code,title from accostcent1 where childcount=0 order by path");
 
         //ord_date , ord date
@@ -252,7 +283,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
         //Ord_REF , Customer Code,
         this.jo.ord_ref = UtilGen.createControl(sap.m.SearchField, this.view, "ord_ref", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
             search: function (e) {
                 if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed) {
                     UtilGen.setControlValue(that.jo.ord_ref, "", "", true);
@@ -268,15 +299,15 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
         //ORD_SHIP , Customer Reference
         this.jo.ord_ship = UtilGen.createControl(sap.m.Input, this.view, "ord_ship", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string");
         //ORD_SHIP , lg_cust_ref_2
         this.jo.lg_cust_ref_2 = UtilGen.createControl(sap.m.Input, this.view, "lg_cust_ref2", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string");
         //ADJUST_DESCR, Customer INV#
         this.jo.adjust_descr = UtilGen.createControl(sap.m.Input, this.view, "adjust_descr", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string");
 
         //startdate,starting date
@@ -299,10 +330,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             enabled: false
         }, "date");
         this.jo.attn = UtilGen.createControl(sap.m.Input, this.view, "joAttn", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string");
         this.jo.payterm = UtilGen.createControl(sap.m.Input, this.view, "jopayterm", {
-            layoutData: new sap.ui.layout.GridData({span: "XL4 L4 M4 S4"}),
+            layoutData: new sap.ui.layout.GridData({ span: "XL4 L4 M4 S4" }),
         }, "string");
 
 
@@ -317,6 +348,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             search: function (e) {
                 fnSearchLoc(e, this);
             }
+        }, "string");
+
+        this.jo.lg_end_consign_name = UtilGen.createControl(sap.m.Input, this.view, "joEndCOnsigName", {
+            // layoutData: new sap.ui.layout.GridData({span: "XL4 L6 M6 S6"}),
         }, "string");
 
 
@@ -426,6 +461,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     "Destination", this.jo.payterm,
                     "Depart. Loc.", this.jo.lg_depart_loc,
                     "Arrival Loc.", this.jo.lg_arrival_loc,
+                    "End Cons. Name", this.jo.lg_end_consign_name,
                     "#Cargo",
                     "Type 1", this.jo.lg_cargo_type_1,
                     "Type 2", this.jo.lg_cargo_type_2,
@@ -471,15 +507,15 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 pg.addContent(this.frmJO);
 
             this._cmdNewNo = new sap.m.Button({
-                    text: "Generate Ord No", press: function () {
-                        that.generate_jo_no();
-                    }
-
+                text: "Generate Ord No", press: function () {
+                    that.generate_jo_no();
                 }
+
+            }
             );
 
             this.frmJO.getToolbar().addContent(this.bk);
-            this.frmJO.getToolbar().addContent(new sap.m.Text({text: "Job Order # " + this.qryStr}));
+            this.frmJO.getToolbar().addContent(new sap.m.Text({ text: "Job Order # " + this.qryStr }));
             this.frmJO.getToolbar().addContent(new sap.m.ToolbarSpacer());
             this.frmJO.getToolbar().addContent(this._cmdNewNo);
             this.frmJO.getToolbar().addContent(new sap.m.Button({
@@ -489,7 +525,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             }));
             this.frmJO.getToolbar().addContent(new sap.m.Button({
                 icon: "sap-icon://delete", press: function () {
-
+                    that.delete_data();
                 }
             }));
             this.frmJO.getToolbar().addContent(new sap.m.Button({
@@ -497,7 +533,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     that.save_data(false);
                     Util.doXhr("report?reportfile=rptLGJob&_para_PNO=" + that.qryStr, true, function (e) {
                         if (this.status == 200) {
-                            var blob = new Blob([this.response], {type: "application/pdf"});
+                            var blob = new Blob([this.response], { type: "application/pdf" });
                             var link = document.createElement('a');
                             link.href = window.URL.createObjectURL(blob);
                             link.target = "_blank";
@@ -523,10 +559,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
     createListBox: function (fldname) {
 
         var _obj = UtilGen.createControl(sap.m.ComboBox, this.view, fldname, {
-            customData: [{key: ""}],
+            customData: [{ key: "" }],
             items: {
                 path: "/",
-                template: new sap.ui.core.ListItem({text: "{NAME}", key: "{NAME}"}),
+                template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{NAME}" }),
                 templateShareable: true
             },
             selectionChange: function (event) {
@@ -545,7 +581,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 {
                     items: {
                         path: "/",
-                        template: new sap.ui.core.ListItem({text: "{NAME}", key: "{NAME}"}),
+                        template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{NAME}" }),
                         templateShareable: true
                     },
                     selectedKey: "",
@@ -618,12 +654,14 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             return;
         var sq = "select code,title from accostcent1 where " + jfld + "='Y' and " +
             tfld + "='Y'" + " and childcount=0 order by path";
+
         if (setVal) {
             UtilGen.setControlValue(this.jo.costcent, "", "", true);
             this.jo.costcent.clearSelection();
             Util.fillCombo(this.jo.costcent, sq, false);
             this.jo.costcent.setSelectedItem(this.jo.costcent.getItems()[0]);
-        }
+        } else
+            Util.fillCombo(this.jo.costcent, sq, false);
 
 
     },
@@ -757,7 +795,30 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                                 return false;
                             }
                         }
-
+                        if (that.joDet1.lg_s_mbl != undefined && Util.nvl(that.joDet1.lg_s_mbl.getValue(), "") != "") {
+                            var t1=-1;
+                            if (Util.nvl(that.qryStr,"")!="")
+                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(that.qryStr) + " and lg_s_mbl=" + Util.quoted(that.joDet1.lg_s_mbl.getValue()));
+                            else
+                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_s_mbl=" + Util.quoted(that.joDet1.lg_s_mbl.getValue()));
+                            if (t1 != -1) {
+                                sap.m.MessageToast.show("MBL # " + that.joDet1.lg_s_mbl.getValue() + " entered in JO #" + t1);
+                                return false;
+                            }
+                        }
+                        if (that.joDet1.lg_a_mawb != undefined && Util.nvl(that.joDet1.lg_a_mawb.getValue(), "") != "") {
+                            var t1=-1;
+                            if (Util.nvl(that.qryStr,"")!="")
+                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(that.qryStr) + " and lg_a_mawb=" + Util.quoted(that.joDet1.lg_a_mawb.getValue()));
+                            else
+                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_a_mawb=" + Util.quoted(that.joDet1.lg_a_mawb.getValue()));
+                            if (t1 != -1) {
+                                sap.m.MessageToast.show("MAWB # " + that.joDet1.lg_a_mawb.getValue() + " entered in JO #" + t1);
+                                return false;
+                            }
+                        }
+                        
+                
                         that.joApp.to(that.mainPage, "flip");
                     }
                 }),
@@ -775,7 +836,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         // 1/Land
         if (ord_type == "1") {
             // LG_A_MAWB, MAWB #
-            this.joDet1.lg_a_mawb = this.addControl(frmElements, "AWB", sap.m.Input, "detmwb", {selected: false}, "string");
+            this.joDet1.lg_a_mawb = this.addControl(frmElements, "AWB", sap.m.Input, "detmwb", { selected: false }, "string");
 
             // LG_END_USER_TYPE,  End User Type
             this.joDet1.lg_end_user_type = this.createListBox2("lg_end_user_type", frmElements, "End User Type", true);
@@ -789,7 +850,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             this.joDet1.lg_notes = this.createListBox2("lg_notes", frmElements, "Remark", false);
 
 
-            frmElements.push(new sap.ui.core.Title({text: "Other info"}));
+            frmElements.push(new sap.ui.core.Title({ text: "Other info" }));
 
 
             // LG_L_CLEARANCE_DATE, Clearance Date
@@ -826,19 +887,21 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         if (ord_type == "2") {
 
             // LG_S_VESSEL_NAME,  Vessel Name
-            this.joDet1.lg_s_vessel_name = this.addControl(frmElements, "Vessel Name", sap.m.Input, "detVesselName", {selected: false}, "string");
+            this.joDet1.lg_s_vessel_name = this.addControl(frmElements, "Vessel Name", sap.m.Input, "detVesselName", { selected: false }, "string");
+            // LG_SHIPING_LINE_NAME,  SHIPPING LINE NAME
+            this.joDet1.lg_shiping_line_name = this.addControl(frmElements, "Shipping Line Name", sap.m.Input, "detShippingLineName", { selected: false }, "string");
             // LG_S_MBL, MBL#
-            this.joDet1.lg_s_mbl = this.addControl(frmElements, "MBL", sap.m.Input, "detMbl", {selected: false}, "string");
+            this.joDet1.lg_s_mbl = this.addControl(frmElements, "MBL", sap.m.Input, "detMbl", { selected: false }, "string");
             // LG_SHIPPER, Shipper
-            this.joDet1.lg_shipper = this.addControl(frmElements, "Shipper", sap.m.Input, "detShipper", {selected: false}, "string");
+            this.joDet1.lg_shipper = this.addControl(frmElements, "Shipper", sap.m.Input, "detShipper", { selected: false }, "string");
             // LG_CONSIGNEE, Consignee
-            this.joDet1.lg_consignee = this.addControl(frmElements, "Consignee", sap.m.Input, "detConsignee", {selected: false}, "string");
+            this.joDet1.lg_consignee = this.addControl(frmElements, "Consignee", sap.m.Input, "detConsignee", { selected: false }, "string");
             // LG_DESCRIPTION,  Description
             this.joDet1.lg_description = this.createListBox2("lg_description", frmElements, "Description", false);
             // LG_NOTES,  Remark
             this.joDet1.lg_notes = this.createListBox2("lg_notes", frmElements, "Remark", false);
 
-            frmElements.push(new sap.ui.core.Title({text: "Other info"}));
+            frmElements.push(new sap.ui.core.Title({ text: "Other info" }));
 
             // LG_ETD,etd
             this.joDet1.lg_etd = UtilGen.addControl(frmElements, "ETD", sap.m.DatePicker, "jo_",
@@ -887,19 +950,19 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
 
             // LG_A_AIRLINE, Air Line Name
-            this.joDet1.lg_a_airline = this.addControl(frmElements, "Airline", sap.m.Input, "detAirline", {selected: false}, "string");
+            this.joDet1.lg_a_airline = this.addControl(frmElements, "Airline", sap.m.Input, "detAirline", { selected: false }, "string");
             // LG_A_MAWB, MAWB #
-            this.joDet1.lg_a_mawb = this.addControl(frmElements, "MAWB", sap.m.Input, "detmwb", {selected: false}, "string");
+            this.joDet1.lg_a_mawb = this.addControl(frmElements, "MAWB", sap.m.Input, "detmwb", { selected: false }, "string");
             // LG_SHIPPER
-            this.joDet1.lg_shipper = this.addControl(frmElements, "Shipper", sap.m.Input, "detShipper", {selected: false}, "string");
+            this.joDet1.lg_shipper = this.addControl(frmElements, "Shipper", sap.m.Input, "detShipper", { selected: false }, "string");
             //LG_CONSIGNEE
-            this.joDet1.lg_consignee = this.addControl(frmElements, "Consignee", sap.m.Input, "detConsignee", {selected: false}, "string");
+            this.joDet1.lg_consignee = this.addControl(frmElements, "Consignee", sap.m.Input, "detConsignee", { selected: false }, "string");
             // LG_DESCRIPTION,  Description
             this.joDet1.lg_description = this.createListBox2("lg_description", frmElements, "Description", false);
             // LG_NOTES,  Remark
             this.joDet1.lg_notes = this.createListBox2("lg_notes", frmElements, "Remark", false);
 
-            frmElements.push(new sap.ui.core.Title({text: "Other info"}));
+            frmElements.push(new sap.ui.core.Title({ text: "Other info" }));
 
             // LG_ETD,etd
             this.joDet1.lg_etd = UtilGen.addControl(frmElements, "ETD", sap.m.DatePicker, "jo_",
@@ -957,7 +1020,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         // 4/LCB
         if (ord_type == "4") {
             // LG_A_MAWB, MAWB #
-            this.joDet1.lg_a_mawb = this.addControl(frmElements, "AWB", sap.m.Input, "detmwb", {selected: false}, "string");
+            this.joDet1.lg_a_mawb = this.addControl(frmElements, "AWB", sap.m.Input, "detmwb", { selected: false }, "string");
             // LG_VENDOR_NAME, Vendor/Driver Name
             this.joDet1.lg_vendor_name = this.createListBox2("lg_vendor_name", frmElements, "Vendor/Driver Name", false);
             // LG_VENDOR_CONTACT ,  Vendor/Driver   Contact Number
@@ -967,7 +1030,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             // LG_NOTES,  Remark
             this.joDet1.lg_notes = this.createListBox2("lg_notes", frmElements, "Remark", false);
 
-            frmElements.push(new sap.ui.core.Title({text: "Other info"}));
+            frmElements.push(new sap.ui.core.Title({ text: "Other info" }));
 
 
             // LG_L_CLEARANCE_DATE, Clearance Date
@@ -1047,7 +1110,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
 
 
         // end element for scrolling...
-        frmElements.push(new sap.ui.core.Title({text: ""}));
+        frmElements.push(new sap.ui.core.Title({ text: "" }));
 
         this.pgDetail.addContent(tb);
         frmBasic = UtilGen.formCreate("", true, frmElements);
@@ -1087,10 +1150,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
         // LG_DUTY_PAID  checkbox ,  LG_MEASUREMENT
         this.joDet1.lg_duty_paid = this.addControl(frmElements, "Duty Paid",
             sap.m.CheckBox, "detDutyPaid", {
-                selected: false, select: function (e) {
-                    sel(e, this);
-                }
-            }, "boolean");
+            selected: false, select: function (e) {
+                sel(e, this);
+            }
+        }, "boolean");
         this.joDet1.lg_duty_paid.trueValues = ["Y", "N"]; // true value , false value;
 
 
@@ -1145,6 +1208,30 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 return false;
             }
         }
+        if (this.joDet1.lg_s_mbl != undefined && Util.nvl(this.joDet1.lg_s_mbl.getValue(), "") != "") {
+            var t1=-1;
+            if (Util.nvl(this.qryStr,"")!="")
+            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(this.qryStr) + " and lg_s_mbl=" + Util.quoted(this.joDet1.lg_s_mbl.getValue()));
+            else
+            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_s_mbl=" + Util.quoted(this.joDet1.lg_s_mbl.getValue()));
+            if (t1 != -1) {
+                sap.m.MessageToast.show("MBL # " + this.joDet1.lg_s_mbl.getValue() + " entered in JO #" + t1);
+                return false;
+            }
+        }
+        if (this.joDet1.lg_a_mawb != undefined && Util.nvl(this.joDet1.lg_a_mawb.getValue(), "") != "") {
+            var t1=-1;
+            if (Util.nvl(this.qryStr,"")!="")
+            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(this.qryStr) + " and lg_a_mawb=" + Util.quoted(this.joDet1.lg_a_mawb.getValue()));
+            else
+            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_a_mawb=" + Util.quoted(this.joDet1.lg_a_mawb.getValue()));
+            if (t1 != -1) {
+                sap.m.MessageToast.show("MAWB # " + this.joDet1.lg_a_mawb.getValue() + " entered in JO #" + t1);
+                return false;
+            }
+        }
+        
+
         var v = Util.getSQLValue("select code,name title from c_ycust " +
             "where iscust='Y' and childcount=0 and code=" + Util.quoted(UtilGen.getControlValue(this.jo.ord_ref)));
         if (Util.nvl(v, "").length == 0) {
@@ -1228,7 +1315,7 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             k = "begin " + k + " end;"
         }
         else {
-            k = UtilGen.getSQLUpdateString(this.jo, "order1", {"ORD_REFNM": Util.quoted(custName)},
+            k = UtilGen.getSQLUpdateString(this.jo, "order1", { "ORD_REFNM": Util.quoted(custName) },
                 "ord_code=" + Util.quoted(this.vars.ord_code) + " and  ord_no=" + Util.quoted(this.qryStr), ["ONAME", "ORD_NO"]);
             // if jo details defined then update records in LG_INFO
             if (this.joDet1 != undefined && Util.objToStr(this.joDet1).length > 0) {

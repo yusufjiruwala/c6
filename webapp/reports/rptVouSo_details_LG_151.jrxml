@@ -17,7 +17,9 @@
 	<parameter name="CURRENCY" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="P_ORD_CODE" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[select ORDER2.* , INITCAP(TRIM(ORDER2.DESCR)) DESCR_I,ORD_ALLQTY*(FC_PRICE/ORD_PACK) AMT from order2
+		<![CDATA[select ORDER2.* , INITCAP(TRIM(ORDER2.DESCR)) DESCR_I,ORD_ALLQTY*(FC_PRICE/ORD_PACK) AMT,
+(select nvl(max(oname),'x') from order1 where ord_no=order2.ord_no and ord_code=order2.ord_code) onamex
+ from order2
 where ord_code=$P{P_ORD_CODE} AND ORD_NO=$P{P_ORD}]]>
 	</queryString>
 	<field name="PERIODCODE" class="java.lang.String"/>
@@ -71,8 +73,11 @@ where ord_code=$P{P_ORD_CODE} AND ORD_NO=$P{P_ORD}]]>
 	<field name="FC_DISC" class="java.math.BigDecimal"/>
 	<field name="FC_MAIN_RATE" class="java.math.BigDecimal"/>
 	<field name="FC_MAIN_DESCR" class="java.lang.String"/>
+	<field name="VAT_ADD" class="java.math.BigDecimal"/>
+	<field name="VAT_P" class="java.math.BigDecimal"/>
 	<field name="DESCR_I" class="java.lang.String"/>
 	<field name="AMT" class="java.math.BigDecimal"/>
+	<field name="ONAMEX" class="java.lang.String"/>
 	<pageHeader>
 		<band height="13"/>
 	</pageHeader>
@@ -212,7 +217,8 @@ where ord_code=$P{P_ORD_CODE} AND ORD_NO=$P{P_ORD}]]>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{DESCR_I} +
 ($F{ORD_RCPTNO}==null ||
- $F{ORD_RCPTNO}.length()==0?""
+ $F{ORD_RCPTNO}.length()==0 ||
+ $F{ONAMEX}.equals("FR")?""
  :" - Rcpt No : "+$F{ORD_RCPTNO})]]></textFieldExpression>
 				</textField>
 			</frame>

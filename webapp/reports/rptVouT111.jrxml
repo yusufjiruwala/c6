@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptVouT" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d9a9ecbb-34e7-486d-b89c-5c1802da9087">
-	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<template><![CDATA["voucherStyleEng.jrtx"]]></template>
@@ -30,7 +30,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select lg_info.LG_A_MAWB bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
+		<![CDATA[select nvl(lg_info.LG_A_MAWB,lg_info.lg_s_mbl) bl,     order1.*,(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no) max_currency,
 (select oname from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) job_oname,
 (select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no) FC_AMOUNT ,lg_info.*,f_words_2((select sum(FC_PRICE*ORD_ALLQTY) from order2 where ord_code=111 and ord_no=order1.ord_no),(select max(ord_fc_descr) from order2 where ord_code=111 and ord_no=order1.ord_no)) amt_in_word,to_char(sysdate,'dd/mm/rrrr hh24:mi') to_day_dat ,lcno,
 y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentcustomer) parent_name,
@@ -155,6 +155,8 @@ order by order1.ord_no]]>
 	<field name="LG_CONTAINER_SIZE_3" class="java.math.BigDecimal"/>
 	<field name="LG_MEASURES" class="java.lang.String"/>
 	<field name="LG_NO_OF_WEIGHT" class="java.lang.String"/>
+	<field name="LG_DEPART_LOC" class="java.lang.String"/>
+	<field name="LG_ARRIVAL_LOC" class="java.lang.String"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
@@ -207,6 +209,8 @@ order by order1.ord_no]]>
 	<field name="LG_CARGO_OUT" class="java.sql.Timestamp"/>
 	<field name="LG_CLOSING" class="java.sql.Timestamp"/>
 	<field name="LG_DEPARTURE" class="java.sql.Timestamp"/>
+	<field name="LG_ETD" class="java.sql.Timestamp"/>
+	<field name="LG_ETA" class="java.sql.Timestamp"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
@@ -223,7 +227,7 @@ order by order1.ord_no]]>
 	<variable name="VAT_AMT" class="java.math.BigDecimal" incrementType="Group" incrementGroup="N1">
 		<variableExpression><![CDATA[$F{FC_AMOUNT} + $F{VAT_TOT}]]></variableExpression>
 	</variable>
-	<group name="N1" isStartNewPage="true" keepTogether="true">
+	<group name="N1" isStartNewPage="true" isReprintHeaderOnEachPage="true" keepTogether="true">
 		<groupExpression><![CDATA[$F{ORD_NO}]]></groupExpression>
 		<groupHeader>
 			<band height="373" splitType="Stretch">

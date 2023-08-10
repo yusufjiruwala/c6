@@ -3,7 +3,7 @@ sap.ui.jsfragment("bin.forms.lg.post", {
     createContent: function (oController) {
         var that = this;
         this.view = oController.getView();
-        this.app = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
+        this.app = new sap.m.SplitApp({ mode: sap.m.SplitAppMode.HideMode });
 
         this.mainPage = new sap.m.Page({
             showHeader: false,
@@ -30,24 +30,24 @@ sap.ui.jsfragment("bin.forms.lg.post", {
         this.fromDate = UtilGen.addControl(fe, "From Date", sap.m.DatePicker, "poFromDate",
             {
                 editable: true,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "date", undefined, view);
 
         this.todate = UtilGen.addControl(fe, "@To Date", sap.m.DatePicker, "poTODate",
             {
                 editable: true,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "date", undefined, view);
         this.postdate = UtilGen.addControl(fe, "POST Date", sap.m.DatePicker, "poPostDate",
             {
                 editable: true,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "date", undefined, view);
 
         this.searchField = UtilGen.addControl(fe, "Search", sap.m.SearchField, "poSearch",
             {
                 editable: true,
-                layoutData: new sap.ui.layout.GridData({span: "XL12 L12 M12 S12"}),
+                layoutData: new sap.ui.layout.GridData({ span: "XL12 L12 M12 S12" }),
                 liveChange: function (event) {
                     UtilGen.doFilterLiveTable(event, that.qv, ["ORD_REF", "ORD_REFNM", "ORD_NO", "JO_NO"]);
                 }
@@ -80,7 +80,7 @@ sap.ui.jsfragment("bin.forms.lg.post", {
             text: "Print", icon: "sap-icon://print", press: function () {
                 that.view.colData = {};
                 that.view.reportsData = {
-                    report_info: {report_name: "Un-posted Transactions"}
+                    report_info: { report_name: "Un-posted Transactions" }
                 };
                 that.qv.printHtml(that.view, "para");
             }
@@ -106,11 +106,11 @@ sap.ui.jsfragment("bin.forms.lg.post", {
 
         var sq = "select (SELECT ONAME FROM ORDER1 WHERE ORD_CODE=106 AND ORD_NO=O1.ORD_REFERENCE) JO_NO," +
             "DECODE(ORD_CODE,111,'SO',103,'PO',151,'DR NOTE',152,'CR NOTE',141,'PROFORMA',131,'P-Return') TYPE_OF_ORDER " +
-            " , O1.ORD_NO, O1.ORD_DATE,O1.ORD_REF,O1.ORD_REFNM,ORD_AMT,ord_reference , " +
+            " , O1.ORD_NO,ORD_REFERENCE JO_2, O1.ORD_DATE,O1.ORD_REF,O1.ORD_REFNM,ORD_AMT,ord_reference , " +
             " ORD_CODE,ORD_FLAG FLGX" +
             " FROM ORDER1 o1 WHERE ORD_CODE IN (141,151,111,103,152,131) and  ord_flag= 1 " + sqwhere +
             " ORDER BY 1,4,3";
-        Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
+        Util.doAjaxJson("sqlmetadata", { sql: sq }, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
                 //UtilGen.applyCols("C6LGREQ.DN1", that.qv);
@@ -118,7 +118,7 @@ sap.ui.jsfragment("bin.forms.lg.post", {
 
                 that.qv.mLctb.cols[0].mGrouped = true;
 
-//                that.qv.mLctb.getColByName("ORD_NO").mHideCol = true;
+                //                that.qv.mLctb.getColByName("ORD_NO").mHideCol = true;
                 that.qv.mLctb.getColByName("ORD_REFERENCE").mHideCol = true;
                 that.qv.mLctb.getColByName("ORD_CODE").mHideCol = true;
                 that.qv.mLctb.getColByName("FLGX").mHideCol = true;
@@ -279,7 +279,7 @@ sap.ui.jsfragment("bin.forms.lg.post", {
             for (var i in ocs)
                 Util.doXhr("report?reportfile=rptVou" + ocs[i], true, function (e) {
                     if (this.status == 200) {
-                        var blob = new Blob([this.response], {type: "application/pdf"});
+                        var blob = new Blob([this.response], { type: "application/pdf" });
                         var link = document.createElement('a');
                         link.href = window.URL.createObjectURL(blob);
                         link.target = "_blank";

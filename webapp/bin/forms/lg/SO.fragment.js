@@ -81,8 +81,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
         this.frm.getToolbar().addContent(new sap.m.ToolbarSpacer());
         (this.view.byId("poMsgInv") != undefined ? this.view.byId("poMsgInv").destroy() : null);
-        this.frm.getToolbar().addContent(new sap.m.Text(view.createId("poMsgInv"), {text: ""}).addStyleClass("redText blinking"));
-        this.frm.getToolbar().addContent(new sap.m.Title({text: "Sales Order Request"}));
+        this.frm.getToolbar().addContent(new sap.m.Text(view.createId("poMsgInv"), { text: "" }).addStyleClass("redText blinking"));
+        this.frm.getToolbar().addContent(new sap.m.Title({ text: "Sales Order Request" }));
 
 
         var sc = new sap.m.ScrollContainer();
@@ -140,40 +140,40 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         this.o2.ord_amt = this.addControl(fe, "LC Amount", sap.m.Input, "poOrdAmt",
             {
                 editable: false,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "number", sett["FORMAT_MONEY_1"]);
         this.o2.ord_amt_lc = this.addControl(fe, "@Amount", sap.m.Input, "poOrdAmtLc",
             {
                 editable: false,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "number", sett["FORMAT_MONEY_1"]);
 
         this.o2.tot_vat_p = this.addControl(fe, "VAT %", sap.m.Input, "poOrdTotVatP",
             {
                 editable: false,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "number", sett["FORMAT_MONEY_1"]);
 
         this.o2.tot_vat_amt = this.addControl(fe, "@VAT Amount", sap.m.Input, "poOrdTotVatAmt",
             {
                 editable: false,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "number", sett["FORMAT_MONEY_1"]);
         this.o2.netlcamt = this.addControl(fe, "Net Amt LC", sap.m.Input, "poOrdnetAmtLc",
             {
                 editable: false,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "number", sett["FORMAT_MONEY_1"]);
         this.o2.netfcamt = this.addControl(fe, "@Net Amt FC", sap.m.Input, "poOrdnetAmtFc",
             {
                 editable: false,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "number", sett["FORMAT_MONEY_1"]);
 
 
         this.o2._label = this.addControl(fe, " ", sap.m.Text, "poLbl1",
             {
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "string");
 
         this.o2.netfcamt.addStyleClass("yellow");
@@ -188,21 +188,21 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         var that = this;
         var fe = [];
         this.o1.oname = this.addControl(fe, "Type", sap.m.Input, "pofrde",
-            {enabled: false}, "string");
+            { enabled: false }, "string");
         // showing proforma invoice if selected ....
         if (Util.nvl(this.qryStrSP, "") != "") {
             this.o1.prof_ord_no = this.addControl(fe, "@Proforma # ", sap.m.Input, "poproforma",
-                {editable: false}, "string");
+                { editable: false }, "string");
             setTimeout(function () {
                 that.o1.prof_ord_no.$("inner").addClass("redText");
             }, 1000);
         }
 
         this.o1.ord_no = this.addControl(fe, "Order No", sap.m.Input, "poOrdNo",
-            {layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})}, "number")
+            { layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" }) }, "number")
         this.o1.ord_date = this.addControl(fe, "@Date", sap.m.DatePicker, "poOrdDate",
             {
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" }),
                 change: function () {
                     that.changeCurrency();
                 }
@@ -212,7 +212,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
         this.o1._jo_complete = this.addControl(fe, "@JO No", sap.m.Input, "dnOrdComNo",
             {
-                layoutData: new sap.ui.layout.GridData({span: "XL1 L1 M1 S12"}),
+                layoutData: new sap.ui.layout.GridData({ span: "XL1 L1 M1 S12" }),
                 enabled: false,
             }, "string");
 
@@ -234,13 +234,13 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 }
             }, "string");
         this.o1.payterm = this.addControl(fe, "Remarks", sap.m.Input, "poRemarks",
-            {enabled: true}, "string");
+            { enabled: true }, "string");
         this.o1.attn = this.addControl(fe, "@Inv Ref #", sap.m.Input, "poinvref",
-            {enabled: true}, "string");
+            { enabled: true }, "string");
         this.o1.ord_fc_main_descr = this.addControl(fe, "Main Currency", sap.m.Input, "socurrency",
-            {editable: false}, "string");
+            { editable: false }, "string");
         this.o1.ord_fc_main_rate = this.addControl(fe, "@Rate", sap.m.Input, "socurrRate",
-            {editable: false}, "number");
+            { editable: false }, "number");
 
         return UtilGen.formCreate("", true, fe, undefined, undefined, [1, 1, 1]);
 
@@ -253,6 +253,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         this.vars.pur_and_srv = 'N';
         this.vars.pur_keyfld = -1;
         this.vars.pur_inv_no = -1;
+        if (!UtilGen.isJODatesInput(that.qryStr))
+            that.pgPO.backFunction();
 
         UtilGen.setControlValue(this.o1.oname, "FR", "FR", true);
         this.view.byId("poMsgInv").setText("");
@@ -336,7 +338,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
             + this.vars.ord_code
             + " order by ord_pos";
         this.qv.getControl().setEditable(true);
-        Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
+        Util.doAjaxJson("sqlmetadata", { sql: sq }, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
                 UtilGen.applyCols("C6LGREQ.SO1", that.qv, that);
@@ -457,7 +459,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         var idx = id;
         if (Util.nvl(id, "") == "")
             idx = lbl.replace(/ ||,||./g, "");
-//        setx["layoutData"] = new sap.ui.layout.GridData({span: "XL4 L4 M4 S12"});
+        //        setx["layoutData"] = new sap.ui.layout.GridData({span: "XL4 L4 M4 S12"});
         var cnt = UtilGen.createControl(cntClass, this.view, idx, setx, dataType, fldFormat);
         if (lbl.length != 0)
             ar.push(lbl);
@@ -474,14 +476,17 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
         var dt = Util.getSQLValue("select to_char(ord_date,'rrrr-mm-dd') from order1 where ord_code=106 and ord_no=" + this.qryStr);
         if (dt == undefined) {
             sap.m.MessageToast.show(dt.ret);
-            return;
+            return false;
         }
         var orddt = new Date(dt + " 0:0:0");
         var podate = UtilGen.getControlValue(this.o1.ord_date);
         if (podate.getTime() < orddt.getTime()) {
             sap.m.MessageToast.show("Date must be above " + df.format(orddt));
-            return;
+            return false;
         }
+        if (!UtilGen.isJODatesInput(that.qryStr))
+            return false;
+
         for (var i = 0; i < that.qv.mLctb.rows.length; i++) {
             var rn = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_RCPTNO"), "");
             var rfr = Util.nvl(that.qv.mLctb.getFieldValue(i, "ORD_REFER"), "");
@@ -647,7 +652,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
 
     }
     ,
-// summary of the table, generally called from database VALIDATE_EVENT triggers on table.
+    // summary of the table, generally called from database VALIDATE_EVENT triggers on table.
     do_summary: function (reAmt) {
         var that = this;
         reamt = Util.nvl(reAmt, false); // re calculate amount if require.
@@ -794,8 +799,8 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
     showFRDE: function () {
         var that = this;
         var view = this.view;
-        var flx = new sap.m.VBox({alignItems: sap.m.FlexAlignItems.Center, height: "100%"});
-        flx.addItem(new sap.m.Title({text: "Kind of Invoice FR De "}).addStyleClass("sapUiMediumMargin"));
+        var flx = new sap.m.VBox({ alignItems: sap.m.FlexAlignItems.Center, height: "100%" });
+        flx.addItem(new sap.m.Title({ text: "Kind of Invoice FR De " }).addStyleClass("sapUiMediumMargin"));
         flx.addItem(new sap.m.HBox({
             items:
                 [
@@ -997,7 +1002,7 @@ sap.ui.jsfragment("bin.forms.lg.SO", {
                 Util.toOraDateString(UtilGen.getControlValue(that.o1.ord_date)));
     }
 })
-;
+    ;
 
 
 
