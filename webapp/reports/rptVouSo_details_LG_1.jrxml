@@ -88,7 +88,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				</box>
 			</frame>
 			<staticText>
-				<reportElement x="392" y="1" width="60" height="15" uuid="29be1085-c530-422b-ad73-592af237d71e"/>
+				<reportElement x="359" y="1" width="60" height="15" uuid="29be1085-c530-422b-ad73-592af237d71e"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -114,7 +114,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[POS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="92" y="1" width="238" height="15" uuid="e7384a99-da15-4686-a263-5d91c823fbbb"/>
+				<reportElement x="92" y="1" width="205" height="15" uuid="e7384a99-da15-4686-a263-5d91c823fbbb"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -132,7 +132,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<text><![CDATA[Total Charges]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="330" y="1" width="62" height="15" uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4"/>
+				<reportElement x="297" y="1" width="62" height="15" uuid="359c721c-a1cc-4677-a76e-791a15d6f9d4"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
@@ -140,10 +140,21 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Price]]></text>
 			</staticText>
+			<staticText>
+				<reportElement x="419" y="1" width="33" height="15" uuid="1acc5280-0c4d-4394-ae94-6e97ea4b267a"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="6"/>
+				</textElement>
+				<text><![CDATA[Currency]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="15" splitType="Stretch">
+		<band height="14" splitType="Stretch">
 			<frame>
 				<reportElement stretchType="RelativeToBandHeight" x="1" y="0" width="554" height="14" uuid="f54499da-6f17-450d-91dc-899e83eab9fb"/>
 				<box>
@@ -171,7 +182,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<textFieldExpression><![CDATA[$F{ORD_REFER}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="391" y="0" width="60" height="13" uuid="927a6454-d3b8-44fd-81a3-eea2d4965281"/>
+					<reportElement style="numQtyCenter" stretchType="RelativeToBandHeight" x="358" y="0" width="60" height="13" uuid="927a6454-d3b8-44fd-81a3-eea2d4965281"/>
 					<box>
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -192,7 +203,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<textField>
-					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="329" y="0" width="62" height="13" uuid="e3eab240-8555-406f-aac0-da4ef12bfd20"/>
+					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="296" y="0" width="62" height="13" uuid="e3eab240-8555-406f-aac0-da4ef12bfd20"/>
 					<box rightPadding="5">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -202,7 +213,7 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="238" height="13" uuid="d4232a84-187f-4290-99a8-6ce4814bca0d"/>
+					<reportElement style="strDetails" stretchType="RelativeToBandHeight" x="91" y="0" width="205" height="13" uuid="d4232a84-187f-4290-99a8-6ce4814bca0d"/>
 					<box leftPadding="2">
 						<leftPen lineWidth="0.5"/>
 						<rightPen lineWidth="0.5"/>
@@ -214,6 +225,18 @@ where ord_code=111 AND ORD_NO=$P{P_ORD}]]>
 ($F{ORD_RCPTNO}==null ||
  $F{ORD_RCPTNO}.length()==0 ||
  $F{ONAMEX}.equals("FR") ?"" :" - Rcpt No : "+$F{ORD_RCPTNO})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="numMoney" stretchType="RelativeToBandHeight" x="418" y="1" width="33" height="13" uuid="58e7091e-fb60-4b34-85f1-874c226aca4a"/>
+					<box rightPadding="5">
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{ORD_FC_DESCR}.substring(0,3)]]></textFieldExpression>
+					<patternExpression><![CDATA[$P{CURRENCY_FORMAT}]]></patternExpression>
 				</textField>
 			</frame>
 		</band>

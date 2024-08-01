@@ -5,7 +5,7 @@ sap.ui.jsfragment("bin.forms.pos.rp2", {
         this.oController = oController;
         this.view = oController.getView();
         this.qryStr = "";
-        this.joApp = new sap.m.SplitApp({mode: sap.m.SplitAppMode.HideMode});
+        this.joApp = new sap.m.SplitApp({ mode: sap.m.SplitAppMode.HideMode });
         this.vars = {
             keyfld: -1,
             flag: 1,  // 1=closed,2 opened,
@@ -41,7 +41,7 @@ sap.ui.jsfragment("bin.forms.pos.rp2", {
         var fe = [];
         this.frm = this.createViewHeader();
         this.frm.getToolbar().addContent(this.bk);
-        var tit = new sap.m.Text({text: "Customer Report"}).addStyleClass("titleFont");
+        var tit = new sap.m.Text({ text: "Customer Report" }).addStyleClass("titleFont");
         this.frm.getToolbar().addContent(tit);
 
 
@@ -72,26 +72,39 @@ sap.ui.jsfragment("bin.forms.pos.rp2", {
         this.o1.fromdate = UtilGen.addControl(fe, "Begin Date", sap.m.DatePicker, "dayFromDate",
             {
                 enabled: true,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
             }, "date", undefined, this.view);
         this.o1.todate = UtilGen.addControl(fe, "@End Date", sap.m.DatePicker, "dayToDate",
             {
                 enabled: true,
-                layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"}),
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" }),
             }, "date", undefined, this.view);
 
         this.o1.empno = UtilGen.addControl(fe, "Location By", sap.m.ComboBox, "apEmpno",
             {
                 items: {
                     path: "/",
-                    template: new sap.ui.core.ListItem({text: "{NAME}", key: "{CODE}"}),
+                    template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{CODE}" }),
                     templateShareable: true
 
                 },
                 value: -1
             }, "string", undefined, this.view, undefined, "select '-1' code,'ALL' NAME from dual union all select code,name from locations order by 1");
+        this.o1.usernm = UtilGen.addControl(fe, "@User By", sap.m.ComboBox, "apUser",
+            {
+                items: {
+                    path: "/",
+                    template: new sap.ui.core.ListItem({ text: "{NAME}", key: "{CODE}" }),
+                    templateShareable: true
+
+                },
+                // layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" }),
+                value: "-1",
+            }, "string", undefined, this.view, undefined, "select 'ALL' name,'-1' code from dual union all select username name,username code from cp_users order by 2");
 
         UtilGen.setControlValue(this.o1.empno, -1, -1, true);
+        UtilGen.setControlValue(this.o1.usernm, "-1", "-1", true);
+        
         var dt = new Date();
         var fr = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
         var to = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
@@ -103,13 +116,13 @@ sap.ui.jsfragment("bin.forms.pos.rp2", {
             text: "Exe Query", press: function () {
                 that.loadData();
             },
-            layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
         });
         this.o1._cmdPrint = new sap.m.Button({
             text: "Print", press: function () {
                 that.printData();
             },
-            layoutData: new sap.ui.layout.GridData({span: "XL2 L2 M2 S12"})
+            layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" })
         });
 
         fe.push(this.o1._cmdExe);
@@ -125,6 +138,7 @@ sap.ui.jsfragment("bin.forms.pos.rp2", {
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
         var db = UtilGen.getControlValue(this.o1.empno);
+        var us = Util.nvl(UtilGen.getControlValue(this.o1.usernm), "");
 
         // var sq = "select * from (SELECT TO_CHAR(ORD_DATE,'DD/MM/RRRR') ORD_DATE, ORD_NO INVOICE_NO, ord_ref File_no, ORD_REFNM CUST_NAME, " +
         //     "DESCR,   ORD_ALLQTY/ORD_PACK QTY,    ORD_PRICE, " +
@@ -139,13 +153,14 @@ sap.ui.jsfragment("bin.forms.pos.rp2", {
         var sq = "select l.name location_name , p.b_no," +
             " p.cust_reference tel,p.cust_name,p.b_date," +
             " p.keyfld ,inv_amt amount from pos_onpur1 p,locations l" +
-            " where trunc(b_date)>=" + Util.toOraDateString(fr) +
+            " where saleinv is not null and trunc(b_date)>=" + Util.toOraDateString(fr) +
             " and trunc(b_date)<=" + Util.toOraDateString(to) +
             " and (p.location_code=" + Util.quoted(db) + " or " + Util.quoted(db) + "='-1') " +
+            " and (p.usernm=" + Util.quoted(us) + " or " + Util.quoted(us) + "='-1') " +
             " and l.code=p.location_code order by b_date desc,keyfld desc";
 
         this.qv.getControl().setEditable(true);
-        Util.doAjaxJson("sqlmetadata", {sql: sq}, false).done(function (data) {
+        Util.doAjaxJson("sqlmetadata", { sql: sq }, false).done(function (data) {
             if (data.ret == "SUCCESS") {
                 that.qv.setJsonStrMetaData("{" + data.data + "}");
 

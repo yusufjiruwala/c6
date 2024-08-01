@@ -89,6 +89,12 @@ sap.ui.jsfragment("bin.forms.lg.gp", {
                 enabled: true,
                 layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" }),
             }, "date", undefined, this.view);
+        this.o1.incUnPost = UtilGen.addControl(fe, "Include Unposted ", sap.m.CheckBox, "chkUnpost",
+            {
+                selected: true,
+                enabled: true,
+                layoutData: new sap.ui.layout.GridData({ span: "XL2 L2 M2 S12" }),
+            }, "string", undefined, this.view);
 
         var dt = new Date();
         var fr = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
@@ -130,8 +136,12 @@ sap.ui.jsfragment("bin.forms.lg.gp", {
 
         var fr = UtilGen.getControlValue(this.o1.fromdate);
         var to = UtilGen.getControlValue(this.o1.todate);
+        var up = this.o1.incUnPost.getSelected();
+        var flgstr = " and ord_flag=2 ";
+        if (up)
+            flgstr = "";
         var nos = "";
-        var sdt = Util.execSQL("select distinct ord_reference from order1 where ord_code=111 and ord_date>=" + Util.toOraDateString(fr) + " and ord_date<=" + Util.toOraDateString(to));
+        var sdt = Util.execSQL("select distinct ord_reference from order1 where ord_code=111 " + flgstr + " AND ord_date>=" + Util.toOraDateString(fr) + " and ord_date<=" + Util.toOraDateString(to));
         if (sdt.ret == "SUCCESS") {
             var sdx = JSON.parse("{" + sdt.data + "}").data;
             for (var si in sdx)

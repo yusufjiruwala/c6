@@ -40,6 +40,7 @@ y.parentcustomer parent_code,(select max(name) from c_ycust where code=y.parentc
 (select lg_measures from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) lg_measures_o1,
 (select lg_no_of_package from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) lg_no_of_package_o1,
 (select lg_no_of_weight from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) lg_no_of_weight_o1,
+(select lg_no_of_container from order1 ox where ord_code=106 and ox.ord_no=order1.ord_reference) lg_no_of_container_o1x,
 (select bank_details from currency_master where code=(select max(ord_fc_descr) from order2 where order2.ord_no=order1.ord_no and ord_code=111)) bnk,
 order1.ord_txt_wo,order1.ord_txt_iid,
 y.addr,y.reference
@@ -160,6 +161,7 @@ order by order1.ord_no]]>
 	<field name="LG_NO_OF_WEIGHT" class="java.lang.String"/>
 	<field name="LG_DEPART_LOC" class="java.lang.String"/>
 	<field name="LG_ARRIVAL_LOC" class="java.lang.String"/>
+	<field name="LG_END_CONSIGN_NAME" class="java.lang.String"/>
 	<field name="MAX_CURRENCY" class="java.lang.String"/>
 	<field name="JOB_ONAME" class="java.lang.String"/>
 	<field name="FC_AMOUNT" class="java.math.BigDecimal"/>
@@ -214,6 +216,7 @@ order by order1.ord_no]]>
 	<field name="LG_DEPARTURE" class="java.sql.Timestamp"/>
 	<field name="LG_ETD" class="java.sql.Timestamp"/>
 	<field name="LG_ETA" class="java.sql.Timestamp"/>
+	<field name="LG_SHIPING_LINE_NAME" class="java.lang.String"/>
 	<field name="AMT_IN_WORD" class="java.lang.String"/>
 	<field name="TO_DAY_DAT" class="java.lang.String"/>
 	<field name="PARENT_CODE" class="java.lang.String"/>
@@ -228,6 +231,7 @@ order by order1.ord_no]]>
 	<field name="LG_MEASURES_O1" class="java.lang.String"/>
 	<field name="LG_NO_OF_PACKAGE_O1" class="java.math.BigDecimal"/>
 	<field name="LG_NO_OF_WEIGHT_O1" class="java.lang.String"/>
+	<field name="LG_NO_OF_CONTAINER_O1X" class="java.math.BigDecimal"/>
 	<field name="BNK" class="java.lang.String"/>
 	<group name="N1" isStartNewPage="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{ORD_NO}]]></groupExpression>
@@ -483,7 +487,10 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA[$P{COMPANY_SPECS}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="strHeader" x="97" y="340" width="453" height="29" uuid="d410e8e7-3890-4262-ada9-f138b5ab9014"/>
+					<reportElement style="strHeader" x="97" y="340" width="252" height="29" uuid="d410e8e7-3890-4262-ada9-f138b5ab9014"/>
+					<box>
+						<rightPen lineWidth="1.0"/>
+					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle"/>
 					<textFieldExpression><![CDATA[$F{LG_DESCRIPTION}]]></textFieldExpression>
 				</textField>
@@ -584,6 +591,21 @@ order by order1.ord_no]]>
 					<textElement textAlignment="Center" verticalAlignment="Middle"/>
 					<textFieldExpression><![CDATA[$F{LG_MEASURES_O1}]]></textFieldExpression>
 				</textField>
+				<staticText>
+					<reportElement style="strHeader" x="351" y="341" width="84" height="28" uuid="bac52913-6886-4b63-9f34-4bc644a113a7"/>
+					<box>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[No Of Container]]></text>
+				</staticText>
+				<textField pattern="">
+					<reportElement style="strHeader" x="435" y="339" width="117" height="32" uuid="bb516f64-59e4-4aa9-a2f7-3efec2f6e14b"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{LG_NO_OF_CONTAINER_O1X}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
@@ -600,7 +622,7 @@ order by order1.ord_no]]>
 					<textFieldExpression><![CDATA[$F{AMT_IN_WORD}]]></textFieldExpression>
 				</textField>
 				<textField pattern="">
-					<reportElement style="numQtyCenter" mode="Opaque" x="434" y="0" width="116" height="25" backcolor="#FFFF00" uuid="307d8e2b-c480-4cd0-8585-99d024b8c72b"/>
+					<reportElement style="numQtyCenter" mode="Opaque" x="436" y="0" width="116" height="25" backcolor="#FFFF00" uuid="307d8e2b-c480-4cd0-8585-99d024b8c72b"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>

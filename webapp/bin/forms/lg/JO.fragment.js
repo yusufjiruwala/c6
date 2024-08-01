@@ -96,7 +96,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             var dt = Util.execSQL("select *from order1 where ord_code=" + this.vars.ord_code + " and ord_no=" + this.qryStr);
             if (dt.ret = "SUCCESS" && dt.data.length > 0) {
                 var dtx = JSON.parse("{" + dt.data + "}").data;
-                UtilGen.loadDataFromJson(this.jo, dtx[0], true);
+                UtilGen.loadDataFromJson(this.jo, dtx[0], true);                
+                this.fill_trans_type(false);
+                this.fill_cc(false);
+                UtilGen.setControlValue(this.jo.ordacc, dtx[0].ORDACC, dtx[0].ORDACC, true);
                 this.jo.ord_no.setEnabled(false);
                 UtilGen.setControlValue(this.jo.ord_ref, dtx[0].ORD_REF + "-" + dtx[0].ORD_REFNM, dtx[0].ORD_REF, false);
                 var cnt = Util.getSQLValue("select nvl(count(*),0) from order1 where ord_code!=103 and ord_reference=" + dtx[0].ORD_NO);
@@ -114,8 +117,10 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                     this.fill_cc(false);
                     this.controlTruck();
                 }
-            UtilGen.setControlValue(this.jo.costcent, dtx[0].COSTCENT, dtx[0].COSTCENT, true);
-            this.controlTruck();             
+                UtilGen.setControlValue(this.jo.costcent, dtx[0].COSTCENT, dtx[0].COSTCENT, true);
+                UtilGen.setControlValue(this.jo.ordacc, dtx[0].ORDACC, dtx[0].ORDACC, true);
+
+                this.controlTruck();
             }
 
         }
@@ -796,29 +801,29 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                             }
                         }
                         if (that.joDet1.lg_s_mbl != undefined && Util.nvl(that.joDet1.lg_s_mbl.getValue(), "") != "") {
-                            var t1=-1;
-                            if (Util.nvl(that.qryStr,"")!="")
-                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(that.qryStr) + " and lg_s_mbl=" + Util.quoted(that.joDet1.lg_s_mbl.getValue()));
+                            var t1 = -1;
+                            if (Util.nvl(that.qryStr, "") != "")
+                                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(that.qryStr) + " and lg_s_mbl=" + Util.quoted(that.joDet1.lg_s_mbl.getValue()));
                             else
-                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_s_mbl=" + Util.quoted(that.joDet1.lg_s_mbl.getValue()));
+                                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_s_mbl=" + Util.quoted(that.joDet1.lg_s_mbl.getValue()));
                             if (t1 != -1) {
                                 sap.m.MessageToast.show("MBL # " + that.joDet1.lg_s_mbl.getValue() + " entered in JO #" + t1);
                                 return false;
                             }
                         }
                         if (that.joDet1.lg_a_mawb != undefined && Util.nvl(that.joDet1.lg_a_mawb.getValue(), "") != "") {
-                            var t1=-1;
-                            if (Util.nvl(that.qryStr,"")!="")
-                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(that.qryStr) + " and lg_a_mawb=" + Util.quoted(that.joDet1.lg_a_mawb.getValue()));
+                            var t1 = -1;
+                            if (Util.nvl(that.qryStr, "") != "")
+                                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(that.qryStr) + " and lg_a_mawb=" + Util.quoted(that.joDet1.lg_a_mawb.getValue()));
                             else
-                            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_a_mawb=" + Util.quoted(that.joDet1.lg_a_mawb.getValue()));
+                                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_a_mawb=" + Util.quoted(that.joDet1.lg_a_mawb.getValue()));
                             if (t1 != -1) {
                                 sap.m.MessageToast.show("MAWB # " + that.joDet1.lg_a_mawb.getValue() + " entered in JO #" + t1);
                                 return false;
                             }
                         }
-                        
-                
+
+
                         that.joApp.to(that.mainPage, "flip");
                     }
                 }),
@@ -1209,28 +1214,28 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
             }
         }
         if (this.joDet1.lg_s_mbl != undefined && Util.nvl(this.joDet1.lg_s_mbl.getValue(), "") != "") {
-            var t1=-1;
-            if (Util.nvl(this.qryStr,"")!="")
-            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(this.qryStr) + " and lg_s_mbl=" + Util.quoted(this.joDet1.lg_s_mbl.getValue()));
+            var t1 = -1;
+            if (Util.nvl(this.qryStr, "") != "")
+                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(this.qryStr) + " and lg_s_mbl=" + Util.quoted(this.joDet1.lg_s_mbl.getValue()));
             else
-            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_s_mbl=" + Util.quoted(this.joDet1.lg_s_mbl.getValue()));
+                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_s_mbl=" + Util.quoted(this.joDet1.lg_s_mbl.getValue()));
             if (t1 != -1) {
                 sap.m.MessageToast.show("MBL # " + this.joDet1.lg_s_mbl.getValue() + " entered in JO #" + t1);
                 return false;
             }
         }
         if (this.joDet1.lg_a_mawb != undefined && Util.nvl(this.joDet1.lg_a_mawb.getValue(), "") != "") {
-            var t1=-1;
-            if (Util.nvl(this.qryStr,"")!="")
-            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(this.qryStr) + " and lg_a_mawb=" + Util.quoted(this.joDet1.lg_a_mawb.getValue()));
+            var t1 = -1;
+            if (Util.nvl(this.qryStr, "") != "")
+                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where ord_no!=" + Util.quoted(this.qryStr) + " and lg_a_mawb=" + Util.quoted(this.joDet1.lg_a_mawb.getValue()));
             else
-            t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_a_mawb=" + Util.quoted(this.joDet1.lg_a_mawb.getValue()));
+                t1 = Util.getSQLValue("select nvl(max(ord_no),-1) from lg_info where lg_a_mawb=" + Util.quoted(this.joDet1.lg_a_mawb.getValue()));
             if (t1 != -1) {
                 sap.m.MessageToast.show("MAWB # " + this.joDet1.lg_a_mawb.getValue() + " entered in JO #" + t1);
                 return false;
             }
         }
-        
+
 
         var v = Util.getSQLValue("select code,name title from c_ycust " +
             "where iscust='Y' and childcount=0 and code=" + Util.quoted(UtilGen.getControlValue(this.jo.ord_ref)));

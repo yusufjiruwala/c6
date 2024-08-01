@@ -45,8 +45,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             },
 
             doAjaxGetSpin: function (path,
-                                     content,
-                                     async, fnDone, fnFail, chk) {
+                content,
+                async, fnDone, fnFail, chk) {
                 if (chk == undefined || chk)
                     this.doSpin("Executing Query...");
                 var that = this;
@@ -55,8 +55,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 }, 100);
             },
             doAjaxGet: function (path,
-                                 content,
-                                 async) {
+                content,
+                async) {
                 var params = {
                     url: this.ajaxPre + path,
                     context: this,
@@ -72,7 +72,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return jQuery.ajax(params);
             },
             doXhr: function (path,
-                             async, onld) {
+                async, onld) {
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', path, async);
                 xhr.responseType = 'arraybuffer';
@@ -81,8 +81,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return xhr;
             },
             doAjaxPost: function (path,
-                                  content,
-                                  async) {
+                content,
+                async) {
                 var params = {
                     url: this.ajaxPre + path,
                     context: this,
@@ -98,8 +98,8 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return jQuery.ajax(params);
             },
             doAjaxJson: function (path,
-                                  content,
-                                  async) {
+                content,
+                async) {
                 var params = {
                     url: this.ajaxPre + path,
                     context: this,
@@ -154,7 +154,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         }
                     }
                 });
-                var flRight = new sap.m.FlexBox({direction: sap.m.FlexDirection.Row, items: [b]});
+                var flRight = new sap.m.FlexBox({ direction: sap.m.FlexDirection.Row, items: [b] });
                 var flLeft = new sap.m.FlexBox({
                     direction: sap.m.FlexDirection.Row, items: [new sap.m.Button({
                         icon: "sap-icon://arrow-left",
@@ -419,7 +419,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             {
                                 value: vls,
                                 width: this.nvl(pWidth, dtx.parameters[i].WIDTH),
-                                customData: [{key: dtlist}],
+                                customData: [{ key: dtlist }],
                                 search: function (e) {
                                     if (e.getParameters().clearButtonPressed || e.getParameters().refreshButtonPressed)
                                         return;
@@ -523,7 +523,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         if (lval != cval)
                             pl = new label(thatView.createId("lblpara_" + ia + i), {
                                 text: cval,
-//                                labelFor: p
+                                //                                labelFor: p
                             }).addStyleClass(st);
 
                     }
@@ -535,7 +535,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             var l2 = ls1[l].split("=");
                             var bt = new sap.m.RadioButton(
                                 {
-                                    text: l2[0], customData: [{key: l2[1]}]
+                                    text: l2[0], customData: [{ key: l2[1] }]
                                 }
                             );
                             if (l2[1] == dtx.parameters[i].PARA_DEFAULT)
@@ -563,14 +563,14 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                             pg.addItem(p);
                         } else {
                             if (Util.nvl(tit, "").length > 0)
-                                pg.addContent(new sap.ui.commons.Title({text: tit}));
+                                pg.addContent(new sap.ui.commons.Title({ text: tit }));
                             if (pl != undefined) pg.addContent(pl);
                             if (p != undefined) {
                                 var lc = pg.getContent()[pg.getContent().length - 1];
                                 pg.addContent(p);
                                 if (pl == undefined) {
-                                    p.setLayoutData(new sap.ui.layout.GridData({span: "XL1 L2 M3 S4"}));
-                                    lc.setLayoutData(new sap.ui.layout.GridData({span: "XL1 L2 M3 S4"}));
+                                    p.setLayoutData(new sap.ui.layout.GridData({ span: "XL1 L2 M3 S4" }));
+                                    lc.setLayoutData(new sap.ui.layout.GridData({ span: "XL1 L2 M3 S4" }));
                                 }
                             }
                             //pg.addContent(pl);
@@ -594,7 +594,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     var menu111 = new sap.m.MenuItem({
                         text: "Create new..",
                         icon: "images/add.png",
-                        customData: [{key: "graph_new"}]
+                        customData: [{ key: "graph_new" }]
                     });
                     menu11.addItem(menu111);
                 }
@@ -625,7 +625,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         if (fnd)
                             menu11.addItem(new sap.m.MenuItem({
                                 text: this.getLangDescrAR(view.colData.subreps[i].REP_TITLE, view.colData.subreps[i].REP_TITLE_ARB),
-                                customData: [{key: "graph"}, {value: view.colData.subreps[i]}]
+                                customData: [{ key: "graph" }, { value: view.colData.subreps[i] }]
                             }));
 
                     }
@@ -674,16 +674,16 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
             createGrid2Obj: function (grid, layoutData1, layoutData2, lblStr, inputObjClass) {
                 var ld1 = layoutData1, ld2 = layoutData2;
                 if (typeof ld1 == "string")
-                    ld1 = {span: ld1};
+                    ld1 = { span: ld1 };
                 if (typeof ld2 == "string")
-                    ld2 = {span: ld2};
+                    ld2 = { span: ld2 };
 
-                var o = new inputObjClass({width: "100%"});
+                var o = new inputObjClass({ width: "100%" });
                 o.setLayoutData(new sap.ui.layout.GridData(ld2));
-                var l = new sap.m.Label({text: lblStr, layoutData: ld1});
+                var l = new sap.m.Label({ text: lblStr, layoutData: ld1 });
                 grid.addContent(l);
                 grid.addContent(o);
-                return {label: l, obj: o};
+                return { label: l, obj: o };
             },
             findComboItem: function (combo, value) {
                 for (var i = 0; i < combo.getItems().length; i++) {
@@ -721,7 +721,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                                     f2 = k;
                             }
                         f2 = Util.nvl(f2, f1);
-                        var k = new sap.ui.core.ListItem({text: "{" + f2 + "}", key: "{" + f1 + "}"});
+                        var k = new sap.ui.core.ListItem({ text: "{" + f2 + "}", key: "{" + f1 + "}" });
                         combo.bindAggregation("items", "/", k);
                         if (combo.getItems().length > 0)
                             combo.setSelectedItem(combo.getItems()[0]);
@@ -730,7 +730,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                     var dtxx = [];
                     var spt = sq.substring(1).split(",");
                     for (var i1 in spt) {
-                        var dttt = {CODE: "", NAME: ""};
+                        var dttt = { CODE: "", NAME: "" };
                         var sx = spt[i1].split("/");
                         dttt.CODE = "" + sx[0];
                         dttt.NAME = "" + sx[1];
@@ -751,7 +751,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                         }
                     f2 = Util.nvl(f2, f1);
                     combo.setModel(new sap.ui.model.json.JSONModel(dtx));
-                    var k = new sap.ui.core.ListItem({text: "{" + f2 + "}", key: "{" + f1 + "}"});
+                    var k = new sap.ui.core.ListItem({ text: "{" + f2 + "}", key: "{" + f1 + "}" });
                     combo.bindAggregation("items", "/", k);
                 }
                 if (combo.getItems().length > 0)
@@ -908,7 +908,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var dtxx = [];
                 var spt = sql.substring(1).split(",");
                 for (var i1 in spt) {
-                    var dttt = {CODE: "", TITLE: ""};
+                    var dttt = { CODE: "", TITLE: "" };
                     var sx = spt[i1].split("/");
                     dttt.CODE = "" + sx[0];
                     dttt.TITLE = "" + sx[1];
@@ -916,7 +916,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 }
                 var md = '"metadata": [{"colname":"CODE","width":50,"data_type":"STRING"},{"colname":"TITLE","width":150,"data_type":"STRING"}]';
                 var dt = JSON.stringify(dtxx);
-                return {sql: sql, ret: "SUCCESS", data: md + ",\"data\":" + dt};
+                return { sql: sql, ret: "SUCCESS", data: md + ",\"data\":" + dt };
             },
             showSearchList: function (sql, colDes, colVal, fnConfirm) {
                 // if (e.getParameters().refreshButtonPressed)
@@ -961,10 +961,10 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 var dtx = undefined;
                 if (sql.toLowerCase().startsWith("select")) {
                     this.doAjaxJson("sqlmetadata", {
-                            sql: sql,
-                            ret: "NONE",
-                            data: null
-                        }
+                        sql: sql,
+                        ret: "NONE",
+                        data: null
+                    }
                         ,
                         false
                     ).done(function (data) {
@@ -991,6 +991,16 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 }
                 return dtx;
             },
+            err: function (msg) {
+                sap.m.MessageToast.show(msg, {
+                    my: sap.ui.core.Popup.Dock.RightBottom,
+                    at: sap.ui.core.Popup.Dock.RightBottom
+                });
+
+                var oMessageToastDOM = $('#content').parent().find('.sapMMessageToast');
+                oMessageToastDOM.css('color', "red");
+                throw msg;
+            },
             execSQLWithData: function (sql, errMsg) {
                 var dt = this.execSQL(sql);
                 var dtx = undefined;
@@ -1013,7 +1023,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 return "";
             },
             show_list: function (sql, cols, retCols, fnSel, width, height, visibleRowCount, multiSelect, fnShowSel) {
-                var vbox = new sap.m.Page({showHeader: true});
+                var vbox = new sap.m.Page({ showHeader: true });
                 var dlg = new sap.m.Dialog({
                     content: [vbox],
                     contentHeight: this.nvl(height, "500px"),
@@ -1077,7 +1087,7 @@ sap.ui.define("sap/ui/ce/generic/Util", [],
                 if (tbl.getSelectedIndices().length == 0)
                     return undefined;
                 var oModel = tbl.getModel();
-//                var rowVis = tbl.getFirstVisibleRow();
+                //                var rowVis = tbl.getFirstVisibleRow();
                 var i = tbl.getSelectedIndices()[0];
                 var cc = tbl.getContextByIndex(i);
                 var cv = oModel.getProperty(cc.sPath + "/" + colname);
