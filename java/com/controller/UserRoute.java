@@ -931,7 +931,9 @@ public class UserRoute {
 		mp.put("COMPANY_NAMEA", instanceInfo.getMmapVar().get("COMPANY_NAMEA"));
 		mp.put("COMPANY_SPECS", instanceInfo.getMmapVar().get("COMPANY_SPECS"));
 		mp.put("COMPANY_SPECSA", instanceInfo.getMmapVar().get("COMPANY_SPECSA"));
+		mp.put("CURRENCY_FORMAT", instanceInfo.getMmapVar().get("FORMAT_MONEY_1"));
 		mp.put("COMPANY_LOGO", instanceInfo.getMmapVar().get("COMPANY_LOGO"));
+		mp.put("DATE_FORMAT", instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT"));
 		mp.put("SES_ID", instanceInfo.getMmapVar().get("SESSION_ID"));
 		//mp.forEach((key, value) -> System.out.println(key + ":" + value));		
 		byte[] pdfFile = instanceInfo.storeReport(reportfile, mp, false);

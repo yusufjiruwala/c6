@@ -175,9 +175,9 @@ sap.ui.jsfragment("bin.forms.lg.JO", {
                 return;
             }
             var sq = "select country||','||state||','||city title from lg_regions where upper(country||','||state||','||city) like " +
-                "'%'||'" + cnt.getValue().toUpperCase() + "'||'%'   order by country,state,city";
+                "'%'||'" + cnt.getValue().toUpperCase() + "'||'%'   order by country,state,city " ;
             Util.showSearchList(sq, "TITLE", "TITLE", function (valx, val) {
-                UtilGen.setControlValue(cnt, val, valx, true);
+                UtilGen.setControlValue(cnt, valx, val, true);
             });
         };
 
