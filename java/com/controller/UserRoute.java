@@ -55,6 +55,7 @@ import com.generic.utils;
 import com.models.Batches;
 import com.models.Batches.UserReports;
 import com.tools.queries.QuickRepMetaData;
+import com.tools.utilities.BatchSqlJson;
 import com.tools.utilities.SQLJson;
 
 @EnableAsync
@@ -65,6 +66,9 @@ public class UserRoute {
 	private String path = "";
 
 	private String sessionId = "";
+
+	@Autowired
+	private GlobalState globalstate;
 
 	@Autowired
 	private ServletContext servletContext;
@@ -251,7 +255,7 @@ public class UserRoute {
 			instanceInfo.sessionId = sessionId;
 			ret = instanceInfo.loginUser(params);
 			// sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-			//instanceInfo.sessionId = sessionId;
+			// instanceInfo.sessionId = sessionId;
 			QueryExe.execute("begin c6_session.delete_cache('" + instanceInfo.getmLoginUser() + "');end;",
 					instanceInfo.getmDbc().getDbConnection());
 
@@ -683,7 +687,6 @@ public class UserRoute {
 
 		return ret;
 	}
-	
 
 	private String buildJsonGraphQuery(Map<String, String> params) throws Exception {
 		Connection con = instanceInfo.getmDbc().getDbConnection();
@@ -924,7 +927,7 @@ public class UserRoute {
 					mp.put(key.replace("_para_", ""), (sdf.parse(params.get(key).substring(1))));
 				if (params.get(key).startsWith("--"))
 					mp.put(key.replace("_para_", ""), (new BigDecimal(params.get(key).substring(2))));
-				
+
 			}
 		}
 		mp.put("COMPANY_NAME", instanceInfo.getMmapVar().get("COMPANY_NAME"));
@@ -935,7 +938,7 @@ public class UserRoute {
 		mp.put("COMPANY_LOGO", instanceInfo.getMmapVar().get("COMPANY_LOGO"));
 		mp.put("DATE_FORMAT", instanceInfo.getMmapVar().get("ENGLISH_DATE_FORMAT"));
 		mp.put("SES_ID", instanceInfo.getMmapVar().get("SESSION_ID"));
-		//mp.forEach((key, value) -> System.out.println(key + ":" + value));		
+		// mp.forEach((key, value) -> System.out.println(key + ":" + value));
 		byte[] pdfFile = instanceInfo.storeReport(reportfile, mp, false);
 		return pdfFile;
 
@@ -1010,6 +1013,37 @@ public class UserRoute {
 		}
 		ret = subreps;
 		return ret;
+	}
+
+	@RequestMapping("/orders")
+	public String orders(@RequestParam Map<String, String> params) {
+//		System.out.println(sessionId + " , weightbridge = " + params.get("value"));
+
+		String phone = params.get("phone");
+		String code = utils.nvl(params.get("code"), "1");
+		globalstate.setPhoneIncome(phone, code);
+		return "SUCCESS";
+	}
+
+	@RequestMapping("/lastphoneno")
+	public ResponseEntity<BatchSqlJson> lastphoneno(@RequestParam Map<String, String> params) {
+		String cd = utils.nvl(params.get("code"), "1");
+		String w = globalstate.getPhoneValue(cd);
+		BatchSqlJson sql = new BatchSqlJson();
+		sql.setData(w);
+		sql.setRet("SUCCESS");
+		return new ResponseEntity<BatchSqlJson>(sql, HttpStatus.OK);
+	}
+
+	@RequestMapping("/clearphoneno")
+	public ResponseEntity<BatchSqlJson> clearphoneno(@RequestParam Map<String, String> params) {
+		String cd = utils.nvl(params.get("code"), "1");
+		String w = globalstate.getPhoneValue(cd);
+		globalstate.setPhoneIncome("", cd);
+		BatchSqlJson sql = new BatchSqlJson();
+		sql.setData(w);
+		sql.setRet("SUCCESS");
+		return new ResponseEntity<BatchSqlJson>(sql, HttpStatus.OK);
 	}
 
 }

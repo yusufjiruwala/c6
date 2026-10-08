@@ -10,6 +10,11 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
         this.qryStrBNo = "";
         this.fragBookItems = undefined;
         this.joApp = new sap.m.App({ mode: sap.m.SplitAppMode.HideMode });
+        that.rcv_data_timer = setInterval(function () {
+            that._rcvData();
+        }, 3000);
+
+
         // this.joApp = new sap.m.SplitApp({});
         this.vars = {
             keyfld: -1,
@@ -421,8 +426,21 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
         var t1 = "XL3 L1 M1 S12";
         var t2 = "XL3 L3 M3 S12";
         var sett = sap.ui.getCore().getModel("settings").getData();
+        Util.destroyID("txtMsg123", this.view);
+        Util.destroyID("txtMsg456", this.view);
         var txtMsg = new sap.m.Text(this.view.createId("txtMsg123"), {
         }).addStyleClass("blinking redText");
+        var txtMsg2 = new sap.m.Text(this.view.createId("txtMsg456"), {
+        }).addStyleClass("blinking redText");
+        setTimeout(() => {
+            txtMsg2.addEventDelegate({
+                ontap: function (oEvent) {
+                    that.clearPhone();
+                }
+            }, this);
+        }, 100);
+
+
         var btx = new sap.m.Button(this.view.createId("cmdSHowInfo"), {
             text: "Show Info",
             icon: "sap-icon://customer-history",
@@ -461,6 +479,7 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
         });
 
         fe.push(btx);
+        fe.push(txtMsg2);
         fe.push(txtMsg);
         this.fa.code = UtilGen.addControl(fe, "{i18n>tel}", sap.m.Input, "custTel",
             {
@@ -787,6 +806,7 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
         this.vars.stra = sett["DEFAULT_STORE"];
         this.loadGroups();
         view.byId("txtMsg123").setText("");
+        view.byId("txtMsg456").setText("");
         if (this.qryStrB == "") {
             if (this.qryStr == "") {
                 UtilGen.resetDataJson(this.fa);
@@ -1581,10 +1601,89 @@ sap.ui.jsfragment("bin.forms.pos.booking", {
             return;
         }
 
+    },
+    _rcvData: function () {
+        var that = this;
+        var view = this.view;
+        var sett = sap.ui.getCore().getModel("settings").getData();
+        if (that.ERROR_ON_RCV_DATA == true || !sap.ui.getCore().byId(this.joApp.getId())) {
+            clearInterval(that.rcv_data_timer);
+        }
+        Util.doAjaxJson("lastphoneno?code=1", {
+        }, false).done(function (data) {
+            if (data.ret == "SUCCESS") {
+                var d = Util.nvl(data.data, "0");
+                if (d <= 0 || d == "0") {
+                    d = 0;
+                    view.byId("txtMsg456").setText("");
+                    view.byId("txtMsg456").cust_code = undefined;
+                } else {
+                    var nm = Util.getSQLValue("select name from poscustomer where code='" + d + "'");
+                    view.byId("txtMsg456").cust_code = d;
+                    view.byId("txtMsg456").setText("☎️ˎˊ˗ " + d + "- " + nm);
+                    view.byId("txtMsg456").$().attr("style", "cursor: pointer");
+                    if (!that.settimeout) {
+                        setTimeout(() => {
+                            view.settimeout = undefined;
+                            if (that.ERROR_ON_RCV_DATA == true || !sap.ui.getCore().byId(that.joApp.getId())) {
+                                that.clearPhone(false);
+                                clearInterval(that.rcv_data_timer);
+                            } else {
+                                that.clearPhone(false);
+                            }
+                        }, 500000);
+                        view.settimeout = true;
+                    }
+                }
+            }
+        });
+    },
+    clearPhone: function (getDataPhone) {
+        var that = this;
+        var view = this.view;
+        if (that.ERROR_ON_RCV_DATA == true || !sap.ui.getCore().byId(this.joApp.getId())) {
+            clearInterval(that.rcv_data_timer);
+        }
+        Util.doAjaxJson("clearphoneno?code=1", {
+        }, false).done(function (data) {
+            if (data.ret == "SUCCESS") {
+                var d = Util.nvl(data.data, "0");
+                if (d <= 0 || d == "0") {
+                    d = 0;
+                    view.byId("txtMsg456").setText("");
+                    view.byId("txtMsg456").cust_code = undefined;
+                    view.byId("txtMsg456").$().attr("style", "cursor: default");
+                }
+                else {
+                    var nm = Util.getSQLValue("select name from poscustomer where code='" + d + "'");
+                    view.byId("txtMsg456").cust_code = d;
+                    view.byId("txtMsg456").setText("☎️ˎˊ˗ " + d + "- " + nm);
+                    view.byId("txtMsg456").$().attr("style", "cursor: pointer");
+                    if (Util.nvl(getDataPhone, true))
+                        that.getDataPhone(d);
+
+                }
+            }
+        });
+    },
+    getDataPhone: function () {
+        var that = this;
+        var view = this.view;
+        var cod = Util.nvl(view.byId("txtMsg456").cust_code, "");
+        if (cod != "") {
+            that.qryStr = "";
+            that.qryStrB = "";
+            that.loadData();
+            setTimeout(() => {
+                that.fa.code.setValue(cod);
+                that.getAddrData(true);
+                that.fa.code.setEnabled(false);
+            }, 100);
+        }
+
     }
 }
-)
-    ;
+);
 
 
 
